@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏀 BASKETBALL POWER UP – 10 DAY CHALLENGE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+–orange: #FF6B00;
+–orange-light: #FF9A3C;
+–yellow: #FFD600;
+–dark: #0D0D1A;
+–darker: #080810;
+–card: #161628;
+–card2: #1E1E35;
+–blue: #00C2FF;
+–green: #00E676;
+–purple: #B44FFF;
+–red: #FF3D5A;
+–text: #F0F0FF;
+–muted: #8888AA;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+font-family: ‘Nunito’, sans-serif;
+background: var(–darker);
+color: var(–text);
+min-height: 100vh;
+overflow-x: hidden;
+background-image:
+radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,107,0,0.15) 0%, transparent 60%),
+url(“data:image/svg+xml,%3Csvg width=‘60’ height=‘60’ viewBox=‘0 0 60 60’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cg fill=‘none’ fill-rule=‘evenodd’%3E%3Cg fill=’%23ffffff’ fill-opacity=‘0.02’%3E%3Cpath d=‘M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z’/%3E%3C/g%3E%3C/g%3E%3C/svg%3E”);
+}
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: block; }
+
+/* ── SPLASH ── */
+#splash {
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+text-align: center; padding: 2rem; position: relative; overflow: hidden;
+}
+#splash.active { display: flex; }
+
+.splash-ball {
+font-size: 7rem; margin-bottom: 1rem;
+animation: bounceBall 1.2s ease-in-out infinite;
+filter: drop-shadow(0 0 30px rgba(255,107,0,0.8));
+}
+@keyframes bounceBall {
+0%,100% { transform: translateY(0) scale(1); }
+50% { transform: translateY(-30px) scale(1.1); }
+}
+
+.splash-title {
+font-family: ‘Black Han Sans’, sans-serif;
+font-size: clamp(2rem, 8vw, 4.5rem);
+line-height: 1; letter-spacing: -1px;
+background: linear-gradient(135deg, #FF6B00, #FFD600, #FF6B00);
+background-size: 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+animation: shimmer 3s linear infinite;
+margin-bottom: 0.5rem;
+}
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+.splash-sub {
+font-size: 1.1rem; color: var(–muted); margin-bottom: 2.5rem; font-weight: 700;
+letter-spacing: 3px; text-transform: uppercase;
+}
+
+.name-input-wrap { width: 100%; max-width: 360px; margin-bottom: 1.5rem; }
+.name-input-wrap label { display: block; font-weight: 800; font-size: 0.85rem;
+letter-spacing: 2px; text-transform: uppercase; color: var(–orange-light); margin-bottom: 0.5rem; }
+.name-input {
+width: 100%; padding: 1rem 1.2rem; font-size: 1.2rem; font-weight: 800;
+font-family: ‘Nunito’, sans-serif;
+background: var(–card); border: 2px solid var(–card2);
+border-radius: 12px; color: var(–text); outline: none;
+transition: border-color 0.2s;
+}
+.name-input:focus { border-color: var(–orange); }
+
+.btn-start {
+width: 100%; max-width: 360px; padding: 1.1rem;
+background: linear-gradient(135deg, var(–orange), var(–orange-light));
+border: none; border-radius: 14px; font-family: ‘Black Han Sans’, sans-serif;
+font-size: 1.4rem; color: #fff; cursor: pointer;
+box-shadow: 0 8px 32px rgba(255,107,0,0.4);
+transition: transform 0.15s, box-shadow 0.15s;
+letter-spacing: 1px;
+}
+.btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,107,0,0.6); }
+.btn-start:active { transform: scale(0.97); }
+
+.splash-rings {
+position: absolute; width: 600px; height: 600px;
+border-radius: 50%; border: 1px solid rgba(255,107,0,0.08);
+top: 50%; left: 50%; transform: translate(-50%,-50%);
+pointer-events: none; z-index: 0;
+}
+.splash-rings::before {
+content: ‘’; position: absolute; width: 80%; height: 80%;
+border-radius: 50%; border: 1px solid rgba(255,107,0,0.06);
+top: 10%; left: 10%;
+}
+#splash > * { position: relative; z-index: 1; }
+
+/* ── TOP BAR ── */
+.topbar {
+position: sticky; top: 0; z-index: 100;
+background: rgba(8,8,16,0.95); backdrop-filter: blur(10px);
+border-bottom: 1px solid rgba(255,107,0,0.2);
+padding: 0.75rem 1rem;
+display: flex; align-items: center; justify-content: space-between;
+gap: 0.75rem;
+}
+.topbar-player { display: flex; align-items: center; gap: 0.6rem; }
+.player-avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(–orange), var(–purple));
+display: flex; align-items: center; justify-content: center;
+font-size: 1.2rem; flex-shrink: 0;
+}
+.player-name { font-weight: 900; font-size: 0.95rem; }
+.player-level { font-size: 0.72rem; color: var(–orange-light); font-weight: 700; }
+
+.topbar-stats { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.stat-pill {
+display: flex; align-items: center; gap: 0.3rem;
+background: var(–card); border-radius: 20px; padding: 0.3rem 0.7rem;
+font-weight: 800; font-size: 0.85rem;
+}
+.stat-pill span { font-size: 1rem; }
+
+.exp-mini-wrap { width: 80px; }
+.exp-mini-label { font-size: 0.6rem; color: var(–muted); font-weight: 700; text-transform: uppercase; }
+.exp-mini-bar {
+height: 6px; background: var(–card2); border-radius: 3px; overflow: hidden; margin-top: 2px;
+}
+.exp-mini-fill {
+height: 100%; background: linear-gradient(90deg, var(–orange), var(–yellow));
+border-radius: 3px; transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── NAV ── */
+.nav-tabs {
+display: flex; overflow-x: auto; gap: 0.4rem; padding: 0.75rem 1rem;
+scrollbar-width: none; background: var(–dark);
+border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+flex-shrink: 0; padding: 0.5rem 0.85rem; border-radius: 20px;
+font-weight: 800; font-size: 0.8rem; cursor: pointer; border: none;
+background: var(–card2); color: var(–muted);
+transition: all 0.2s;
+}
+.nav-tab.active { background: var(–orange); color: #fff; }
+.nav-tab.done { background: rgba(0,230,118,0.15); color: var(–green); }
+.nav-tab.done.active { background: var(–green); color: #000; }
+
+/* ── MAIN CONTENT ── */
+#main-screen { padding-bottom: 5rem; }
+#main-screen.active { display: block; }
+
+.content-area { padding: 1rem; }
+
+/* ── DASHBOARD ── */
+.dashboard-card {
+background: var(–card); border-radius: 20px;
+padding: 1.5rem; margin-bottom: 1rem;
+border: 1px solid rgba(255,255,255,0.06);
+}
+
+.dashboard-hero {
+background: linear-gradient(135deg, rgba(255,107,0,0.15), rgba(180,79,255,0.1));
+border: 1px solid rgba(255,107,0,0.25);
+border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem;
+text-align: center; position: relative; overflow: hidden;
+}
+.dashboard-hero::before {
+content: ‘🏀’; position: absolute; font-size: 8rem; opacity: 0.05;
+right: -1rem; top: -1rem; pointer-events: none;
+}
+.hero-level-badge {
+display: inline-block; background: linear-gradient(135deg, var(–orange), var(–yellow));
+color: #000; font-weight: 900; font-size: 0.75rem; padding: 0.25rem 0.75rem;
+border-radius: 20px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;
+}
+.hero-name { font-family: ‘Black Han Sans’, sans-serif; font-size: 2rem; margin-bottom: 0.25rem; }
+.hero-title { color: var(–orange-light); font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; }
+
+.exp-bar-wrap { margin-bottom: 0.4rem; }
+.exp-bar-label {
+display: flex; justify-content: space-between;
+font-size: 0.75rem; font-weight: 700; color: var(–muted); margin-bottom: 0.3rem;
+}
+.exp-bar {
+height: 14px; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden;
+position: relative;
+}
+.exp-bar-fill {
+height: 100%; background: linear-gradient(90deg, var(–orange), var(–yellow));
+border-radius: 7px; transition: width 0.8s cubic-bezier(.4,0,.2,1);
+position: relative;
+}
+.exp-bar-fill::after {
+content: ‘’; position: absolute; right: 0; top: 0; bottom: 0;
+width: 8px; background: rgba(255,255,255,0.5); border-radius: 4px;
+animation: expPulse 1.5s ease-in-out infinite;
+}
+@keyframes expPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* ── SKILL BARS ── */
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+.skill-card {
+background: var(–card2); border-radius: 14px; padding: 0.9rem 0.7rem;
+text-align: center; border: 1px solid rgba(255,255,255,0.05);
+transition: transform 0.2s;
+}
+.skill-card:hover { transform: translateY(-2px); }
+.skill-icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
+.skill-name { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(–muted); margin-bottom: 0.4rem; }
+.skill-level-num { font-family: ‘Black Han Sans’, sans-serif; font-size: 1.5rem; line-height: 1; }
+.skill-bar { height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; margin-top: 0.4rem; overflow: hidden; }
+.skill-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.skill-speed .skill-bar-fill { background: linear-gradient(90deg, var(–orange), var(–yellow)); }
+.skill-jump .skill-bar-fill { background: linear-gradient(90deg, var(–blue), #7B2FFF); }
+.skill-stamina .skill-bar-fill { background: linear-gradient(90deg, var(–green), #00BFA5); }
+
+/* ── DAY VIEW ── */
+.day-header {
+background: linear-gradient(135deg, var(–orange), #FF3D5A);
+border-radius: 18px; padding: 1.2rem 1.5rem;
+margin-bottom: 1rem; position: relative; overflow: hidden;
+}
+.day-header.day-locked {
+background: linear-gradient(135deg, #2a2a3a, #1e1e30);
+}
+.day-header::after {
+content: attr(data-day); position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+font-family: ‘Black Han Sans’, sans-serif; font-size: 5rem; color: rgba(255,255,255,0.08);
+pointer-events: none;
+}
+.day-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
+.day-title { font-family: ‘Black Han Sans’, sans-serif; font-size: 1.6rem; }
+.day-subtitle { font-size: 0.85rem; opacity: 0.8; margin-top: 0.2rem; }
+
+.day-locked-msg {
+display: flex; align-items: center; gap: 0.5rem;
+font-size: 0.9rem; font-weight: 700; color: var(–muted);
+}
+
+/* ── MISSIONS ── */
+.section-title {
+font-size: 0.7rem; font-weight: 900; letter-spacing: 3px;
+text-transform: uppercase; color: var(–orange-light);
+margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.section-title::after { content: ‘’; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+
+.mission-card {
+background: var(–card); border-radius: 14px; padding: 1rem;
+margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.9rem;
+border: 1px solid rgba(255,255,255,0.05);
+transition: border-color 0.2s, background 0.2s;
+cursor: pointer;
+}
+.mission-card.done {
+background: rgba(0,230,118,0.06); border-color: rgba(0,230,118,0.2);
+}
+.mission-check {
+width: 30px; height: 30px; border-radius: 8px;
+border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0;
+display: flex; align-items: center; justify-content: center;
+font-size: 1.1rem; transition: all 0.2s;
+}
+.mission-card.done .mission-check { background: var(–green); border-color: var(–green); }
+.mission-icon { font-size: 1.5rem; }
+.mission-info { flex: 1; }
+.mission-name { font-weight: 800; font-size: 0.95rem; }
+.mission-desc { font-size: 0.78rem; color: var(–muted); margin-top: 0.15rem; }
+.mission-reward {
+background: rgba(255,214,0,0.1); border: 1px solid rgba(255,214,0,0.2);
+border-radius: 8px; padding: 0.2rem 0.5rem;
+font-size: 0.72rem; font-weight: 800; color: var(–yellow);
+white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── STATS INPUT ── */
+.stats-input-card {
+background: var(–card); border-radius: 16px; padding: 1.2rem;
+border: 1px solid rgba(255,255,255,0.06); margin-bottom: 1rem;
+}
+.input-row {
+display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.6rem;
+}
+.input-group label {
+display: block; font-size: 0.65rem; font-weight: 800;
+text-transform: uppercase; letter-spacing: 1px; color: var(–muted); margin-bottom: 0.3rem;
+}
+.stat-input {
+width: 100%; padding: 0.65rem 0.5rem; background: var(–card2);
+border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+color: var(–text); font-family: ‘Nunito’, sans-serif; font-weight: 800;
+font-size: 1rem; text-align: center; outline: none;
+transition: border-color 0.2s;
+}
+.stat-input:focus { border-color: var(–orange); }
+.input-unit { font-size: 0.65rem; color: var(–muted); text-align: center; margin-top: 0.2rem; }
+
+.stat-delta {
+font-size: 0.7rem; font-weight: 800; text-align: center; margin-top: 0.2rem; min-height: 1em;
+}
+.delta-better { color: var(–green); }
+.delta-worse { color: var(–red); }
+.delta-same { color: var(–muted); }
+
+.btn-complete {
+width: 100%; padding: 1rem; border: none; border-radius: 14px;
+font-family: ‘Black Han Sans’, sans-serif; font-size: 1.3rem;
+cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+background: linear-gradient(135deg, var(–orange), var(–orange-light));
+color: #fff; box-shadow: 0 6px 24px rgba(255,107,0,0.35);
+}
+.btn-complete:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(255,107,0,0.5); }
+.btn-complete:active { transform: scale(0.98); }
+.btn-complete.completed {
+background: linear-gradient(135deg, var(–green), #00BFA5);
+box-shadow: 0 6px 24px rgba(0,230,118,0.3);
+}
+
+/* ── 1V1 ── */
+.pvp-card {
+background: linear-gradient(135deg, rgba(180,79,255,0.15), rgba(0,194,255,0.1));
+border: 1px solid rgba(180,79,255,0.25); border-radius: 16px; padding: 1.2rem;
+margin-bottom: 0.6rem;
+}
+.pvp-title { font-family: ‘Black Han Sans’, sans-serif; font-size: 1.1rem; margin-bottom: 0.75rem; }
+.pvp-desc { font-size: 0.85rem; color: var(–muted); margin-bottom: 1rem; }
+.pvp-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.btn-pvp {
+padding: 0.75rem; border: none; border-radius: 12px; font-weight: 900;
+font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+font-family: ‘Nunito’, sans-serif;
+}
+.btn-win { background: var(–green); color: #000; }
+.btn-lose { background: var(–card2); color: var(–muted); border: 1px solid rgba(255,255,255,0.1); }
+.btn-win:hover { transform: scale(1.03); }
+.btn-win.selected { box-shadow: 0 0 0 3px rgba(0,230,118,0.5); }
+.btn-lose.selected { box-shadow: 0 0 0 3px rgba(255,255,255,0.2); color: var(–text); }
+
+/* ── ACHIEVEMENTS ── */
+.badges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+.badge-card {
+background: var(–card2); border-radius: 14px; padding: 0.9rem 0.6rem;
+text-align: center; border: 1px solid rgba(255,255,255,0.05);
+transition: all 0.3s;
+}
+.badge-card.unlocked {
+background: rgba(255,214,0,0.08); border-color: rgba(255,214,0,0.3);
+}
+.badge-icon { font-size: 2rem; margin-bottom: 0.3rem; filter: grayscale(1); opacity: 0.3; transition: all 0.3s; }
+.badge-card.unlocked .badge-icon { filter: grayscale(0); opacity: 1; }
+.badge-name { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(–muted); }
+.badge-card.unlocked .badge-name { color: var(–yellow); }
+.badge-desc { font-size: 0.6rem; color: var(–muted); margin-top: 0.2rem; }
+
+/* ── FINAL BOSS ── */
+.boss-screen {
+text-align: center; padding: 2rem 1rem;
+}
+.boss-title {
+font-family: ‘Black Han Sans’, sans-serif;
+font-size: clamp(2rem, 8vw, 3.5rem);
+background: linear-gradient(135deg, var(–orange), var(–yellow));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 0.5rem; animation: shimmer 3s linear infinite;
+background-size: 200%;
+}
+.boss-sub { color: var(–muted); font-size: 1rem; font-weight: 700; margin-bottom: 2rem; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; margin-bottom: 1.5rem; }
+.compare-col { background: var(–card); border-radius: 16px; padding: 1rem; }
+.compare-col.improved { background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2); }
+.compare-day-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(–muted); margin-bottom: 0.5rem; }
+.compare-val { font-family: ‘Black Han Sans’, sans-serif; font-size: 1.4rem; }
+.compare-vs { display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(–orange-light); font-size: 0.9rem; }
+
+.boss-trophy { font-size: 5rem; margin-bottom: 1rem; animation: bounceBall 1.5s ease-in-out infinite; }
+.boss-msg {
+font-family: ‘Black Han Sans’, sans-serif; font-size: 1.5rem;
+color: var(–yellow); margin-bottom: 2rem; line-height: 1.3;
+}
+.final-stats-card { background: var(–card); border-radius: 18px; padding: 1.5rem; text-align: left; }
+.final-stat-row {
+display: flex; justify-content: space-between; align-items: center;
+padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.final-stat-row:last-child { border-bottom: none; }
+.final-stat-label { font-weight: 700; color: var(–muted); font-size: 0.9rem; }
+.final-stat-val { font-weight: 900; font-size: 1rem; }
+
+/* ── LEVEL UP OVERLAY ── */
+.overlay {
+position: fixed; inset: 0; z-index: 999;
+background: rgba(0,0,0,0.85);
+display: flex; align-items: center; justify-content: center;
+opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.overlay-card {
+background: var(–card); border-radius: 24px; padding: 2.5rem 2rem;
+text-align: center; max-width: 340px; width: 90%;
+border: 2px solid var(–orange);
+animation: popIn 0.4s cubic-bezier(.4,0,.2,1);
+box-shadow: 0 0 80px rgba(255,107,0,0.3);
+}
+@keyframes popIn { 0%{transform:scale(0.5) rotate(-5deg);opacity:0} 100%{transform:scale(1) rotate(0deg);opacity:1} }
+.overlay-emoji { font-size: 4rem; margin-bottom: 1rem; animation: bounceBall 1s ease-in-out infinite; }
+.overlay-title { font-family: ‘Black Han Sans’, sans-serif; font-size: 2rem;
+background: linear-gradient(135deg, var(–orange), var(–yellow));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 0.5rem;
+}
+.overlay-msg { color: var(–muted); font-size: 0.95rem; font-weight: 600; margin-bottom: 1.5rem; }
+.btn-overlay-ok {
+background: linear-gradient(135deg, var(–orange), var(–orange-light));
+border: none; border-radius: 12px; padding: 0.85rem 2.5rem;
+font-family: ‘Black Han Sans’, sans-serif; font-size: 1.1rem; color: #fff; cursor: pointer;
+}
+
+/* ── TOAST ── */
+.toast {
+position: fixed; bottom: 5.5rem; left: 50%; transform: translateX(-50%) translateY(20px);
+background: var(–card); border: 1px solid rgba(255,107,0,0.3);
+border-radius: 30px; padding: 0.65rem 1.2rem;
+font-weight: 800; font-size: 0.9rem; white-space: nowrap;
+z-index: 998; opacity: 0; transition: all 0.3s;
+box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── PROGRESS PAGE ── */
+.chart-wrap { background: var(–card); border-radius: 16px; padding: 1rem; margin-bottom: 1rem; }
+.mini-chart { height: 80px; display: flex; align-items: flex-end; gap: 4px; padding: 0 0.5rem; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar {
+width: 100%; border-radius: 4px 4px 0 0; min-height: 4px;
+transition: height 0.6s cubic-bezier(.4,0,.2,1);
+position: relative;
+}
+.chart-bar-label { font-size: 0.6rem; color: var(–muted); font-weight: 700; }
+.chart-bar-val { font-size: 0.6rem; font-weight: 800; color: var(–text); white-space: nowrap; }
+
+.progress-day-row {
+display: flex; align-items: center; gap: 0.8rem;
+background: var(–card2); border-radius: 12px; padding: 0.7rem 1rem;
+margin-bottom: 0.4rem;
+}
+.progress-day-num {
+width: 32px; height: 32px; border-radius: 8px;
+background: var(–card); display: flex; align-items: center; justify-content: center;
+font-weight: 900; font-size: 0.9rem; flex-shrink: 0;
+}
+.progress-day-num.done { background: var(–green); color: #000; }
+.progress-day-stats { flex: 1; font-size: 0.8rem; color: var(–muted); font-weight: 700; }
+.progress-day-coins { font-size: 0.8rem; font-weight: 800; color: var(–yellow); }
+
+/* ── CONFETTI ── */
+.confetti-piece {
+position: fixed; pointer-events: none; z-index: 9999;
+width: 8px; height: 8px; border-radius: 2px;
+animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── COIN FLOAT ── */
+.coin-float {
+position: fixed; pointer-events: none; z-index: 998;
+font-weight: 900; font-size: 1rem; color: var(–yellow);
+animation: floatUp 1.2s ease-out forwards;
+}
+@keyframes floatUp {
+0% { opacity: 1; transform: translateY(0); }
+100% { opacity: 0; transform: translateY(-60px); }
+}
+
+/* scroll */
+html { scroll-behavior: smooth; }
+
+.page-section { display: none; }
+.page-section.active { display: block; }
+</style>
+
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+
+<div id="splash" class="screen active">
+  <div class="splash-rings"></div>
+  <div class="splash-ball">🏀</div>
+  <div class="splash-title">BASKETBALL<br>POWER UP</div>
+  <div class="splash-sub">⚡ 10 DAY CHALLENGE ⚡</div>
+  <div class="name-input-wrap">
+    <label>YOUR NAME, PLAYER</label>
+    <input type="text" class="name-input" id="playerName" placeholder="Enter your name..." maxlength="20" />
+  </div>
+  <button class="btn-start" onclick="startGame()">🏀 START GAME</button>
+</div>
+
+<!-- MAIN GAME SCREEN -->
+
+<div id="main-screen" class="screen">
+
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+    <div class="topbar-player">
+      <div class="player-avatar">🏀</div>
+      <div>
+        <div class="player-name" id="tb-name">Player</div>
+        <div class="player-level" id="tb-level">LVL 1 • ROOKIE</div>
+      </div>
+    </div>
+    <div class="topbar-stats">
+      <div class="exp-mini-wrap">
+        <div class="exp-mini-label">EXP</div>
+        <div class="exp-mini-bar"><div class="exp-mini-fill" id="exp-mini-fill" style="width:0%"></div></div>
+      </div>
+      <div class="stat-pill"><span>🪙</span><span id="tb-coins">0</span></div>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+
+  <div class="nav-tabs" id="nav-tabs"></div>
+
+  <!-- CONTENT -->
+
+  <div class="content-area" id="content-area">
+    <!-- Dynamic content injected here -->
+  </div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-emoji" id="overlay-emoji">⚡</div>
+    <div class="overlay-title" id="overlay-title">LEVEL UP!</div>
+    <div class="overlay-msg" id="overlay-msg">You are getting stronger!</div>
+    <button class="btn-overlay-ok" onclick="closeOverlay()">🔥 LET'S GO!</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DATA & STATE
+// ══════════════════════════════════════════════════════
+
+const LEVEL_TITLES = [
+  'ROOKIE', 'BALLER', 'SHOOTER', 'POINT GUARD',
+  'SMALL FORWARD', 'POWER FORWARD', 'CENTER',
+  'ALL-STAR', 'MVP', 'LEGEND', '🔥 GOAT'
+];
+
+const EXP_PER_LEVEL = 200;
+
+const DAY_THEMES = [
+  { title: 'FIRST STEP', sub: 'Begin your journey, rookie!', color: 'linear-gradient(135deg, #FF6B00, #FF3D5A)' },
+  { title: 'SPEED DRILL', sub: 'How fast can you go?', color: 'linear-gradient(135deg, #FF9A3C, #FF6B00)' },
+  { title: 'SKY LIMIT', sub: 'Jump higher than yesterday!', color: 'linear-gradient(135deg, #00C2FF, #7B2FFF)' },
+  { title: 'IRON LEGS', sub: 'Build that stamina engine!', color: 'linear-gradient(135deg, #00E676, #00BFA5)' },
+  { title: 'MID WEEK PUSH', sub: "Halfway to glory!", color: 'linear-gradient(135deg, #B44FFF, #FF3D5A)' },
+  { title: 'CLUTCH TIME', sub: 'Real ballers show up now!', color: 'linear-gradient(135deg, #FFD600, #FF6B00)' },
+  { title: 'CHAIN REACTION', sub: 'Every rep counts!', color: 'linear-gradient(135deg, #FF3D5A, #B44FFF)' },
+  { title: 'BEAST MODE', sub: 'Push beyond your limits!', color: 'linear-gradient(135deg, #00C2FF, #00E676)' },
+  { title: 'FINAL PREP', sub: 'Tomorrow is the big day...', color: 'linear-gradient(135deg, #FF6B00, #FFD600)' },
+  { title: '⚡ FINAL BOSS', sub: 'DEFEAT YOUR OLD SELF!', color: 'linear-gradient(135deg, #B44FFF, #FF6B00, #FFD600)' },
+];
+
+const DAY_MISSIONS = [
+  [ // Day 1
+    { id:'speed', icon:'⚡', name:'Sprint Challenge', desc:'Do 3x 30m sprints. Rest 90s between.', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Jump & Land', desc:'10 squat jumps + measure vertical.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Endurance Run', desc:'Run 800m at steady pace.', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'1v1 vs Dad', desc:'First to 7 baskets. Game time!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Speed Ladder', desc:'Footwork drill × 5 rounds. Fast feet!', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Box Jumps', desc:'15 box jumps × 3 sets.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Shuttle Run', desc:'5× shuttle (baseline → half court).', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'1v1 Rematch', desc:'First to 5. Winner picks next drill!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Explosive Start', desc:'10× standing start → 15m sprint.', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Vert Training', desc:'Wall touch × 15 → rest → repeat × 3.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Full Court Run', desc:'10 full court runs (jog back).', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'Trick Shot Duel', desc:'3 trick shot spots. Most makes wins!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Chase Drill', desc:'Dad starts 2m ahead – can you catch him?', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Depth Jump', desc:'Step off box → immediate jump × 10.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'1km Time Trial', desc:'Best time today. Remember it!', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'3-Point Contest', desc:'10 shots from 3-point line. Count!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Sprint Intervals', desc:'Sprint 20s · Walk 40s × 8 rounds.', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Power Skip', desc:'Power skip × 30m × 4 rounds.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Suicide Drills', desc:'Baseline → free throw → half → other end × 5.', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'Mid-Week Battle', desc:'Full game to 11. Celebrate halfway!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Reaction Speed', desc:'Dad signals → you explode. 10 reps.', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Standing Long Jump', desc:'Measure how far you can jump forward.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'2-Ball Dribble Run', desc:'Dribble 2 balls × full court × 5.', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'Clutch Free Throw', desc:'10 free throws. Each counts for coins!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Zigzag Sprint', desc:'Cone course zigzag × 6 rounds.', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Continuous Jump', desc:'Max jumps in 30s. Beat your record!', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Endurance Push', desc:'Run 1.2km. Did you beat Day 4?', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'Around the World', desc:'Classic around-the-world game. Winner takes all!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Beast Sprint', desc:'4× 40m sprint. Fastest time counts!', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Plyometric Combo', desc:'5× squat jump + 5× box jump × 4 sets.', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Iron Man Run', desc:'Jog 2km without stopping.', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'No-Rules Challenge', desc:'Make up your own game. Most fun wins!', exp:20, coins:10 },
+  ],
+  [
+    { id:'speed', icon:'⚡', name:'Sprint Prep', desc:'Final sprint set. 5× 30m. Feeling fast?', exp:40, coins:8 },
+    { id:'jump', icon:'🦘', name:'Jump Benchmark', desc:'3 max vert attempts. Pick your best!', exp:40, coins:8 },
+    { id:'stamina', icon:'🔁', name:'Endurance Prep', desc:'Easy 1km jog. Save energy for Day 10!', exp:40, coins:8 },
+    { id:'pvp', icon:'🏀', name:'Mini Tournament', desc:'3 rounds of H-O-R-S-E. Get hyped!', exp:20, coins:10 },
+  ],
+  [ // Day 10 - BOSS
+    { id:'speed', icon:'⚡', name:'FINAL SPRINT', desc:'5× 30m – beat your Day 1 time!', exp:60, coins:20 },
+    { id:'jump', icon:'🦘', name:'FINAL JUMP', desc:'Max vertical. Have you grown wings?', exp:60, coins:20 },
+    { id:'stamina', icon:'🔁', name:'FINAL RUN', desc:'1km – smash your personal record!', exp:60, coins:20 },
+    { id:'pvp', icon:'🏀', name:'BOSS BATTLE', desc:'EPIC 1v1 to 11. Legacy on the line!', exp:40, coins:30 },
+  ],
+];
+
+const ACHIEVEMENTS = [
+  { id:'first_day', icon:'🌟', name:'First Step', desc:'Complete Day 1' },
+  { id:'speed_hunter', icon:'⚡', name:'Speed Hunter', desc:'Improve sprint time' },
+  { id:'jump_booster', icon:'🦘', name:'Jump Booster', desc:'Improve vertical jump' },
+  { id:'iron_energy', icon:'🔁', name:'Iron Energy', desc:'Improve stamina' },
+  { id:'clutch_player', icon:'🏀', name:'Clutch Player', desc:'Win a 1v1' },
+  { id:'streak_3', icon:'🔥', name:'On Fire', desc:'Complete 3 days in a row' },
+  { id:'streak_5', icon:'💎', name:'Diamond Grind', desc:'Complete 5 days in a row' },
+  { id:'halfway', icon:'🎯', name:'Halfway Hero', desc:'Complete Day 5' },
+  { id:'record_breaker', icon:'🏆', name:'Record Breaker', desc:'Beat a personal record' },
+  { id:'champion', icon:'👑', name:'CHAMPION', desc:'Complete all 10 days!' },
+];
+
+let state = {};
+
+function defaultState() {
+  return {
+    name: 'Player',
+    exp: 0,
+    coins: 0,
+    currentDay: 1,
+    currentTab: 'day1',
+    days: Array.from({length:10}, (_,i) => ({
+      dayNum: i+1,
+      completed: false,
+      missions: {},
+      pvpResult: null,
+      stats: { speed: '', jump: '', stamina: '' },
+    })),
+    achievements: {},
+  };
+}
+
+function saveState() { localStorage.setItem('bpu_state', JSON.stringify(state)); }
+function loadState() {
+  const raw = localStorage.getItem('bpu_state');
+  if (raw) {
+    try { state = JSON.parse(raw); } catch(e) { state = defaultState(); }
+  } else { state = defaultState(); }
+}
+
+// ══════════════════════════════════════════════════════
+// GAME LOGIC
+// ══════════════════════════════════════════════════════
+
+function getLevel() {
+  return Math.min(10, Math.floor(state.exp / EXP_PER_LEVEL));
+}
+function getLevelTitle() { return LEVEL_TITLES[getLevel()]; }
+function getExpInLevel() { return state.exp % EXP_PER_LEVEL; }
+function getExpPct() { return (getExpInLevel() / EXP_PER_LEVEL) * 100; }
+
+function getSkillLevel(skill) {
+  // based on how many times that skill mission was completed
+  let count = 0;
+  state.days.forEach(d => { if (d.missions[skill]) count++; });
+  return Math.min(10, count);
+}
+
+function addExp(amount) {
+  const prevLevel = getLevel();
+  state.exp += amount;
+  const newLevel = getLevel();
+  updateTopBar();
+  if (newLevel > prevLevel) {
+    setTimeout(() => showOverlay('⚡', `LEVEL ${newLevel}!`, `You are now a ${getLevelTitle()}!`), 500);
+  }
+}
+
+function addCoins(amount, x, y) {
+  state.coins += amount;
+  if (x !== undefined) spawnCoinFloat(`+${amount}🪙`, x, y);
+  updateTopBar();
+}
+
+function startGame() {
+  const name = document.getElementById('playerName').value.trim() || 'Bảo Lâm';
+  loadState();
+  state.name = name;
+  saveState();
+  document.getElementById('splash').classList.remove('active');
+  document.getElementById('main-screen').classList.add('active');
+  buildNav();
+  renderTab('dashboard');
+  updateTopBar();
+}
+
+// ══════════════════════════════════════════════════════
+// UI BUILDERS
+// ══════════════════════════════════════════════════════
+
+function updateTopBar() {
+  document.getElementById('tb-name').textContent = state.name;
+  document.getElementById('tb-level').textContent = `LVL ${getLevel()} • ${getLevelTitle()}`;
+  document.getElementById('tb-coins').textContent = state.coins;
+  document.getElementById('exp-mini-fill').style.width = getExpPct() + '%';
+}
+
+function buildNav() {
+  const tabs = document.getElementById('nav-tabs');
+  const tabDefs = [
+    { id:'dashboard', label:'🏠 Home' },
+    { id:'progress', label:'📊 Progress' },
+    { id:'badges', label:'🏆 Badges' },
+    ...Array.from({length:10}, (_,i) => ({
+      id: `day${i+1}`,
+      label: `D${i+1}`,
+      dayIndex: i,
+    }))
+  ];
+  tabs.innerHTML = tabDefs.map(t => {
+    let cls = 'nav-tab';
+    if (t.dayIndex !== undefined && state.days[t.dayIndex].completed) cls += ' done';
+    if (state.currentTab === t.id) cls += ' active';
+    return `<button class="${cls}" onclick="renderTab('${t.id}')">${t.label}</button>`;
+  }).join('');
+}
+
+function setActiveTab(id) {
+  state.currentTab = id;
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.onclick.toString().includes(`'${id}'`)) btn.classList.add('active');
+  });
+}
+
+function renderTab(id) {
+  state.currentTab = id;
+  buildNav();
+  const area = document.getElementById('content-area');
+  if (id === 'dashboard') area.innerHTML = buildDashboard();
+  else if (id === 'progress') area.innerHTML = buildProgress();
+  else if (id === 'badges') area.innerHTML = buildBadges();
+  else if (id.startsWith('day')) {
+    const dayNum = parseInt(id.replace('day',''));
+    area.innerHTML = buildDayView(dayNum);
+  }
+  // Re-attach event listeners after render
+  area.querySelectorAll('.stat-input').forEach(inp => {
+    inp.addEventListener('input', onStatInput);
+  });
+  // Animate bars
+  setTimeout(() => {
+    area.querySelectorAll('.exp-bar-fill, .skill-bar-fill, .exp-mini-fill').forEach(el => {
+      el.style.width = el.getAttribute('data-target') || el.style.width;
+    });
+  }, 50);
+}
+
+function buildDashboard() {
+  const lvl = getLevel();
+  const expPct = getExpPct();
+  const totalDays = state.days.filter(d=>d.completed).length;
+  const totalCoins = state.coins;
+
+  return `
+  <div class="dashboard-hero">
+    <div class="hero-level-badge">LEVEL ${lvl} • ${getLevelTitle()}</div>
+    <div class="hero-name">🏀 ${state.name}</div>
+    <div class="hero-title">🔥 Basketball Warrior</div>
+    <div class="exp-bar-wrap">
+      <div class="exp-bar-label"><span>EXP ${getExpInLevel()} / ${EXP_PER_LEVEL}</span><span>Next: LVL ${lvl+1}</span></div>
+      <div class="exp-bar"><div class="exp-bar-fill" style="width:${expPct}%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title">SKILL LEVELS</div>
+  <div class="skills-grid" style="margin-bottom:1rem">
+    ${buildSkillCard('speed','⚡','Speed',getSkillLevel('speed'),'skill-speed')}
+    ${buildSkillCard('jump','🦘','Jump',getSkillLevel('jump'),'skill-jump')}
+    ${buildSkillCard('stamina','🔁','Stamina',getSkillLevel('stamina'),'skill-stamina')}
+  </div>
+
+  <div class="section-title">OVERALL PROGRESS</div>
+  <div class="dashboard-card">
+    <div style="display:flex;justify-content:space-around;text-align:center;gap:1rem">
+      <div>
+        <div style="font-family:'Black Han Sans',sans-serif;font-size:2.5rem;color:var(--orange)">${totalDays}</div>
+        <div style="font-size:0.72rem;color:var(--muted);font-weight:800;text-transform:uppercase">Days Done</div>
+      </div>
+      <div>
+        <div style="font-family:'Black Han Sans',sans-serif;font-size:2.5rem;color:var(--yellow)">${totalCoins}</div>
+        <div style="font-size:0.72rem;color:var(--muted);font-weight:800;text-transform:uppercase">Coins</div>
+      </div>
+      <div>
+        <div style="font-family:'Black Han Sans',sans-serif;font-size:2.5rem;color:var(--purple)">${state.exp}</div>
+        <div style="font-size:0.72rem;color:var(--muted);font-weight:800;text-transform:uppercase">Total EXP</div>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem">
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem">
+        <span>Challenge Progress</span><span>${totalDays}/10 days</span>
+      </div>
+      <div style="height:10px;background:rgba(255,255,255,0.07);border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${totalDays*10}%;background:linear-gradient(90deg,var(--orange),var(--yellow));border-radius:5px;transition:width 0.8s ease"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">TODAY'S MISSION</div>
+  <div class="dashboard-card" style="text-align:center;cursor:pointer;border:1px solid rgba(255,107,0,0.2)"
+       onclick="renderTab('day${Math.min(totalDays+1,10)}')">
+    <div style="font-size:3rem;margin-bottom:0.5rem">🏀</div>
+    <div style="font-family:'Black Han Sans',sans-serif;font-size:1.3rem;margin-bottom:0.3rem">GO TO DAY ${Math.min(totalDays+1,10)}</div>
+    <div style="font-size:0.85rem;color:var(--muted);font-weight:700">${DAY_THEMES[Math.min(totalDays,9)].title} – ${DAY_THEMES[Math.min(totalDays,9)].sub}</div>
+    <div style="margin-top:1rem;display:inline-block;background:var(--orange);border-radius:20px;padding:0.4rem 1.2rem;font-weight:900;font-size:0.9rem">TAP TO PLAY →</div>
+  </div>
+  `;
+}
+
+function buildSkillCard(skill, icon, name, lvl, cls) {
+  const pct = (lvl/10)*100;
+  return `
+  <div class="skill-card ${cls}">
+    <div class="skill-icon">${icon}</div>
+    <div class="skill-name">${name}</div>
+    <div class="skill-level-num" style="color:${cls.includes('speed')?'var(--orange)':cls.includes('jump')?'var(--blue)':'var(--green)'}">${lvl}</div>
+    <div class="skill-bar"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function buildDayView(dayNum) {
+  const dayIdx = dayNum - 1;
+  const dayData = state.days[dayIdx];
+  const theme = DAY_THEMES[dayIdx];
+  const missions = DAY_MISSIONS[dayIdx];
+  const totalDone = state.days.filter(d=>d.completed).length;
+  const isLocked = dayNum > totalDone + 1;
+  const isBossDay = dayNum === 10;
+
+  if (isLocked) {
+    return `
+    <div class="day-header day-locked" data-day="${dayNum}" style="background:linear-gradient(135deg,#1e1e30,#2a2a3a)">
+      <div class="day-label">DAY ${dayNum}</div>
+      <div class="day-title">🔒 LOCKED</div>
+      <div class="day-locked-msg">Complete Day ${dayNum-1} to unlock!</div>
+    </div>
+    <div style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+      <div style="font-size:4rem;margin-bottom:1rem">🔐</div>
+      <div style="font-weight:800;font-size:1.1rem;margin-bottom:0.5rem">Keep grinding!</div>
+      <div style="font-size:0.9rem">Finish the previous day to unlock this challenge.</div>
+    </div>`;
+  }
+
+  if (isBossDay && dayData.completed) {
+    return buildFinalBoss();
+  }
+
+  const allMissionsDone = missions.filter(m=>m.id!=='pvp').every(m => dayData.missions[m.id]);
+  const isPvpDone = dayData.pvpResult !== null;
+  const canComplete = allMissionsDone;
+
+  return `
+  <div class="day-header" data-day="${dayNum}" style="background:${theme.color}">
+    <div class="day-label">${isBossDay ? '👑 FINAL BOSS –' : ''} DAY ${dayNum} / 10</div>
+    <div class="day-title">${theme.title}</div>
+    <div class="day-subtitle">${theme.sub}</div>
+  </div>
+
+  <div class="section-title">MISSIONS</div>
+  ${missions.filter(m=>m.id!=='pvp').map(m => `
+    <div class="mission-card ${dayData.missions[m.id]?'done':''}" onclick="toggleMission(${dayNum},'${m.id}')">
+      <div class="mission-check">${dayData.missions[m.id]?'✓':''}</div>
+      <div class="mission-icon">${m.icon}</div>
+      <div class="mission-info">
+        <div class="mission-name">${m.name}</div>
+        <div class="mission-desc">${m.desc}</div>
+      </div>
+      <div class="mission-reward">+${m.exp} EXP</div>
+    </div>
+  `).join('')}
+
+  <div class="section-title" style="margin-top:1rem">TODAY'S STATS</div>
+  <div class="stats-input-card">
+    <div class="input-row">
+      ${buildStatInput(dayNum,'speed','⚡ Speed','sec','30m time')}
+      ${buildStatInput(dayNum,'jump','🦘 Jump','cm','vertical')}
+      ${buildStatInput(dayNum,'stamina','🔁 Stamina','min','1km time')}
+    </div>
+  </div>
+
+  <div class="section-title">1V1 BATTLE</div>
+  ${buildPvpCard(dayNum, dayData)}
+
+  <button class="btn-complete ${dayData.completed?'completed':''}"
+    onclick="completeDay(${dayNum})" ${dayData.completed?'disabled':''}>
+    ${dayData.completed ? '✅ DAY COMPLETED!' : canComplete ? '🔥 COMPLETE DAY ' + dayNum : '⚡ FINISH MISSIONS FIRST'}
+  </button>
+  `;
+}
+
+function buildStatInput(dayNum, skill, label, unit, placeholder) {
+  const dayData = state.days[dayNum-1];
+  const val = dayData.stats[skill] || '';
+  const prev = getPrevStat(dayNum, skill);
+  const deltaHtml = getDeltaHtml(skill, val, prev);
+
+  return `
+  <div class="input-group">
+    <label>${label}</label>
+    <input type="number" class="stat-input" data-day="${dayNum}" data-skill="${skill}"
+      placeholder="${placeholder}" value="${val}" step="0.1">
+    <div class="input-unit">${unit}</div>
+    <div class="stat-delta" id="delta-${dayNum}-${skill}">${deltaHtml}</div>
+  </div>`;
+}
+
+function getPrevStat(dayNum, skill) {
+  for (let i = dayNum-2; i >= 0; i--) {
+    if (state.days[i].stats[skill]) return parseFloat(state.days[i].stats[skill]);
+  }
+  return null;
+}
+
+function getDeltaHtml(skill, val, prev) {
+  if (!val || !prev) return '';
+  const curr = parseFloat(val);
+  const diff = curr - prev;
+  // For speed/stamina: lower is better
+  const lowerIsBetter = skill === 'speed' || skill === 'stamina';
+  const improved = lowerIsBetter ? diff < 0 : diff > 0;
+  const sign = diff > 0 ? '+' : '';
+  const cls = diff === 0 ? 'delta-same' : improved ? 'delta-better' : 'delta-worse';
+  const emoji = diff === 0 ? '=' : improved ? '▲ NEW RECORD!' : '▽';
+  return `<span class="${cls}">${sign}${diff.toFixed(1)} ${emoji}</span>`;
+}
+
+function buildPvpCard(dayNum, dayData) {
+  const pvp = DAY_MISSIONS[dayNum-1].find(m=>m.id==='pvp');
+  const res = dayData.pvpResult;
+  return `
+  <div class="pvp-card">
+    <div class="pvp-title">${pvp.icon} ${pvp.name}</div>
+    <div class="pvp-desc">${pvp.desc}</div>
+    <div class="pvp-btns">
+      <button class="btn-pvp btn-win ${res==='win'?'selected':''}" onclick="setPvpResult(${dayNum},'win')">🏆 I WON! (+${pvp.coins}🪙)</button>
+      <button class="btn-pvp btn-lose ${res==='lose'?'selected':''}" onclick="setPvpResult(${dayNum},'lose')">💪 DAD WON (+5🪙)</button>
+    </div>
+  </div>`;
+}
+
+function buildProgress() {
+  const days = state.days;
+  const speedVals = days.map(d => parseFloat(d.stats.speed)||null);
+  const jumpVals = days.map(d => parseFloat(d.stats.jump)||null);
+  const staminaVals = days.map(d => parseFloat(d.stats.stamina)||null);
+
+  return `
+  <div class="section-title">PERFORMANCE CHARTS</div>
+  ${buildMiniChart('⚡ Sprint Speed (sec)', speedVals, 'var(--orange)', true)}
+  ${buildMiniChart('🦘 Vertical Jump (cm)', jumpVals, 'var(--blue)', false)}
+  ${buildMiniChart('🔁 Stamina Time (min)', staminaVals, 'var(--green)', true)}
+
+  <div class="section-title" style="margin-top:0.5rem">DAY LOG</div>
+  ${days.map((d,i) => `
+    <div class="progress-day-row">
+      <div class="progress-day-num ${d.completed?'done':''}">${d.completed?'✓':(i+1)}</div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:0.9rem">${DAY_THEMES[i].title}</div>
+        <div class="progress-day-stats">
+          ${d.stats.speed ? `⚡${d.stats.speed}s` : '⚡–'}
+          ${d.stats.jump ? ` · 🦘${d.stats.jump}cm` : ' · 🦘–'}
+          ${d.stats.stamina ? ` · 🔁${d.stats.stamina}min` : ' · 🔁–'}
+        </div>
+      </div>
+      <div class="progress-day-coins">${d.completed?'✅':''}</div>
+    </div>
+  `).join('')}
+  `;
+}
+
+function buildMiniChart(title, vals, color, lowerIsBetter) {
+  const filtered = vals.filter(v=>v!==null);
+  if (filtered.length === 0) return `
+    <div class="chart-wrap">
+      <div class="section-title" style="margin-bottom:0.5rem">${title}</div>
+      <div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:1rem">No data yet – complete some days!</div>
+    </div>`;
+
+  const max = Math.max(...filtered);
+  const min = Math.min(...filtered);
+  const range = max - min || 1;
+
+  return `
+  <div class="chart-wrap">
+    <div style="font-weight:800;font-size:0.8rem;margin-bottom:0.5rem">${title}</div>
+    <div class="mini-chart">
+      ${vals.map((v,i) => {
+        if (v === null) return `<div class="chart-bar-wrap"><div style="flex:1"></div><div class="chart-bar-label">D${i+1}</div></div>`;
+        const pct = lowerIsBetter
+          ? 1 - (v - min) / range
+          : (v - min) / range;
+        const heightPct = Math.max(10, Math.min(90, pct * 100));
+        const isFirst = filtered.indexOf(v) === 0;
+        const prevFiltered = filtered.slice(0, filtered.indexOf(v));
+        const prevVal = prevFiltered[prevFiltered.length-1];
+        const improved = prevVal !== undefined && (lowerIsBetter ? v < prevVal : v > prevVal);
+        return `
+          <div class="chart-bar-wrap">
+            <div class="chart-bar-val">${v}</div>
+            <div class="chart-bar" style="height:${heightPct}%;background:${improved?'var(--green)':color}"></div>
+            <div class="chart-bar-label">D${i+1}</div>
+          </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function buildBadges() {
+  return `
+  <div class="section-title">ACHIEVEMENTS</div>
+  <div class="badges-grid">
+    ${ACHIEVEMENTS.map(a => `
+      <div class="badge-card ${state.achievements[a.id]?'unlocked':''}">
+        <div class="badge-icon">${a.icon}</div>
+        <div class="badge-name">${a.name}</div>
+        <div class="badge-desc">${a.desc}</div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function buildFinalBoss() {
+  const day1 = state.days[0];
+  const day10 = state.days[9];
+  const totalExp = state.exp;
+  const totalCoins = state.coins;
+  const totalDays = state.days.filter(d=>d.completed).length;
+
+  function compareStat(skill, label, unit, lowerIsBetter) {
+    const v1 = parseFloat(day1.stats[skill]);
+    const v10 = parseFloat(day10.stats[skill]);
+    if (!v1 || !v10) return '';
+    const improved = lowerIsBetter ? v10 < v1 : v10 > v1;
+    const diff = v10 - v1;
+    const sign = diff > 0 ? '+' : '';
+    return `
+    <div style="margin-bottom:0.75rem">
+      <div style="font-size:0.7rem;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:0.4rem">${label}</div>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-day-label">DAY 1</div>
+          <div class="compare-val">${v1}${unit}</div>
+        </div>
+        <div class="compare-vs">VS</div>
+        <div class="compare-col ${improved?'improved':''}">
+          <div class="compare-day-label">DAY 10</div>
+          <div class="compare-val" style="color:${improved?'var(--green)':'var(--red)'}">${v10}${unit}</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:0.8rem;font-weight:800;color:${improved?'var(--green)':'var(--muted)'}">
+        ${improved ? `▲ ${sign}${diff.toFixed(1)}${unit} IMPROVED! 🔥` : `${sign}${diff.toFixed(1)}${unit}`}
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="boss-screen">
+    <div class="boss-trophy">🏆</div>
+    <div class="boss-title">YOU DEFEATED YOUR OLD SELF!</div>
+    <div class="boss-sub">10 days. No excuses. Pure grind.</div>
+
+    ${compareStat('speed','⚡ SPRINT SPEED','s',true)}
+    ${compareStat('jump','🦘 VERTICAL JUMP','cm',false)}
+    ${compareStat('stamina','🔁 STAMINA','min',true)}
+
+    <div class="final-stats-card" style="margin-top:1rem">
+      <div class="final-stat-row">
+        <div class="final-stat-label">🎮 Total EXP Earned</div>
+        <div class="final-stat-val" style="color:var(--orange)">${totalExp} XP</div>
+      </div>
+      <div class="final-stat-row">
+        <div class="final-stat-label">🪙 Coins Collected</div>
+        <div class="final-stat-val" style="color:var(--yellow)">${totalCoins}</div>
+      </div>
+      <div class="final-stat-row">
+        <div class="final-stat-label">⚡ Player Level</div>
+        <div class="final-stat-val" style="color:var(--purple)">LVL ${getLevel()} ${getLevelTitle()}</div>
+      </div>
+      <div class="final-stat-row">
+        <div class="final-stat-label">🏅 Days Completed</div>
+        <div class="final-stat-val" style="color:var(--green)">${totalDays} / 10</div>
+      </div>
+    </div>
+
+    <div class="boss-msg" style="margin-top:1.5rem">"A champion is not born.<br>A champion is built – one day at a time."</div>
+
+    <button class="btn-start" style="max-width:100%;margin-top:0.5rem" onclick="resetGame()">🔄 Start New Challenge</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════════════════
+
+function toggleMission(dayNum, missionId) {
+  const dayData = state.days[dayNum-1];
+  if (dayData.completed) return;
+
+  const wasDone = dayData.missions[missionId];
+  dayData.missions[missionId] = !wasDone;
+
+  if (!wasDone) {
+    const mission = DAY_MISSIONS[dayNum-1].find(m=>m.id===missionId);
+    addExp(mission.exp);
+    addCoins(mission.coins);
+    showToast(`+${mission.exp} EXP 🔥`);
+    checkAchievements();
+  } else {
+    const mission = DAY_MISSIONS[dayNum-1].find(m=>m.id===missionId);
+    state.exp = Math.max(0, state.exp - mission.exp);
+    state.coins = Math.max(0, state.coins - mission.coins);
+    updateTopBar();
+  }
+
+  saveState();
+  renderTab(`day${dayNum}`);
+}
+
+function setPvpResult(dayNum, result) {
+  const dayData = state.days[dayNum-1];
+  if (dayData.completed) return;
+
+  const prev = dayData.pvpResult;
+  dayData.pvpResult = result;
+
+  // Remove previous reward
+  if (prev === 'win') { state.exp -= 20; state.coins -= 20; }
+  if (prev === 'lose') { state.exp -= 5; state.coins -= 5; }
+  state.exp = Math.max(0, state.exp);
+  state.coins = Math.max(0, state.coins);
+
+  // Add new reward
+  if (result === 'win') { addExp(20); addCoins(20); showToast('🏆 WIN! +20 EXP +20🪙'); unlockAchievement('clutch_player'); }
+  if (result === 'lose') { addExp(5); addCoins(5); showToast('💪 Good fight! +5 EXP'); }
+
+  saveState();
+  renderTab(`day${dayNum}`);
+}
+
+function onStatInput(e) {
+  const dayNum = parseInt(e.target.dataset.day);
+  const skill = e.target.dataset.skill;
+  const val = e.target.value;
+
+  state.days[dayNum-1].stats[skill] = val;
+  saveState();
+
+  const prev = getPrevStat(dayNum, skill);
+  const deltaEl = document.getElementById(`delta-${dayNum}-${skill}`);
+  if (deltaEl) deltaEl.innerHTML = getDeltaHtml(skill, val, prev);
+
+  // Check record
+  if (val && prev) {
+    const curr = parseFloat(val);
+    const lowerIsBetter = skill === 'speed' || skill === 'stamina';
+    const improved = lowerIsBetter ? curr < prev : curr > prev;
+    if (improved) {
+      showToast('🔥 NEW RECORD!');
+      addCoins(15);
+      unlockAchievement('record_breaker');
+      if (skill==='speed') unlockAchievement('speed_hunter');
+      if (skill==='jump') unlockAchievement('jump_booster');
+      if (skill==='stamina') unlockAchievement('iron_energy');
+    }
+  }
+}
+
+function completeDay(dayNum) {
+  const dayData = state.days[dayNum-1];
+  if (dayData.completed) return;
+
+  const missions = DAY_MISSIONS[dayNum-1].filter(m=>m.id!=='pvp');
+  const allDone = missions.every(m => dayData.missions[m.id]);
+  if (!allDone) { showToast('❌ Complete all missions first!'); return; }
+
+  dayData.completed = true;
+  addCoins(10);
+  addExp(20);
+  saveState();
+  checkAchievements();
+  spawnConfetti();
+
+  if (dayNum === 10) {
+    unlockAchievement('champion');
+    setTimeout(() => showOverlay('👑', 'CHAMPION!', 'You completed the 10 Day Challenge! GOAT status achieved!'), 600);
+  } else {
+    showOverlay('🏀', `DAY ${dayNum} DONE!`, `+10 🪙 coins earned! Day ${dayNum+1} is now unlocked!`);
+  }
+
+  setTimeout(() => renderTab(`day${dayNum}`), 300);
+}
+
+function checkAchievements() {
+  const days = state.days;
+  const done = days.filter(d=>d.completed).length;
+
+  if (done >= 1) unlockAchievement('first_day');
+  if (done >= 5) unlockAchievement('halfway');
+  if (done >= 10) unlockAchievement('champion');
+
+  // Streaks
+  let streak = 0; let maxStreak = 0;
+  days.forEach(d => { if(d.completed){streak++;maxStreak=Math.max(maxStreak,streak);}else{streak=0;} });
+  if (maxStreak >= 3) unlockAchievement('streak_3');
+  if (maxStreak >= 5) unlockAchievement('streak_5');
+}
+
+function unlockAchievement(id) {
+  if (state.achievements[id]) return;
+  state.achievements[id] = true;
+  const ach = ACHIEVEMENTS.find(a=>a.id===id);
+  if (ach) {
+    saveState();
+    showToast(`🏆 Achievement: ${ach.name}!`);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// OVERLAYS & FX
+// ══════════════════════════════════════════════════════
+
+function showOverlay(emoji, title, msg) {
+  document.getElementById('overlay-emoji').textContent = emoji;
+  document.getElementById('overlay-title').textContent = title;
+  document.getElementById('overlay-msg').textContent = msg;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function spawnConfetti() {
+  const colors = ['#FF6B00','#FFD600','#00E676','#00C2FF','#B44FFF','#FF3D5A'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}vw;
+      top: -10px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${Math.random()*8+4}px;
+      height: ${Math.random()*8+4}px;
+      animation-duration: ${Math.random()*2+1.5}s;
+      animation-delay: ${Math.random()*0.5}s;
+      transform: rotate(${Math.random()*360}deg);
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
+function spawnCoinFloat(text, x, y) {
+  if (x === undefined) return;
+  const el = document.createElement('div');
+  el.className = 'coin-float';
+  el.textContent = text;
+  el.style.cssText = `left:${x}px;top:${y}px`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function resetGame() {
+  if (!confirm('Start a new challenge? All progress will be reset.')) return;
+  const name = state.name;
+  state = defaultState();
+  state.name = name;
+  saveState();
+  renderTab('dashboard');
+  buildNav();
+  updateTopBar();
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+
+// Check if game was already started
+loadState();
+if (state.name && state.name !== 'Player') {
+  document.getElementById('playerName').value = state.name;
+}
+</script>
+
+</body>
+</html>
