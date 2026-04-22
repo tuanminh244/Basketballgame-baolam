@@ -4,558 +4,343 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🏀 Basketball Power Up v2</title>
+<title>Basketball Power Up v3</title>
 <style>
-/* ═══════════════════════════════════════════
-   DESIGN TOKENS
-═══════════════════════════════════════════ */
-:root {
-  --or: #FF6B00; --orl: #FF9A3C; --ye: #FFD600;
-  --dk: #0D0D1A; --dkr: #080810; --cd: #161628; --cd2: #1E1E35;
-  --bl: #00C2FF; --gr: #00E676; --pu: #B44FFF; --rd: #FF3D5A;
-  --tx: #F0F0FF; --mu: #8888AA;
-  --radius: 14px; --transition: 0.22s cubic-bezier(.4,0,.2,1);
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
-body{
-  font-family:'Nunito',system-ui,-apple-system,sans-serif;
-  background:var(--dkr); color:var(--tx); min-height:100vh;
-  overflow-x:hidden;
-  background-image:
-    radial-gradient(ellipse 90% 50% at 50% -10%,rgba(255,107,0,.12) 0%,transparent 60%),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.018'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
-}
+/* BUG FIX: @import MUST be the very first rule in a CSS block */
 @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nunito:wght@700;800;900&display=swap');
-.ff-display{font-family:'Black Han Sans','Arial Black',Impact,sans-serif;}
 
-/* ═══════════════════════════════════════════
-SPLASH / LOGIN
-═══════════════════════════════════════════ */
-#splash{
-display:flex;flex-direction:column;align-items:center;justify-content:center;
-min-height:100vh;padding:1.5rem;text-align:center;position:relative;overflow:hidden;
+/* ===== DESIGN TOKENS ===== */
+:root {
+–or: #FF6B00; –orl: #FF9A3C; –ye: #FFD600;
+–dk: #0D0D1A; –dkr: #080810; –cd: #161628; –cd2: #1E1E35;
+–bl: #00C2FF; –gr: #00E676; –pu: #B44FFF; –rd: #FF3D5A;
+–tx: #F0F0FF; –mu: #8888AA;
+–radius: 14px; –tr: 0.22s cubic-bezier(.4,0,.2,1);
 }
-.splash-step{width:100%;max-width:400px;}
-.splash-ring{
-position:absolute;border-radius:50%;border:1px solid rgba(255,107,0,.07);
-pointer-events:none;
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body {
+font-family:‘Nunito’,system-ui,-apple-system,sans-serif;
+background:var(–dkr); color:var(–tx); min-height:100vh; overflow-x:hidden;
+background-image:
+radial-gradient(ellipse 90% 50% at 50% -10%, rgba(255,107,0,.12) 0%, transparent 60%),
+url(“data:image/svg+xml,%3Csvg width=‘60’ height=‘60’ viewBox=‘0 0 60 60’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cg fill=’%23ffffff’ fill-opacity=‘0.018’%3E%3Cpath d=‘M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z’/%3E%3C/g%3E%3C/svg%3E”);
 }
-.splash-ball{font-size:5.5rem;animation:bounce 1.3s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(255,107,0,.7));margin-bottom:.8rem;}
-.splash-title{
+.ff { font-family:‘Black Han Sans’,‘Arial Black’,Impact,sans-serif; }
+
+/* ===== SPLASH / LOGIN ===== */
+#splash {
+display:flex; flex-direction:column; align-items:center; justify-content:center;
+min-height:100vh; padding:1.5rem; text-align:center; position:relative; overflow:hidden;
+}
+.splash-step { width:100%; max-width:400px; }
+.splash-ring { position:absolute; border-radius:50%; border:1px solid rgba(255,107,0,.07); pointer-events:none; }
+.splash-ball { font-size:5.5rem; animation:bounce 1.3s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(255,107,0,.7)); margin-bottom:.8rem; }
+.splash-title {
 font-family:‘Black Han Sans’,Impact,sans-serif;
-font-size:clamp(2rem,9vw,4rem);line-height:1;letter-spacing:-1px;margin-bottom:.3rem;
-background:linear-gradient(135deg,var(–or),var(–ye),var(–or));
-background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-animation:shimmer 3s linear infinite;
+font-size:clamp(2rem,9vw,4rem); line-height:1; letter-spacing:-1px; margin-bottom:.3rem;
+background:linear-gradient(135deg,var(–or),var(–ye),var(–or)); background-size:200%;
+-webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite;
 }
-.splash-sub{font-size:.85rem;color:var(–mu);letter-spacing:3px;text-transform:uppercase;font-weight:800;margin-bottom:2rem;}
-.splash-section-title{font-size:.7rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(–orl);margin-bottom:.75rem;}
-.player-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
-.player-btn{
-display:flex;align-items:center;gap:.8rem;
-background:var(–cd);border:1px solid rgba(255,255,255,.07);border-radius:var(–radius);
-padding:.9rem 1rem;cursor:pointer;transition:all var(–transition);text-align:left;
-width:100%;color:var(–tx);
+.splash-sub { font-size:.85rem; color:var(–mu); letter-spacing:3px; text-transform:uppercase; font-weight:800; margin-bottom:2rem; }
+.splash-stl { font-size:.7rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(–orl); margin-bottom:.75rem; }
+.player-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:1rem; }
+.player-btn {
+display:flex; align-items:center; gap:.8rem;
+background:var(–cd); border:1px solid rgba(255,255,255,.07); border-radius:var(–radius);
+padding:.9rem 1rem; cursor:pointer; transition:all var(–tr); text-align:left; width:100%; color:var(–tx);
 }
-.player-btn:hover{border-color:var(–or);background:rgba(255,107,0,.08);}
-.player-btn-avatar{
-width:38px;height:38px;border-radius:50%;flex-shrink:0;
-display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+.player-btn:hover { border-color:var(–or); background:rgba(255,107,0,.08); }
+.player-btn-av { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.player-btn-info { flex:1; }
+.player-btn-name { font-weight:900; font-size:1rem; }
+.player-btn-stats { font-size:.72rem; color:var(–mu); font-weight:700; margin-top:.1rem; }
+.role-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1rem; }
+.role-card {
+background:var(–cd); border:2px solid rgba(255,255,255,.07); border-radius:18px;
+padding:1.5rem 1rem; cursor:pointer; transition:all var(–tr); text-align:center;
 }
-.player-btn-info{flex:1;}
-.player-btn-name{font-weight:900;font-size:1rem;}
-.player-btn-stats{font-size:.72rem;color:var(–mu);font-weight:700;margin-top:.1rem;}
-.player-btn-arrow{color:var(–mu);font-size:1.2rem;}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;}
-.role-card{
-background:var(–cd);border:2px solid rgba(255,255,255,.07);border-radius:18px;
-padding:1.5rem 1rem;cursor:pointer;transition:all var(–transition);text-align:center;
+.role-card:hover { transform:translateY(-3px); }
+.role-card.father:hover { border-color:var(–or); background:rgba(255,107,0,.08); }
+.role-card.child:hover { border-color:var(–bl); background:rgba(0,194,255,.08); }
+.role-icon { font-size:2.8rem; margin-bottom:.5rem; }
+.role-name { font-weight:900; font-size:1.05rem; margin-bottom:.25rem; }
+.role-desc { font-size:.72rem; color:var(–mu); font-weight:700; }
+.pwd-input {
+width:100%; padding:1rem; background:var(–cd); border:2px solid rgba(255,255,255,.1);
+border-radius:var(–radius); color:var(–tx); font-size:1.5rem; font-weight:900;
+text-align:center; letter-spacing:.5rem; font-family:monospace; outline:none;
+transition:border-color var(–tr); margin-bottom:1rem;
 }
-.role-card:hover{transform:translateY(-3px);}
-.role-card.father:hover,.role-card.father:active{border-color:var(–or);background:rgba(255,107,0,.08);}
-.role-card.child:hover,.role-card.child:active{border-color:var(–bl);background:rgba(0,194,255,.08);}
-.role-icon{font-size:2.8rem;margin-bottom:.5rem;}
-.role-name{font-weight:900;font-size:1.05rem;margin-bottom:.25rem;}
-.role-desc{font-size:.72rem;color:var(–mu);font-weight:700;}
-.pwd-input{
-width:100%;padding:1rem;background:var(–cd);border:2px solid rgba(255,255,255,.1);
-border-radius:var(–radius);color:var(–tx);font-size:1.5rem;font-weight:900;
-text-align:center;letter-spacing:.5rem;font-family:monospace;outline:none;
-transition:border-color var(–transition);margin-bottom:1rem;
+.pwd-input:focus { border-color:var(–or); }
+.pwd-error { color:var(–rd); font-size:.85rem; font-weight:700; margin-bottom:.7rem; min-height:1.2em; }
+.new-player-input {
+width:100%; padding:.9rem 1rem; background:var(–cd); border:2px solid rgba(255,255,255,.08);
+border-radius:var(–radius); color:var(–tx); font-size:1rem; font-weight:800;
+font-family:inherit; outline:none; transition:border-color var(–tr); margin-bottom:.75rem;
 }
-.pwd-input:focus{border-color:var(–or);}
-.pwd-error{color:var(–rd);font-size:.85rem;font-weight:700;margin-bottom:.7rem;min-height:1.2em;}
-.new-player-input{
-width:100%;padding:.9rem 1rem;background:var(–cd);border:2px solid rgba(255,255,255,.08);
-border-radius:var(–radius);color:var(–tx);font-size:1rem;font-weight:800;
-font-family:inherit;outline:none;transition:border-color var(–transition);margin-bottom:.75rem;
-}
-.new-player-input:focus{border-color:var(–or);}
+.new-player-input:focus { border-color:var(–or); }
 
-/* ═══════════════════════════════════════════
-BUTTONS
-═══════════════════════════════════════════ */
-.btn{
-display:block;width:100%;padding:.95rem 1rem;border:none;border-radius:var(–radius);
-font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;
-transition:all var(–transition);text-align:center;
+/* ===== BUTTONS ===== */
+.btn {
+display:block; width:100%; padding:.95rem 1rem; border:none; border-radius:var(–radius);
+font-family:inherit; font-weight:900; font-size:1rem; cursor:pointer;
+transition:all var(–tr); text-align:center;
 }
-.btn:active{transform:scale(.97);}
-.btn-primary{background:linear-gradient(135deg,var(–or),var(–orl));color:#fff;box-shadow:0 6px 24px rgba(255,107,0,.35);}
-.btn-primary:hover{box-shadow:0 10px 32px rgba(255,107,0,.55);transform:translateY(-2px);}
-.btn-secondary{background:var(–cd2);color:var(–tx);border:1px solid rgba(255,255,255,.08);}
-.btn-secondary:hover{background:var(–cd);border-color:rgba(255,255,255,.15);}
-.btn-success{background:linear-gradient(135deg,var(–gr),#00BFA5);color:#000;}
-.btn-success:hover{box-shadow:0 8px 24px rgba(0,230,118,.3);transform:translateY(-2px);}
-.btn-danger{background:linear-gradient(135deg,var(–rd),#c62a47);color:#fff;}
-.btn-sm{padding:.55rem .9rem;font-size:.8rem;width:auto;display:inline-flex;align-items:center;gap:.3rem;}
-.btn-ghost{background:transparent;color:var(–mu);border:1px solid rgba(255,255,255,.08);}
-.btn-ghost:hover{color:var(–tx);border-color:rgba(255,255,255,.2);}
-.btn[disabled],.btn-locked{opacity:.5;cursor:not-allowed;pointer-events:none;}
-.btn-back{
-display:inline-flex;align-items:center;gap:.4rem;background:none;border:none;
-color:var(–mu);font-size:.85rem;font-weight:800;cursor:pointer;padding:.5rem 0;
-transition:color var(–transition);
-}
-.btn-back:hover{color:var(–tx);}
+.btn:active { transform:scale(.97); }
+.btn-primary { background:linear-gradient(135deg,var(–or),var(–orl)); color:#fff; box-shadow:0 6px 24px rgba(255,107,0,.35); }
+.btn-primary:hover { box-shadow:0 10px 32px rgba(255,107,0,.55); transform:translateY(-2px); }
+.btn-secondary { background:var(–cd2); color:var(–tx); border:1px solid rgba(255,255,255,.08); }
+.btn-secondary:hover { background:var(–cd); }
+.btn-success { background:linear-gradient(135deg,var(–gr),#00BFA5); color:#000; }
+.btn-success:hover { box-shadow:0 8px 24px rgba(0,230,118,.3); transform:translateY(-2px); }
+.btn-danger { background:linear-gradient(135deg,var(–rd),#c62a47); color:#fff; }
+.btn-sm { padding:.55rem .9rem; font-size:.8rem; width:auto; display:inline-flex; align-items:center; gap:.3rem; }
+.btn-ghost { background:transparent; color:var(–mu); border:1px solid rgba(255,255,255,.08); }
+.btn-ghost:hover { color:var(–tx); border-color:rgba(255,255,255,.2); }
+.btn-back { display:inline-flex; align-items:center; gap:.4rem; background:none; border:none; color:var(–mu); font-size:.85rem; font-weight:800; cursor:pointer; padding:.5rem 0; transition:color var(–tr); }
+.btn-back:hover { color:var(–tx); }
 
-/* ═══════════════════════════════════════════
-TOPBAR
-═══════════════════════════════════════════ */
-#topbar{
-position:sticky;top:0;z-index:100;
-background:rgba(8,8,16,.96);backdrop-filter:blur(12px);
+/* ===== TOPBAR ===== */
+#topbar {
+position:sticky; top:0; z-index:100;
+background:rgba(8,8,16,.96); backdrop-filter:blur(12px);
 border-bottom:1px solid rgba(255,107,0,.18);
-padding:.65rem .9rem;display:flex;align-items:center;gap:.6rem;
+padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
 }
-.tb-player{display:flex;align-items:center;gap:.55rem;flex:1;min-width:0;}
-.tb-avatar{
-width:36px;height:36px;border-radius:50%;flex-shrink:0;
-display:flex;align-items:center;justify-content:center;font-size:1.1rem;
-}
-.tb-info{min-width:0;}
-.tb-name{font-weight:900;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.tb-lv{font-size:.65rem;color:var(–orl);font-weight:800;white-space:nowrap;}
-.tb-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
-.coin-pill{
-display:flex;align-items:center;gap:.3rem;background:var(–cd);
-border-radius:20px;padding:.28rem .6rem;font-weight:900;font-size:.85rem;
-border:1px solid rgba(255,214,0,.15);
-}
-.exp-mini{width:72px;}
-.exp-mini-lbl{font-size:.55rem;color:var(–mu);font-weight:800;text-transform:uppercase;}
-.exp-mini-bar{height:6px;background:var(–cd2);border-radius:3px;overflow:hidden;margin-top:2px;}
-.exp-mini-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:3px;transition:width .7s ease;}
-.tb-btns{display:flex;gap:.3rem;}
-.icon-btn{
-width:34px;height:34px;border-radius:10px;background:var(–cd);border:1px solid rgba(255,255,255,.07);
-display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;
-transition:all var(–transition);color:var(–mu);
-}
-.icon-btn:hover{background:var(–cd2);color:var(–tx);}
-.role-badge{
-display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .55rem;
-border-radius:20px;font-size:.6rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;
-}
-.role-badge.father{background:rgba(255,107,0,.15);color:var(–orl);border:1px solid rgba(255,107,0,.25);}
-.role-badge.child{background:rgba(0,194,255,.12);color:var(–bl);border:1px solid rgba(0,194,255,.2);}
+.tb-player { display:flex; align-items:center; gap:.55rem; flex:1; min-width:0; }
+.tb-av { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+.tb-info { min-width:0; }
+.tb-name { font-weight:900; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tb-lv { font-size:.65rem; color:var(–orl); font-weight:800; }
+.tb-right { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+.coin-pill { display:flex; align-items:center; gap:.3rem; background:var(–cd); border-radius:20px; padding:.28rem .6rem; font-weight:900; font-size:.85rem; border:1px solid rgba(255,214,0,.15); }
+.exp-mini { width:72px; }
+.exp-mini-lbl { font-size:.55rem; color:var(–mu); font-weight:800; text-transform:uppercase; }
+.exp-mini-bar { height:6px; background:var(–cd2); border-radius:3px; overflow:hidden; margin-top:2px; }
+.exp-mini-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:3px; transition:width .7s ease; }
+.tb-btns { display:flex; gap:.3rem; }
+.icon-btn { width:34px; height:34px; border-radius:10px; background:var(–cd); border:1px solid rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; transition:all var(–tr); color:var(–mu); }
+.icon-btn:hover { background:var(–cd2); color:var(–tx); }
+.role-badge { display:inline-flex; align-items:center; gap:.25rem; padding:.2rem .55rem; border-radius:20px; font-size:.6rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; flex-shrink:0; }
+.role-badge.father { background:rgba(255,107,0,.15); color:var(–orl); border:1px solid rgba(255,107,0,.25); }
+.role-badge.child { background:rgba(0,194,255,.12); color:var(–bl); border:1px solid rgba(0,194,255,.2); }
+/* Sync status dot */
+#sync-dot { width:8px; height:8px; border-radius:50%; background:var(–mu); flex-shrink:0; transition:background .4s; }
+#sync-dot.syncing { background:var(–ye); animation:pulse 1s ease-in-out infinite; }
+#sync-dot.synced { background:var(–gr); }
+#sync-dot.error { background:var(–rd); }
 
-/* ═══════════════════════════════════════════
-NAV
-═══════════════════════════════════════════ */
-#nav-bar{
-display:flex;overflow-x:auto;gap:.35rem;padding:.65rem .9rem;
-background:var(–dk);border-bottom:1px solid rgba(255,255,255,.05);
-scrollbar-width:none;flex-shrink:0;
-}
-#nav-bar::-webkit-scrollbar{display:none;}
-.nav-tab{
-flex-shrink:0;padding:.45rem .8rem;border-radius:20px;
-font-weight:900;font-size:.75rem;cursor:pointer;border:none;
-background:var(–cd2);color:var(–mu);transition:all var(–transition);
-white-space:nowrap;
-}
-.nav-tab.active{background:var(–or);color:#fff;}
-.nav-tab.done{background:rgba(0,230,118,.12);color:var(–gr);}
-.nav-tab.done.active{background:var(–gr);color:#000;}
+/* ===== NAV ===== */
+#nav-bar { display:flex; overflow-x:auto; gap:.35rem; padding:.65rem .9rem; background:var(–dk); border-bottom:1px solid rgba(255,255,255,.05); scrollbar-width:none; flex-shrink:0; }
+#nav-bar::-webkit-scrollbar { display:none; }
+.nav-tab { flex-shrink:0; padding:.45rem .8rem; border-radius:20px; font-weight:900; font-size:.75rem; cursor:pointer; border:none; background:var(–cd2); color:var(–mu); transition:all var(–tr); white-space:nowrap; }
+.nav-tab.active { background:var(–or); color:#fff; }
+.nav-tab.done { background:rgba(0,230,118,.12); color:var(–gr); }
+.nav-tab.done.active { background:var(–gr); color:#000; }
 
-/* ═══════════════════════════════════════════
-CONTENT AREA
-═══════════════════════════════════════════ */
-#content{padding:.9rem;padding-bottom:5rem;}
-.section-title{
-font-size:.65rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;
-color:var(–orl);margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem;
-}
-.section-title::after{content:’’;flex:1;height:1px;background:rgba(255,255,255,.05);}
-.card{
-background:var(–cd);border-radius:18px;padding:1.25rem;
-border:1px solid rgba(255,255,255,.05);margin-bottom:.8rem;
-}
-.card-glow{border-color:rgba(255,107,0,.2);background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(180,79,255,.04));}
+/* ===== CONTENT ===== */
+#content { padding:.9rem; padding-bottom:5rem; }
+.section-title { font-size:.65rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(–orl); margin-bottom:.7rem; display:flex; align-items:center; gap:.5rem; }
+.section-title::after { content:’’; flex:1; height:1px; background:rgba(255,255,255,.05); }
+.card { background:var(–cd); border-radius:18px; padding:1.25rem; border:1px solid rgba(255,255,255,.05); margin-bottom:.8rem; }
+.card-glow { border-color:rgba(255,107,0,.2); background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(180,79,255,.04)); }
 
-/* ═══════════════════════════════════════════
-DASHBOARD
-═══════════════════════════════════════════ */
-.hero-card{
-background:linear-gradient(135deg,rgba(255,107,0,.14),rgba(180,79,255,.08));
-border:1px solid rgba(255,107,0,.22);border-radius:20px;padding:1.4rem;
-margin-bottom:.9rem;text-align:center;position:relative;overflow:hidden;
-}
-.hero-card::before{content:‘🏀’;position:absolute;font-size:8rem;opacity:.05;right:-1rem;top:-1rem;pointer-events:none;}
-.hero-badge{
-display:inline-block;background:linear-gradient(135deg,var(–or),var(–ye));
-color:#000;font-weight:900;font-size:.7rem;padding:.22rem .7rem;
-border-radius:20px;letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem;
-}
-.hero-name{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:2rem;margin-bottom:.2rem;}
-.hero-subtitle{color:var(–orl);font-size:.82rem;font-weight:800;margin-bottom:1rem;}
-.exp-bar{height:14px;background:rgba(255,255,255,.07);border-radius:7px;overflow:hidden;position:relative;}
-.exp-bar-fill{
-height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:7px;
-transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;
-}
-.exp-bar-fill::after{
-content:’’;position:absolute;right:0;top:0;bottom:0;width:6px;
-background:rgba(255,255,255,.5);border-radius:3px;animation:pulse 1.5s ease-in-out infinite;
-}
-.exp-bar-lbl{display:flex;justify-content:space-between;font-size:.72rem;font-weight:800;color:var(–mu);margin-bottom:.35rem;}
-.skills-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;margin-bottom:.9rem;}
-.skill-card{
-background:var(–cd2);border-radius:14px;padding:.85rem .6rem;
-text-align:center;border:1px solid rgba(255,255,255,.04);transition:transform var(–transition);
-}
-.skill-card:hover{transform:translateY(-2px);}
-.skill-icon{font-size:1.7rem;margin-bottom:.25rem;}
-.skill-nm{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.35rem;}
-.skill-num{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.5rem;line-height:1;}
-.skill-bar-wrap{height:5px;background:rgba(255,255,255,.07);border-radius:3px;margin-top:.4rem;overflow:hidden;}
-.skill-bar{height:100%;border-radius:3px;transition:width .7s ease;}
-.stats-trio{display:flex;justify-content:space-around;text-align:center;gap:.5rem;margin-bottom:1rem;}
-.stat-big{flex:1;}
-.stat-big-num{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:2.3rem;line-height:1;}
-.stat-big-lbl{font-size:.65rem;color:var(–mu);font-weight:800;text-transform:uppercase;margin-top:.2rem;}
-.progress-bar-wrap{margin-top:1rem;}
-.progress-bar{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;}
-.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:5px;transition:width .8s ease;}
+/* ===== DASHBOARD ===== */
+.hero-card { background:linear-gradient(135deg,rgba(255,107,0,.14),rgba(180,79,255,.08)); border:1px solid rgba(255,107,0,.22); border-radius:20px; padding:1.4rem; margin-bottom:.9rem; text-align:center; position:relative; overflow:hidden; }
+.hero-card::before { content:‘🏀’; position:absolute; font-size:8rem; opacity:.05; right:-1rem; top:-1rem; pointer-events:none; }
+.hero-badge { display:inline-block; background:linear-gradient(135deg,var(–or),var(–ye)); color:#000; font-weight:900; font-size:.7rem; padding:.22rem .7rem; border-radius:20px; letter-spacing:2px; text-transform:uppercase; margin-bottom:.5rem; }
+.hero-name { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2rem; margin-bottom:.2rem; }
+.hero-subtitle { color:var(–orl); font-size:.82rem; font-weight:800; margin-bottom:1rem; }
+.exp-bar-lbl { display:flex; justify-content:space-between; font-size:.72rem; font-weight:800; color:var(–mu); margin-bottom:.35rem; }
+.exp-bar { height:14px; background:rgba(255,255,255,.07); border-radius:7px; overflow:hidden; position:relative; }
+.exp-bar-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:7px; transition:width .9s cubic-bezier(.4,0,.2,1); position:relative; }
+.exp-bar-fill::after { content:’’; position:absolute; right:0; top:0; bottom:0; width:6px; background:rgba(255,255,255,.5); border-radius:3px; animation:pulse 1.5s ease-in-out infinite; }
+.skills-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.55rem; margin-bottom:.9rem; }
+.skill-card { background:var(–cd2); border-radius:14px; padding:.85rem .6rem; text-align:center; border:1px solid rgba(255,255,255,.04); transition:transform var(–tr); }
+.skill-card:hover { transform:translateY(-2px); }
+.skill-icon { font-size:1.7rem; margin-bottom:.25rem; }
+.skill-nm { font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.35rem; }
+.skill-num { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.5rem; line-height:1; }
+.skill-bar-wrap { height:5px; background:rgba(255,255,255,.07); border-radius:3px; margin-top:.4rem; overflow:hidden; }
+.skill-bar { height:100%; border-radius:3px; transition:width .7s ease; }
+.stats-trio { display:flex; justify-content:space-around; text-align:center; gap:.5rem; margin-bottom:1rem; }
+.stat-big { flex:1; }
+.stat-big-num { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2.3rem; line-height:1; }
+.stat-big-lbl { font-size:.65rem; color:var(–mu); font-weight:800; text-transform:uppercase; margin-top:.2rem; }
+.progress-bar-wrap { margin-top:1rem; }
+.progress-bar { height:10px; background:rgba(255,255,255,.06); border-radius:5px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:5px; transition:width .8s ease; }
 
-/* ═══════════════════════════════════════════
-DAY VIEW
-═══════════════════════════════════════════ */
-.day-header{
-border-radius:18px;padding:1.2rem 1.4rem;margin-bottom:.9rem;
-position:relative;overflow:hidden;
-}
-.day-header::after{
-content:attr(data-day);position:absolute;right:.8rem;top:50%;transform:translateY(-50%);
-font-family:‘Black Han Sans’,Impact,sans-serif;font-size:5rem;color:rgba(255,255,255,.08);pointer-events:none;
-}
-.day-label{font-size:.65rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;opacity:.8;margin-bottom:.2rem;}
-.day-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.65rem;line-height:1.1;}
-.day-sub{font-size:.82rem;opacity:.75;margin-top:.2rem;}
-.mission-card{
-background:var(–cd);border-radius:14px;padding:.95rem;
-margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;
-border:1px solid rgba(255,255,255,.05);transition:all var(–transition);cursor:pointer;
-}
-.mission-card.done{background:rgba(0,230,118,.06);border-color:rgba(0,230,118,.2);}
-.mission-card:hover:not(.done):not(.locked-action){background:rgba(255,255,255,.03);}
-.mission-check{
-width:28px;height:28px;border-radius:8px;border:2px solid rgba(255,255,255,.14);
-flex-shrink:0;display:flex;align-items:center;justify-content:center;
-font-size:1rem;transition:all var(–transition);
-}
-.mission-card.done .mission-check{background:var(–gr);border-color:var(–gr);animation:checkPop .3s cubic-bezier(.4,0,.2,1);}
-.mission-icon{font-size:1.4rem;}
-.mission-info{flex:1;}
-.mission-name{font-weight:900;font-size:.92rem;}
-.mission-desc{font-size:.73rem;color:var(–mu);margin-top:.12rem;}
-.mission-reward{
-background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.2);
-border-radius:8px;padding:.18rem .5rem;font-size:.68rem;font-weight:900;
-color:var(–ye);white-space:nowrap;flex-shrink:0;
-}
-.stats-input-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;margin-bottom:.5rem;}
-.stat-group label{display:block;font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.28rem;}
-.stat-inp{
-width:100%;padding:.6rem .4rem;background:var(–cd2);border:1px solid rgba(255,255,255,.07);
-border-radius:10px;color:var(–tx);font-family:inherit;font-weight:900;font-size:1rem;
-text-align:center;outline:none;transition:border-color var(–transition);
-}
-.stat-inp:focus{border-color:var(–or);box-shadow:0 0 0 3px rgba(255,107,0,.12);}
-.stat-inp:disabled{opacity:.45;cursor:not-allowed;}
-.stat-unit{font-size:.6rem;color:var(–mu);text-align:center;margin-top:.18rem;}
-.stat-delta{font-size:.65rem;font-weight:800;text-align:center;margin-top:.15rem;min-height:1em;}
-.dlt-good{color:var(–gr);} .dlt-bad{color:var(–rd);} .dlt-neu{color:var(–mu);}
-.pvp-card{
-background:linear-gradient(135deg,rgba(180,79,255,.12),rgba(0,194,255,.08));
-border:1px solid rgba(180,79,255,.22);border-radius:16px;padding:1.1rem;margin-bottom:.55rem;
-}
-.pvp-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.05rem;margin-bottom:.5rem;}
-.pvp-desc{font-size:.82rem;color:var(–mu);margin-bottom:.9rem;}
-.pvp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
-.pvp-btn{
-padding:.7rem;border:2px solid transparent;border-radius:12px;
-font-weight:900;font-size:.9rem;cursor:pointer;transition:all var(–transition);
-font-family:inherit;
-}
-.pvp-win{background:var(–gr);color:#000;}
-.pvp-lose{background:var(–cd2);color:var(–mu);border-color:rgba(255,255,255,.08);}
-.pvp-win.sel{box-shadow:0 0 0 3px rgba(0,230,118,.4);transform:scale(1.02);}
-.pvp-lose.sel{color:var(–tx);border-color:rgba(255,255,255,.25);}
-.pvp-btn:disabled{opacity:.4;cursor:not-allowed;}
-.btn-complete{
-width:100%;padding:.95rem;border:none;border-radius:14px;
-font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.25rem;cursor:pointer;
-transition:all var(–transition);letter-spacing:1px;margin-top:.3rem;
-background:linear-gradient(135deg,var(–or),var(–orl));
-color:#fff;box-shadow:0 6px 20px rgba(255,107,0,.32);
-}
-.btn-complete:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,107,0,.5);}
-.btn-complete:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-.btn-complete.completed{background:linear-gradient(135deg,var(–gr),#00BFA5);box-shadow:0 6px 20px rgba(0,230,118,.28);cursor:default;}
-.edit-bar{
-display:flex;align-items:center;justify-content:space-between;
-background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.18);
-border-radius:12px;padding:.6rem .9rem;margin-bottom:.7rem;
-}
-.edit-bar-lbl{font-size:.78rem;font-weight:800;color:var(–orl);}
+/* ===== DAY VIEW ===== */
+.day-header { border-radius:18px; padding:1.2rem 1.4rem; margin-bottom:.9rem; position:relative; overflow:hidden; }
+.day-header::after { content:attr(data-day); position:absolute; right:.8rem; top:50%; transform:translateY(-50%); font-family:‘Black Han Sans’,Impact,sans-serif; font-size:5rem; color:rgba(255,255,255,.08); pointer-events:none; }
+.day-label { font-size:.65rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; opacity:.8; margin-bottom:.2rem; }
+.day-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.65rem; line-height:1.1; }
+.day-sub { font-size:.82rem; opacity:.75; margin-top:.2rem; }
+.mission-card { background:var(–cd); border-radius:14px; padding:.95rem; margin-bottom:.5rem; display:flex; align-items:center; gap:.8rem; border:1px solid rgba(255,255,255,.05); transition:all var(–tr); cursor:pointer; }
+.mission-card.done { background:rgba(0,230,118,.06); border-color:rgba(0,230,118,.2); }
+.mission-card:hover:not(.done) { background:rgba(255,255,255,.03); }
+.mission-check { width:28px; height:28px; border-radius:8px; border:2px solid rgba(255,255,255,.14); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:all var(–tr); }
+.mission-card.done .mission-check { background:var(–gr); border-color:var(–gr); animation:checkPop .3s cubic-bezier(.4,0,.2,1); }
+.mission-icon { font-size:1.4rem; }
+.mission-info { flex:1; }
+.mission-name { font-weight:900; font-size:.92rem; }
+.mission-desc { font-size:.73rem; color:var(–mu); margin-top:.12rem; }
+.mission-reward { background:rgba(255,214,0,.1); border:1px solid rgba(255,214,0,.2); border-radius:8px; padding:.18rem .5rem; font-size:.68rem; font-weight:900; color:var(–ye); white-space:nowrap; flex-shrink:0; }
+.stats-input-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.55rem; margin-bottom:.5rem; }
+.stat-group label { display:block; font-size:.62rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.28rem; }
+.stat-inp { width:100%; padding:.6rem .4rem; background:var(–cd2); border:1px solid rgba(255,255,255,.07); border-radius:10px; color:var(–tx); font-family:inherit; font-weight:900; font-size:1rem; text-align:center; outline:none; transition:border-color var(–tr); }
+.stat-inp:focus { border-color:var(–or); box-shadow:0 0 0 3px rgba(255,107,0,.12); }
+.stat-inp:disabled { opacity:.45; cursor:not-allowed; }
+.stat-unit { font-size:.6rem; color:var(–mu); text-align:center; margin-top:.18rem; }
+.stat-delta { font-size:.65rem; font-weight:800; text-align:center; margin-top:.15rem; min-height:1em; }
+.dlt-good { color:var(–gr); } .dlt-bad { color:var(–rd); } .dlt-neu { color:var(–mu); }
+.pvp-card { background:linear-gradient(135deg,rgba(180,79,255,.12),rgba(0,194,255,.08)); border:1px solid rgba(180,79,255,.22); border-radius:16px; padding:1.1rem; margin-bottom:.55rem; }
+.pvp-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.05rem; margin-bottom:.5rem; }
+.pvp-desc { font-size:.82rem; color:var(–mu); margin-bottom:.9rem; }
+.pvp-grid { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+.pvp-btn { padding:.7rem; border:2px solid transparent; border-radius:12px; font-weight:900; font-size:.9rem; cursor:pointer; transition:all var(–tr); font-family:inherit; }
+.pvp-win { background:var(–gr); color:#000; }
+.pvp-lose { background:var(–cd2); color:var(–mu); border-color:rgba(255,255,255,.08); }
+.pvp-win.sel { box-shadow:0 0 0 3px rgba(0,230,118,.4); transform:scale(1.02); }
+.pvp-lose.sel { color:var(–tx); border-color:rgba(255,255,255,.25); }
+.pvp-btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-complete { width:100%; padding:.95rem; border:none; border-radius:14px; font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.25rem; cursor:pointer; transition:all var(–tr); letter-spacing:1px; margin-top:.3rem; background:linear-gradient(135deg,var(–or),var(–orl)); color:#fff; box-shadow:0 6px 20px rgba(255,107,0,.32); }
+.btn-complete:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,107,0,.5); }
+.btn-complete:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+.btn-complete.completed { background:linear-gradient(135deg,var(–gr),#00BFA5); box-shadow:0 6px 20px rgba(0,230,118,.28); cursor:default; }
+.edit-bar { display:flex; align-items:center; justify-content:space-between; background:rgba(255,107,0,.07); border:1px solid rgba(255,107,0,.18); border-radius:12px; padding:.6rem .9rem; margin-bottom:.7rem; }
+.edit-bar-lbl { font-size:.78rem; font-weight:800; color:var(–orl); }
+.locked-tip { font-size:.72rem; color:var(–mu); font-weight:700; text-align:center; margin-top:.3rem; }
 
-/* ═══════════════════════════════════════════
-PROGRESS / CHART
-═══════════════════════════════════════════ */
-.chart-card{background:var(–cd);border-radius:16px;padding:1rem;margin-bottom:.8rem;border:1px solid rgba(255,255,255,.05);}
-.chart-title{font-weight:900;font-size:.82rem;margin-bottom:.65rem;}
-.mini-chart{height:90px;display:flex;align-items:flex-end;gap:3px;padding:0 .3rem;}
-.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.bar-val{font-size:.55rem;font-weight:900;color:var(–tx);white-space:nowrap;}
-.bar-body{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .6s ease;}
-.bar-lbl{font-size:.58rem;color:var(–mu);font-weight:800;}
-.day-log-row{
-display:flex;align-items:center;gap:.75rem;background:var(–cd2);
-border-radius:12px;padding:.65rem .9rem;margin-bottom:.4rem;
-}
-.day-log-num{
-width:30px;height:30px;border-radius:8px;background:var(–cd);
-display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;flex-shrink:0;
-}
-.day-log-num.done{background:var(–gr);color:#000;}
-.day-log-stats{flex:1;font-size:.75rem;color:var(–mu);font-weight:700;}
-.day-log-title{font-weight:900;font-size:.85rem;margin-bottom:.1rem;}
+/* ===== PROGRESS / CHART ===== */
+.chart-card { background:var(–cd); border-radius:16px; padding:1rem; margin-bottom:.8rem; border:1px solid rgba(255,255,255,.05); }
+.chart-title { font-weight:900; font-size:.82rem; margin-bottom:.65rem; }
+.mini-chart { height:90px; display:flex; align-items:flex-end; gap:3px; padding:0 .3rem; }
+.bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.bar-val { font-size:.55rem; font-weight:900; color:var(–tx); white-space:nowrap; }
+.bar-body { width:100%; border-radius:4px 4px 0 0; min-height:4px; transition:height .6s ease; }
+.bar-lbl { font-size:.58rem; color:var(–mu); font-weight:800; }
+.day-log-row { display:flex; align-items:center; gap:.75rem; background:var(–cd2); border-radius:12px; padding:.65rem .9rem; margin-bottom:.4rem; }
+.day-log-num { width:30px; height:30px; border-radius:8px; background:var(–cd); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.85rem; flex-shrink:0; }
+.day-log-num.done { background:var(–gr); color:#000; }
+.day-log-stats { flex:1; font-size:.75rem; color:var(–mu); font-weight:700; }
+.day-log-title { font-weight:900; font-size:.85rem; margin-bottom:.1rem; }
 
-/* ═══════════════════════════════════════════
-BADGES
-═══════════════════════════════════════════ */
-.badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;}
-.badge-card{
-background:var(–cd2);border-radius:14px;padding:.85rem .6rem;
-text-align:center;border:1px solid rgba(255,255,255,.04);transition:all var(–transition);
-}
-.badge-card.unlocked{background:rgba(255,214,0,.07);border-color:rgba(255,214,0,.28);}
-.badge-card.unlocked.new-unlock{animation:badgePop .5s cubic-bezier(.4,0,.2,1);}
-.badge-ico{font-size:2rem;margin-bottom:.28rem;filter:grayscale(1);opacity:.28;transition:all var(–transition);}
-.badge-card.unlocked .badge-ico{filter:grayscale(0);opacity:1;}
-.badge-nm{font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(–mu);}
-.badge-card.unlocked .badge-nm{color:var(–ye);}
-.badge-ds{font-size:.58rem;color:var(–mu);margin-top:.18rem;}
+/* ===== BADGES ===== */
+.badges-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+.badge-card { background:var(–cd2); border-radius:14px; padding:.85rem .6rem; text-align:center; border:1px solid rgba(255,255,255,.04); transition:all var(–tr); }
+.badge-card.unlocked { background:rgba(255,214,0,.07); border-color:rgba(255,214,0,.28); }
+.badge-ico { font-size:2rem; margin-bottom:.28rem; filter:grayscale(1); opacity:.28; transition:all var(–tr); }
+.badge-card.unlocked .badge-ico { filter:grayscale(0); opacity:1; }
+.badge-nm { font-size:.62rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:var(–mu); }
+.badge-card.unlocked .badge-nm { color:var(–ye); }
+.badge-ds { font-size:.58rem; color:var(–mu); margin-top:.18rem; }
 
-/* ═══════════════════════════════════════════
-REWARDS
-═══════════════════════════════════════════ */
-.reward-card{
-background:var(–cd);border-radius:16px;padding:1.1rem;margin-bottom:.65rem;
-border:1px solid rgba(255,255,255,.05);
-}
-.reward-card.redeemed{opacity:.55;}
-.reward-card.big{border-color:rgba(255,214,0,.25);background:rgba(255,214,0,.04);}
-.reward-card.small{border-color:rgba(0,194,255,.2);background:rgba(0,194,255,.03);}
-.reward-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;}
-.reward-day{font-size:.65rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(–mu);}
-.reward-type-badge{
-padding:.2rem .6rem;border-radius:20px;font-size:.65rem;font-weight:900;
-letter-spacing:1px;text-transform:uppercase;
-}
-.reward-type-badge.big{background:rgba(255,214,0,.15);color:var(–ye);}
-.reward-type-badge.small{background:rgba(0,194,255,.12);color:var(–bl);}
-.reward-items{display:flex;gap:.55rem;margin-bottom:.75rem;flex-wrap:wrap;}
-.reward-item{
-display:flex;align-items:center;gap:.35rem;background:var(–cd2);
-border-radius:10px;padding:.4rem .7rem;font-weight:800;font-size:.85rem;
-}
-.reward-status{font-size:.75rem;color:var(–gr);font-weight:800;}
+/* ===== REWARDS ===== */
+.reward-card { background:var(–cd); border-radius:16px; padding:1.1rem; margin-bottom:.65rem; border:1px solid rgba(255,255,255,.05); }
+.reward-card.redeemed { opacity:.55; }
+.reward-card.big { border-color:rgba(255,214,0,.25); background:rgba(255,214,0,.04); }
+.reward-card.small { border-color:rgba(0,194,255,.2); background:rgba(0,194,255,.03); }
+.reward-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
+.reward-day { font-size:.65rem; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(–mu); }
+.reward-type-badge { padding:.2rem .6rem; border-radius:20px; font-size:.65rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; }
+.reward-type-badge.big { background:rgba(255,214,0,.15); color:var(–ye); }
+.reward-type-badge.small { background:rgba(0,194,255,.12); color:var(–bl); }
+.reward-items { display:flex; gap:.55rem; margin-bottom:.75rem; flex-wrap:wrap; }
+.reward-item { display:flex; align-items:center; gap:.35rem; background:var(–cd2); border-radius:10px; padding:.4rem .7rem; font-weight:800; font-size:.85rem; }
+.reward-status { font-size:.75rem; color:var(–gr); font-weight:800; }
 
-/* ═══════════════════════════════════════════
-ADMIN PANEL
-═══════════════════════════════════════════ */
-.admin-section{margin-bottom:1.2rem;}
-.player-manage-row{
-display:flex;align-items:center;gap:.75rem;background:var(–cd);
-border-radius:14px;padding:.8rem 1rem;margin-bottom:.45rem;
-border:1px solid rgba(255,255,255,.05);
-}
-.player-manage-name{flex:1;font-weight:900;}
-.player-manage-stats{font-size:.72rem;color:var(–mu);font-weight:700;}
-.sync-textarea{
-width:100%;min-height:120px;background:var(–cd2);border:1px solid rgba(255,255,255,.08);
-border-radius:12px;color:var(–tx);font-family:monospace;font-size:.75rem;
-padding:.75rem;resize:vertical;outline:none;line-height:1.5;
-}
-.sync-textarea:focus{border-color:var(–or);}
+/* ===== ADMIN ===== */
+.admin-section { margin-bottom:1.2rem; }
+.player-manage-row { display:flex; align-items:center; gap:.75rem; background:var(–cd); border-radius:14px; padding:.8rem 1rem; margin-bottom:.45rem; border:1px solid rgba(255,255,255,.05); }
+.player-manage-name { flex:1; font-weight:900; }
+.player-manage-stats { font-size:.72rem; color:var(–mu); font-weight:700; }
+.sync-textarea { width:100%; min-height:120px; background:var(–cd2); border:1px solid rgba(255,255,255,.08); border-radius:12px; color:var(–tx); font-family:monospace; font-size:.75rem; padding:.75rem; resize:vertical; outline:none; line-height:1.5; }
+.sync-textarea:focus { border-color:var(–or); }
 
-/* ═══════════════════════════════════════════
-FINAL BOSS
-═══════════════════════════════════════════ */
-.boss-wrap{text-align:center;padding:1.5rem 0;}
-.boss-trophy{font-size:5rem;animation:bounce 1.5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(255,214,0,.5));}
-.boss-title{
-font-family:‘Black Han Sans’,Impact,sans-serif;
-font-size:clamp(1.8rem,7vw,3rem);margin:.6rem 0 .3rem;
-background:linear-gradient(135deg,var(–or),var(–ye));
-background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-animation:shimmer 3s linear infinite;
-}
-.boss-sub{color:var(–mu);font-size:.95rem;font-weight:800;margin-bottom:1.5rem;}
-.compare-row{
-display:grid;grid-template-columns:1fr auto 1fr;gap:.4rem;margin-bottom:.75rem;align-items:center;
-}
-.compare-cell{background:var(–cd);border-radius:14px;padding:.9rem;text-align:center;}
-.compare-cell.win{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);}
-.compare-cell.lose{background:rgba(255,61,90,.06);border:1px solid rgba(255,61,90,.15);}
-.compare-lbl{font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.3rem;}
-.compare-val{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.4rem;}
-.compare-vs{font-weight:900;color:var(–orl);font-size:.82rem;text-align:center;}
-.boss-quote{
-font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.2rem;
-color:var(–ye);margin:1.5rem 0;line-height:1.4;
-}
-.final-stat-row{
-display:flex;justify-content:space-between;align-items:center;
-padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);
-}
-.final-stat-row:last-child{border-bottom:none;}
+/* ===== FINAL BOSS ===== */
+.boss-wrap { text-align:center; padding:1.5rem 0; }
+.boss-trophy { font-size:5rem; animation:bounce 1.5s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(255,214,0,.5)); }
+.boss-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:clamp(1.8rem,7vw,3rem); margin:.6rem 0 .3rem; background:linear-gradient(135deg,var(–or),var(–ye)); background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite; }
+.boss-sub { color:var(–mu); font-size:.95rem; font-weight:800; margin-bottom:1.5rem; }
+.compare-row { display:grid; grid-template-columns:1fr auto 1fr; gap:.4rem; margin-bottom:.75rem; align-items:center; }
+.compare-cell { background:var(–cd); border-radius:14px; padding:.9rem; text-align:center; }
+.compare-cell.win { background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); }
+.compare-cell.lose { background:rgba(255,61,90,.06); border:1px solid rgba(255,61,90,.15); }
+.compare-lbl { font-size:.6rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.3rem; }
+.compare-val { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.4rem; }
+.compare-vs { font-weight:900; color:var(–orl); font-size:.82rem; text-align:center; }
+.boss-quote { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.2rem; color:var(–ye); margin:1.5rem 0; line-height:1.4; }
+.final-stat-row { display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.final-stat-row:last-child { border-bottom:none; }
 
-/* ═══════════════════════════════════════════
-MODAL SYSTEM
-═══════════════════════════════════════════ */
-#modal-bg{
-position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);
-display:flex;align-items:flex-end;justify-content:center;
-opacity:0;pointer-events:none;transition:opacity .25s;
-}
-#modal-bg.open{opacity:1;pointer-events:all;}
-#modal-box{
-background:var(–cd);border-radius:24px 24px 0 0;
-width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
-padding:1.5rem 1.2rem;
-transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-#modal-bg.open #modal-box{transform:translateY(0);}
-.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 1.2rem;}
-.modal-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.4rem;margin-bottom:1rem;text-align:center;}
+/* ===== MODAL ===== */
+#modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.82); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
+#modal-bg.open { opacity:1; pointer-events:all; }
+#modal-box { background:var(–cd); border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:85vh; overflow-y:auto; padding:1.5rem 1.2rem; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
+#modal-bg.open #modal-box { transform:translateY(0); }
+.modal-handle { width:40px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 1.2rem; }
+.modal-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.4rem; margin-bottom:1rem; text-align:center; }
 
-/* ═══════════════════════════════════════════
-OVERLAYS (level up, achievement)
-═══════════════════════════════════════════ */
-#levelup-overlay{
-position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.88);
-display:flex;align-items:center;justify-content:center;
-opacity:0;pointer-events:none;transition:opacity .3s;
-}
-#levelup-overlay.show{opacity:1;pointer-events:all;}
-.levelup-card{
-background:var(–cd);border-radius:24px;padding:2.5rem 2rem;text-align:center;
-max-width:320px;width:90%;border:2px solid var(–or);
-box-shadow:0 0 80px rgba(255,107,0,.25),0 0 120px rgba(255,107,0,.1);
-transform:scale(0);transition:transform .4s cubic-bezier(.4,0,.2,1);
-}
-#levelup-overlay.show .levelup-card{transform:scale(1);}
-.lu-emoji{font-size:4rem;display:block;margin-bottom:.8rem;animation:bounce 1s ease-in-out infinite;}
-.lu-title{
-font-family:‘Black Han Sans’,Impact,sans-serif;font-size:2.2rem;
-background:linear-gradient(135deg,var(–or),var(–ye));
-background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-animation:shimmer 3s linear infinite;margin-bottom:.4rem;
-}
-.lu-msg{color:var(–mu);font-size:.92rem;font-weight:700;margin-bottom:1.5rem;}
-#achievement-toast{
-position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(20px);
-background:linear-gradient(135deg,rgba(255,214,0,.15),rgba(255,107,0,.1));
-border:1px solid rgba(255,214,0,.3);border-radius:30px;
-padding:.6rem 1.2rem;font-weight:900;font-size:.85rem;z-index:400;
-opacity:0;transition:all .3s;white-space:nowrap;backdrop-filter:blur(8px);
-}
-#achievement-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-#toast{
-position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(10px);
-background:var(–cd);border:1px solid rgba(255,107,0,.25);border-radius:30px;
-padding:.55rem 1.1rem;font-weight:800;font-size:.85rem;z-index:399;
-opacity:0;transition:all .3s;white-space:nowrap;
-}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* ===== OVERLAYS ===== */
+#levelup-overlay { position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; }
+#levelup-overlay.show { opacity:1; pointer-events:all; }
+.levelup-card { background:var(–cd); border-radius:24px; padding:2.5rem 2rem; text-align:center; max-width:320px; width:90%; border:2px solid var(–or); box-shadow:0 0 80px rgba(255,107,0,.25),0 0 120px rgba(255,107,0,.1); transform:scale(0); transition:transform .4s cubic-bezier(.4,0,.2,1); }
+#levelup-overlay.show .levelup-card { transform:scale(1); }
+.lu-emoji { font-size:4rem; display:block; margin-bottom:.8rem; animation:bounce 1s ease-in-out infinite; }
+.lu-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2.2rem; background:linear-gradient(135deg,var(–or),var(–ye)); background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite; margin-bottom:.4rem; }
+.lu-msg { color:var(–mu); font-size:.92rem; font-weight:700; margin-bottom:1.5rem; }
+#achievement-toast { position:fixed; bottom:5.5rem; left:50%; transform:translateX(-50%) translateY(20px); background:linear-gradient(135deg,rgba(255,214,0,.15),rgba(255,107,0,.1)); border:1px solid rgba(255,214,0,.3); border-radius:30px; padding:.6rem 1.2rem; font-weight:900; font-size:.85rem; z-index:400; opacity:0; transition:all .3s; white-space:nowrap; backdrop-filter:blur(8px); }
+#achievement-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#toast { position:fixed; bottom:5rem; left:50%; transform:translateX(-50%) translateY(10px); background:var(–cd); border:1px solid rgba(255,107,0,.25); border-radius:30px; padding:.55rem 1.1rem; font-weight:800; font-size:.85rem; z-index:399; opacity:0; transition:all .3s; white-space:nowrap; }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* ═══════════════════════════════════════════
-CONFETTI & FX
-═══════════════════════════════════════════ */
-.confetti{
-position:fixed;pointer-events:none;z-index:800;border-radius:2px;
-animation:confettiFall linear forwards;
-}
-.coin-float{
-position:fixed;pointer-events:none;z-index:800;
-font-weight:900;font-size:.95rem;color:var(–ye);
-animation:floatUp 1.2s ease-out forwards;
-}
-.locked-action{cursor:not-allowed!important;}
-.locked-action::after{content:’ 🔒’;}
+/* ===== FX ===== */
+.confetti { position:fixed; pointer-events:none; z-index:800; border-radius:2px; animation:confettiFall linear forwards; }
+.coin-float { position:fixed; pointer-events:none; z-index:800; font-weight:900; font-size:.95rem; color:var(–ye); animation:floatUp 1.2s ease-out forwards; }
 
-/* ═══════════════════════════════════════════
-KEYFRAMES
-═══════════════════════════════════════════ */
-@keyframes bounce{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-22px) scale(1.08);}}
-@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
-@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
-@keyframes checkPop{0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
-@keyframes badgePop{0%{transform:scale(0.5) rotate(-10deg);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
-@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
-@keyframes slideIn{0%{transform:translateX(-20px);opacity:0}100%{transform:translateX(0);opacity:1}}
-@keyframes expCount{0%{width:0%}}
-@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(255,107,0,.3)}50%{box-shadow:0 0 40px rgba(255,107,0,.6)}}
+/* ===== KEYFRAMES ===== */
+@keyframes bounce { 0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-22px) scale(1.08);} }
+@keyframes shimmer { 0%{background-position:0%}100%{background-position:200%} }
+@keyframes pulse { 0%,100%{opacity:.5}50%{opacity:1} }
+@keyframes checkPop { 0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.3)}100%{transform:scale(1)} }
+@keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+@keyframes floatUp { 0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)} }
 </style>
 
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════
-     SPLASH / LOGIN
-═══════════════════════════════════════════ -->
+<!-- ===== SPLASH ===== -->
 
 <div id="splash">
-  <!-- WELCOME STEP -->
+  <!-- WELCOME -->
   <div class="splash-step" id="step-welcome">
     <div class="splash-ring" style="width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
     <div class="splash-ring" style="width:360px;height:360px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
     <div class="splash-ball">🏀</div>
     <div class="splash-title">BASKETBALL<br>POWER UP</div>
-    <div class="splash-sub">⚡ 10 DAY CHALLENGE v2 ⚡</div>
-    <div class="splash-section-title">SELECT PLAYER</div>
+    <div class="splash-sub">10 DAY CHALLENGE v3</div>
+    <div class="splash-stl">SELECT PLAYER</div>
     <div class="player-list" id="player-list"></div>
     <button class="btn btn-ghost" style="max-width:400px;margin:0 auto" onclick="showStep('new-player')">➕ Add New Player</button>
+    <div id="sync-status-splash" style="margin-top:1rem;font-size:.72rem;color:var(--mu);font-weight:700;min-height:1.2em"></div>
   </div>
 
-  <!-- NEW PLAYER STEP -->
+  <!-- NEW PLAYER -->
 
   <div class="splash-step" id="step-new-player" style="display:none">
     <button class="btn-back" onclick="showStep('welcome')">← Back</button>
     <div class="splash-ball" style="font-size:4rem;margin-top:1rem">🏀</div>
     <div class="splash-title" style="font-size:2.5rem;margin-bottom:1.5rem">NEW PLAYER</div>
-    <div class="splash-section-title">PLAYER NAME</div>
+    <div class="splash-stl">PLAYER NAME</div>
     <input type="text" class="new-player-input" id="new-player-name" placeholder="Enter player name..." maxlength="20">
     <button class="btn btn-primary" style="max-width:400px;margin:0 auto" onclick="createPlayer()">CREATE PLAYER →</button>
   </div>
 
-  <!-- ROLE SELECT STEP -->
+  <!-- ROLE SELECT -->
 
   <div class="splash-step" id="step-role" style="display:none">
     <button class="btn-back" onclick="showStep('welcome')">← Back</button>
@@ -565,8 +350,8 @@ KEYFRAMES
     <div class="role-grid">
       <div class="role-card child" onclick="loginAsChild()">
         <div class="role-icon">🏀</div>
-        <div class="role-name">Bảo Lâm</div>
-        <div class="role-desc">VIEW progress & missions</div>
+        <div class="role-name">Bao Lam</div>
+        <div class="role-desc">VIEW progress &amp; missions</div>
       </div>
       <div class="role-card father" onclick="showStep('password')">
         <div class="role-icon">👨</div>
@@ -576,32 +361,28 @@ KEYFRAMES
     </div>
   </div>
 
-  <!-- PASSWORD STEP -->
+  <!-- PASSWORD -->
 
   <div class="splash-step" id="step-password" style="display:none">
     <button class="btn-back" onclick="showStep('role')">← Back</button>
     <div style="font-size:3rem;margin:1rem 0">🔐</div>
     <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">ADMIN ACCESS</div>
     <div class="splash-sub" style="margin-bottom:1.5rem">Enter 6-digit password</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="••••••" maxlength="6"
-      oninput="if(this.value.length===6)loginAsFather()">
+    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6">
     <div class="pwd-error" id="pwd-error"></div>
     <button class="btn btn-primary" style="max-width:400px;margin:0 auto" onclick="loginAsFather()">UNLOCK →</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MAIN GAME
-═══════════════════════════════════════════ -->
+<!-- ===== GAME SCREEN ===== -->
 
 <div id="game-screen" style="display:none">
-  <!-- TOPBAR -->
   <div id="topbar">
     <div class="tb-player">
-      <div class="tb-avatar" id="tb-avatar">🏀</div>
+      <div class="tb-av" id="tb-av">🏀</div>
       <div class="tb-info">
-        <div class="tb-name" id="tb-name">–</div>
-        <div class="tb-lv" id="tb-lv">LVL 1 · ROOKIE</div>
+        <div class="tb-name" id="tb-name">-</div>
+        <div class="tb-lv" id="tb-lv">LVL 1 ROOKIE</div>
       </div>
     </div>
     <div class="tb-right">
@@ -610,26 +391,19 @@ KEYFRAMES
         <div class="exp-mini-bar"><div class="exp-mini-fill" id="exp-mini-fill" style="width:0%"></div></div>
       </div>
       <div class="coin-pill">🪙<span id="tb-coins">0</span></div>
-      <div class="role-badge" id="tb-role-badge">–</div>
+      <div class="role-badge" id="tb-role-badge">-</div>
+      <div id="sync-dot" title="Sync status"></div>
       <div class="tb-btns">
         <div class="icon-btn" id="sound-btn" onclick="toggleSound()" title="Sound">🔊</div>
         <div class="icon-btn" onclick="confirmLogout()" title="Switch player">⇄</div>
       </div>
     </div>
   </div>
-
-  <!-- NAV -->
-
   <div id="nav-bar"></div>
-
-  <!-- CONTENT -->
-
   <div id="content"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MODAL (bottom sheet)
-═══════════════════════════════════════════ -->
+<!-- MODAL -->
 
 <div id="modal-bg" onclick="modalBgClick(event)">
   <div id="modal-box">
@@ -638,9 +412,7 @@ KEYFRAMES
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     LEVEL UP OVERLAY
-═══════════════════════════════════════════ -->
+<!-- LEVEL UP OVERLAY -->
 
 <div id="levelup-overlay">
   <div class="levelup-card">
@@ -651,81 +423,117 @@ KEYFRAMES
   </div>
 </div>
 
-<!-- ACHIEVEMENT TOAST -->
-
 <div id="achievement-toast"></div>
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════════════
-   1. CONSTANTS
-═══════════════════════════════════════════════════════════════════ */
+/* =============================================================
+   PART 0 - FIREBASE CONFIG
+   Fill in your Firebase project details to enable cloud sync.
+   Leave FB_URL empty ('') to use localStorage only.
+   =============================================================
+   HOW TO SET UP (free):
+   1. Go to https://console.firebase.google.com
+   2. Create project → Realtime Database → Create database
+   3. Rules: set read/write to true for testing
+      { "rules": { ".read": true, ".write": true } }
+   4. Copy your database URL below (ends with .firebaseio.com)
+============================================================= */
+const FB_URL = '';   // e.g. 'https://my-project-default-rtdb.firebaseio.com'
+const FB_PATH = '/bpu_game';   // data path in the database
+const FB_SECRET = '';  // optional: database secret for auth (Admin SDK)
+
+/* =============================================================
+   PART 1 - CONSTANTS
+============================================================= */
 const ADMIN_PWD = '141089';
-const STORAGE_KEY = 'bpu_v2_players';
-const SETTINGS_KEY = 'bpu_v2_settings';
+const LS_KEY = 'bpu_v3_players';
+const LS_SETTINGS = 'bpu_v3_settings';
 const EXP_PER_LV = 200;
 
-const LEVEL_TITLES = [
-  'ROOKIE','BALLER','SHOOTER','POINT GUARD','SMALL FWD',
-  'POWER FWD','CENTER','ALL-STAR','MVP','LEGEND','🔥 GOAT'
-];
+const LEVEL_TITLES = ['ROOKIE','BALLER','SHOOTER','POINT GUARD','SMALL FWD','POWER FWD','CENTER','ALL-STAR','MVP','LEGEND','GOAT'];
 const AVATARS = ['🏀','⭐','🔥','💎','👑','⚡','🦁','🐉','🏆','🌟'];
+const AV_COLORS = [
+  'linear-gradient(135deg,#FF6B00,#FF3D5A)',
+  'linear-gradient(135deg,#00C2FF,#7B2FFF)',
+  'linear-gradient(135deg,#00E676,#00BFA5)',
+  'linear-gradient(135deg,#B44FFF,#FF6B00)'
+];
 
 const DAY_THEMES = [
   {title:'FIRST STEP',sub:'Begin your journey, rookie!',color:'linear-gradient(135deg,#FF6B00,#FF3D5A)'},
   {title:'SPEED DRILL',sub:'How fast can you go?',color:'linear-gradient(135deg,#FF9A3C,#FF6B00)'},
   {title:'SKY LIMIT',sub:'Jump higher than yesterday!',color:'linear-gradient(135deg,#00C2FF,#7B2FFF)'},
   {title:'IRON LEGS',sub:'Build that stamina engine!',color:'linear-gradient(135deg,#00E676,#00BFA5)'},
-  {title:'MID WEEK PUSH',sub:"Halfway to glory!",color:'linear-gradient(135deg,#B44FFF,#FF3D5A)'},
+  {title:'MID WEEK PUSH',sub:'Halfway to glory!',color:'linear-gradient(135deg,#B44FFF,#FF3D5A)'},
   {title:'CLUTCH TIME',sub:'Real ballers show up now!',color:'linear-gradient(135deg,#FFD600,#FF6B00)'},
   {title:'CHAIN REACTION',sub:'Every rep counts!',color:'linear-gradient(135deg,#FF3D5A,#B44FFF)'},
   {title:'BEAST MODE',sub:'Push beyond your limits!',color:'linear-gradient(135deg,#00C2FF,#00E676)'},
   {title:'FINAL PREP',sub:'Tomorrow is the big day...',color:'linear-gradient(135deg,#FF6B00,#FFD600)'},
-  {title:'⚡ FINAL BOSS',sub:'DEFEAT YOUR OLD SELF!',color:'linear-gradient(135deg,#B44FFF,#FF6B00,#FFD600)'},
+  {title:'FINAL BOSS',sub:'DEFEAT YOUR OLD SELF!',color:'linear-gradient(135deg,#B44FFF,#FF6B00,#FFD600)'},
 ];
 
 const DAY_MISSIONS = [
-  [{id:'speed',icon:'⚡',name:'Sprint Challenge',desc:'3× 30m sprints. Rest 90s between.',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Jump & Land',desc:'10 squat jumps + measure vertical.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Endurance Run',desc:'Run 800m at steady pace.',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'1v1 vs Dad',desc:'First to 7 baskets. Game time!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Speed Ladder',desc:'Footwork drill × 5 rounds. Fast feet!',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Box Jumps',desc:'15 box jumps × 3 sets.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Shuttle Run',desc:'5× shuttle baseline → half court.',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'1v1 Rematch',desc:'First to 5. Winner picks next drill!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Explosive Start',desc:'10× standing start → 15m sprint.',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Vert Training',desc:'Wall touch × 15 → rest → repeat × 3.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Full Court Run',desc:'10 full court runs (jog back).',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'Trick Shot Duel',desc:'3 trick shot spots. Most makes wins!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Chase Drill',desc:'Dad starts 2m ahead – catch him!',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Depth Jump',desc:'Step off box → immediate jump × 10.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'1km Time Trial',desc:'Best time today. Remember it!',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'3-Point Contest',desc:'10 shots from 3-point line. Count!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Sprint Intervals',desc:'Sprint 20s · Walk 40s × 8 rounds.',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Power Skip',desc:'Power skip × 30m × 4 rounds.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Suicide Drills',desc:'Baseline → free throw → half → end × 5.',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'Mid-Week Battle',desc:'Full game to 11. Celebrate halfway!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Reaction Speed',desc:'Dad signals → you explode. 10 reps.',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Standing Long Jump',desc:'Measure how far you jump forward.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'2-Ball Dribble Run',desc:'Dribble 2 balls × full court × 5.',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'Clutch Free Throw',desc:'10 free throws. Each counts!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Zigzag Sprint',desc:'Cone course zigzag × 6 rounds.',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Continuous Jump',desc:'Max jumps in 30s. Beat your record!',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Endurance Push',desc:'Run 1.2km. Did you beat Day 4?',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'Around the World',desc:'Classic around-the-world. Winner takes all!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Beast Sprint',desc:'4× 40m sprint. Fastest time counts!',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Plyometric Combo',desc:'5× squat jump + 5× box jump × 4 sets.',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Iron Man Run',desc:'Jog 2km without stopping.',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'No-Rules Challenge',desc:'Make up your own game. Most fun wins!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'Sprint Prep',desc:'Final sprint set. 5× 30m. Feeling fast?',exp:40,coins:8},
-   {id:'jump',icon:'🦘',name:'Jump Benchmark',desc:'3 max vert attempts. Pick your best!',exp:40,coins:8},
-   {id:'stamina',icon:'🔁',name:'Endurance Prep',desc:'Easy 1km jog. Save energy for Day 10!',exp:40,coins:8},
-   {id:'pvp',icon:'🏀',name:'Mini Tournament',desc:'3 rounds of H-O-R-S-E. Get hyped!',exp:20,coins:10}],
-  [{id:'speed',icon:'⚡',name:'FINAL SPRINT',desc:'5× 30m – beat your Day 1 time!',exp:60,coins:20},
-   {id:'jump',icon:'🦘',name:'FINAL JUMP',desc:'Max vertical. Have you grown wings?',exp:60,coins:20},
-   {id:'stamina',icon:'🔁',name:'FINAL RUN',desc:'1km – smash your personal record!',exp:60,coins:20},
-   {id:'pvp',icon:'🏀',name:'BOSS BATTLE',desc:'EPIC 1v1 to 11. Legacy on the line!',exp:40,coins:30}],
+  [
+    {id:'speed',icon:'⚡',name:'Sprint Challenge',desc:'3x 30m sprints. Rest 90s between.',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Jump & Land',desc:'10 squat jumps + measure vertical.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Endurance Run',desc:'Run 800m at steady pace.',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'1v1 vs Dad',desc:'First to 7 baskets. Game time!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Speed Ladder',desc:'Footwork drill x5 rounds. Fast feet!',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Box Jumps',desc:'15 box jumps x3 sets.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Shuttle Run',desc:'5x shuttle baseline to half court.',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'1v1 Rematch',desc:'First to 5. Winner picks next drill!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Explosive Start',desc:'10x standing start to 15m sprint.',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Vert Training',desc:'Wall touch x15 - rest - repeat x3.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Full Court Run',desc:'10 full court runs (jog back).',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'Trick Shot Duel',desc:'3 trick shot spots. Most makes wins!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Chase Drill',desc:'Dad starts 2m ahead - catch him!',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Depth Jump',desc:'Step off box - immediate jump x10.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'1km Time Trial',desc:'Best time today. Remember it!',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'3-Point Contest',desc:'10 shots from 3-point line. Count!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Sprint Intervals',desc:'Sprint 20s, Walk 40s x8 rounds.',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Power Skip',desc:'Power skip x30m x4 rounds.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Suicide Drills',desc:'Baseline to free throw to half to end x5.',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'Mid-Week Battle',desc:'Full game to 11. Celebrate halfway!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Reaction Speed',desc:'Dad signals - you explode. 10 reps.',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Standing Long Jump',desc:'Measure how far you jump forward.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'2-Ball Dribble Run',desc:'Dribble 2 balls x full court x5.',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'Clutch Free Throw',desc:'10 free throws. Each counts!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Zigzag Sprint',desc:'Cone course zigzag x6 rounds.',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Continuous Jump',desc:'Max jumps in 30s. Beat your record!',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Endurance Push',desc:'Run 1.2km. Did you beat Day 4?',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'Around the World',desc:'Classic around-the-world. Winner takes all!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Beast Sprint',desc:'4x 40m sprint. Fastest time counts!',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Plyometric Combo',desc:'5x squat jump + 5x box jump x4 sets.',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Iron Man Run',desc:'Jog 2km without stopping.',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'No-Rules Challenge',desc:'Make up your own game. Most fun wins!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'Sprint Prep',desc:'Final sprint set. 5x 30m. Feeling fast?',exp:40,coins:8},
+    {id:'jump',icon:'🦘',name:'Jump Benchmark',desc:'3 max vert attempts. Pick your best!',exp:40,coins:8},
+    {id:'stamina',icon:'🔁',name:'Endurance Prep',desc:'Easy 1km jog. Save energy for Day 10!',exp:40,coins:8},
+    {id:'pvp',icon:'🏀',name:'Mini Tournament',desc:'3 rounds of H-O-R-S-E. Get hyped!',exp:20,coins:10}
+  ],
+  [
+    {id:'speed',icon:'⚡',name:'FINAL SPRINT',desc:'5x 30m - beat your Day 1 time!',exp:60,coins:20},
+    {id:'jump',icon:'🦘',name:'FINAL JUMP',desc:'Max vertical. Have you grown wings?',exp:60,coins:20},
+    {id:'stamina',icon:'🔁',name:'FINAL RUN',desc:'1km - smash your personal record!',exp:60,coins:20},
+    {id:'pvp',icon:'🏀',name:'BOSS BATTLE',desc:'EPIC 1v1 to 11. Legacy on the line!',exp:40,coins:30}
+  ]
 ];
 
 const ACHIEVEMENTS = [
@@ -741,35 +549,31 @@ const ACHIEVEMENTS = [
   {id:'champion',icon:'👑',name:'CHAMPION',desc:'Complete all 10 days!'},
 ];
 
-/* ═══════════════════════════════════════════════════════════════════
-   2. STATE MANAGEMENT
-═══════════════════════════════════════════════════════════════════ */
-
-// Session state (not persisted)
-const SESSION = { currentPlayer: null, role: null, currentTab: 'dashboard', editMode: false };
-
-// Settings (persisted separately)
-let SETTINGS = { soundEnabled: true };
-
-// All players data (persisted)
+/* =============================================================
+   PART 2 - STATE
+============================================================= */
+const SESSION = {currentPlayer:null, role:null, currentTab:'dashboard', editMode:false};
+let SETTINGS = {soundEnabled:true};
 let ALL_PLAYERS = {};
+// Password modal callback store
+let _pwdCb = null;
+
+function saveSettings() { try { localStorage.setItem(LS_SETTINGS, JSON.stringify(SETTINGS)); } catch(e){} }
+function loadSettings() { try { const s = JSON.parse(localStorage.getItem(LS_SETTINGS)||'{}'); SETTINGS = Object.assign(SETTINGS, s); } catch(e){} }
 
 function savePlayers() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_PLAYERS));
-}
-function loadPlayers() {
-  try { ALL_PLAYERS = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { ALL_PLAYERS = {}; }
-}
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(SETTINGS));
-}
-function loadSettings() {
-  try { SETTINGS = { ...SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch(e) {}
+  try { localStorage.setItem(LS_KEY, JSON.stringify(ALL_PLAYERS)); } catch(e) {}
+  syncToFirebase();  // also push to cloud
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   3. PLAYER MANAGEMENT
-═══════════════════════════════════════════════════════════════════ */
+function loadPlayers() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) ALL_PLAYERS = JSON.parse(raw) || {};
+  } catch(e) { ALL_PLAYERS = {}; }
+  // Ensure ALL_PLAYERS is a plain object
+  if (typeof ALL_PLAYERS !== 'object' || Array.isArray(ALL_PLAYERS)) ALL_PLAYERS = {};
+}
 
 function createDefaultPlayer(name) {
   return {
@@ -778,52 +582,126 @@ function createDefaultPlayer(name) {
     coins: 0,
     avatarIdx: Math.floor(Math.random() * AVATARS.length),
     days: Array.from({length:10}, (_,i) => ({
-      dayNum: i+1,
-      completed: false,
-      completedAt: null,
-      missions: {}, // { speed: bool, jump: bool, stamina: bool }
-      pvpResult: null, // 'win' | 'lose' | null
-      stats: { speed:'', jump:'', stamina:'' },
-      recordsAwarded: {}, // tracks which skills had records awarded this day
-      reward: null, // assigned on completion
+      dayNum: i+1, completed: false, completedAt: null,
+      missions: {}, pvpResult: null,
+      stats: {speed:'', jump:'', stamina:''},
+      recordsAwarded: {}, reward: null,
     })),
-    achievements: {}, // { [id]: timestamp }
-    rewards: [], // list of reward entries
+    achievements: {},
+    rewards: [],
   };
 }
 
-function getPlayer() { return ALL_PLAYERS[SESSION.currentPlayer]; }
+/* =============================================================
+   PART 3 - FIREBASE CLOUD SYNC
+   Uses Firebase Realtime Database REST API (no SDK required).
+   Falls back gracefully to localStorage when offline or unconfigured.
+============================================================= */
 
-function isFather() { return SESSION.role === 'father'; }
+let _syncTimer = null;
+let _isSyncing = false;
 
-function canEdit() { return isFather() && !SESSION.editMode === false || isFather(); }
+function setSyncStatus(status) {
+  // status: 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  dot.className = '';
+  if (status === 'syncing') { dot.classList.add('syncing'); dot.title = 'Syncing...'; }
+  else if (status === 'synced') { dot.classList.add('synced'); dot.title = 'Synced to cloud'; }
+  else if (status === 'error') { dot.classList.add('error'); dot.title = 'Sync error (using local)'; }
+  else { dot.title = FB_URL ? 'Not synced' : 'Cloud sync not configured'; }
 
-/* ═══════════════════════════════════════════════════════════════════
-   4. GAME LOGIC
-═══════════════════════════════════════════════════════════════════ */
-
-function getLevel(p) { return Math.min(10, Math.floor((p || getPlayer()).exp / EXP_PER_LV)); }
-function getLevelTitle(p) { return LEVEL_TITLES[getLevel(p)]; }
-function getExpInLevel(p) { return (p || getPlayer()).exp % EXP_PER_LV; }
-function getExpPct(p) { return (getExpInLevel(p) / EXP_PER_LV) * 100; }
-
-function getSkillLevel(p, skill) {
-  return Math.min(10, p.days.filter(d => d.missions[skill]).length);
-}
-
-function addExp(p, amount) {
-  const prev = getLevel(p);
-  p.exp += amount;
-  const next = getLevel(p);
-  updateTopBar();
-  if (next > prev) {
-    playSound('levelup');
-    setTimeout(() => showLevelUp(next, getLevelTitle(p)), 600);
+  // Also update splash status
+  const sp = document.getElementById('sync-status-splash');
+  if (sp) {
+    if (!FB_URL) sp.textContent = 'Cloud sync: not configured (localStorage only)';
+    else if (status === 'synced') sp.textContent = 'Cloud: connected';
+    else if (status === 'error') sp.textContent = 'Cloud: offline - using local data';
+    else sp.textContent = 'Cloud: connecting...';
   }
 }
 
-function addCoins(p, amount) {
-  p.coins += amount;
+function fbEndpoint() {
+  if (!FB_URL) return null;
+  const base = FB_URL.replace(/\/$/, '');
+  const auth = FB_SECRET ? '?auth=' + FB_SECRET : '';
+  return base + FB_PATH + '.json' + auth;
+}
+
+async function syncToFirebase() {
+  if (!FB_URL || _isSyncing) return;
+  _isSyncing = true;
+  setSyncStatus('syncing');
+  try {
+    const url = fbEndpoint();
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(ALL_PLAYERS),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('error');
+  } finally {
+    _isSyncing = false;
+  }
+}
+
+async function loadFromFirebase() {
+  if (!FB_URL) { setSyncStatus('idle'); return false; }
+  setSyncStatus('syncing');
+  try {
+    const url = fbEndpoint();
+    const res = await fetch(url, {method:'GET', headers:{'Accept':'application/json'}});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
+      // Validate each player entry
+      let valid = true;
+      for (const [k,v] of Object.entries(data)) {
+        if (!v || typeof v.exp !== 'number' || !Array.isArray(v.days)) { valid = false; break; }
+      }
+      if (valid) {
+        // Merge: cloud wins for existing keys, keep any local-only players
+        for (const [k,v] of Object.entries(data)) { ALL_PLAYERS[k] = v; }
+        localStorage.setItem(LS_KEY, JSON.stringify(ALL_PLAYERS));
+        setSyncStatus('synced');
+        return true;
+      }
+    }
+    setSyncStatus('synced'); // empty db is valid
+    return false;
+  } catch(e) {
+    setSyncStatus('error');
+    return false; // fallback to localStorage (already loaded)
+  }
+}
+
+/* =============================================================
+   PART 4 - GAME LOGIC
+============================================================= */
+function getPlayer() { return ALL_PLAYERS[SESSION.currentPlayer] || null; }
+function isFather() { return SESSION.role === 'father'; }
+
+function getLevel(p) { return Math.min(10, Math.floor((p||getPlayer()).exp / EXP_PER_LV)); }
+function getLvTitle(p) { return LEVEL_TITLES[getLevel(p||getPlayer())]; }
+function getExpInLv(p) { return (p||getPlayer()).exp % EXP_PER_LV; }
+function getExpPct(p) { return (getExpInLv(p||getPlayer()) / EXP_PER_LV) * 100; }
+function getSkillLv(p, skill) { return Math.min(10, p.days.filter(d => d.missions[skill]).length); }
+
+function addExp(p, amt) {
+  const prev = getLevel(p);
+  p.exp += amt;
+  updateTopBar();
+  if (getLevel(p) > prev) {
+    playSound('levelup');
+    setTimeout(() => showLevelUp('⚡', 'LEVEL ' + getLevel(p) + '!', 'You are now a ' + getLvTitle(p) + '!'), 600);
+  }
+}
+
+function addCoins(p, amt) {
+  p.coins += amt;
   playSound('coin');
   updateTopBar();
 }
@@ -837,81 +715,68 @@ function getPrevStat(p, dayNum, skill) {
 }
 
 function getDeltaHtml(skill, val, prev) {
-  if (!val || !prev || isNaN(parseFloat(val))) return '';
-  const curr = parseFloat(val), diff = curr - prev;
+  if (!val || prev === null || isNaN(parseFloat(val))) return '';
+  const cur = parseFloat(val), diff = cur - prev;
   const lowerBetter = skill === 'speed' || skill === 'stamina';
   const good = lowerBetter ? diff < 0 : diff > 0;
   const sign = diff > 0 ? '+' : '';
   const cls = diff === 0 ? 'dlt-neu' : good ? 'dlt-good' : 'dlt-bad';
-  const tag = diff === 0 ? '=' : good ? '▲ RECORD!' : '▽';
-  return `<span class="${cls}">${sign}${diff.toFixed(1)} ${tag}</span>`;
+  const tag = diff === 0 ? '=' : good ? 'RECORD!' : 'lower';
+  return '<span class="' + cls + '">' + sign + diff.toFixed(1) + ' ' + tag + '</span>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   5. REWARD SYSTEM
-═══════════════════════════════════════════════════════════════════ */
-
-/**
- * Calculate day reward based on mission completion percentage.
- * Physical missions (3) × 80% weight + PvP (1) × 20% weight = 100%
- * <70% → none | 70–89% → small | 90–100% → big
- */
+/* =============================================================
+   PART 5 - REWARD SYSTEM
+============================================================= */
 function calcReward(dayData) {
   const physDone = ['speed','jump','stamina'].filter(s => dayData.missions[s]).length;
   const pvpDone = dayData.pvpResult !== null ? 1 : 0;
   const pct = Math.round((physDone / 3) * 80 + pvpDone * 20);
-
-  if (pct < 70) return { type:'none', pct, gameTime:null, money:null };
-  if (pct < 90) return { type:'small', pct, gameTime:'30 min', money:'20.000đ' };
-  return { type:'big', pct, gameTime:'1 hour', money:'50.000đ' };
+  if (pct < 70) return {type:'none', pct, gameTime:null, money:null};
+  if (pct < 90) return {type:'small', pct, gameTime:'30 min', money:'20.000d'};
+  return {type:'big', pct, gameTime:'1 hour', money:'50.000d'};
 }
 
-function getUnredeemedRewards(p) {
-  return p.rewards.filter(r => r.type !== 'none' && !r.redeemed);
+function getUnredeemed(p) {
+  return (p.rewards||[]).filter(r => r.type !== 'none' && !r.redeemed);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   6. SOUND SYSTEM (Web Audio API)
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 6 - SOUND SYSTEM
+============================================================= */
 let _audioCtx = null;
-function getAudioCtx() {
-  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function getCtx() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
   return _audioCtx;
 }
 
-function playTone(freq, duration, type = 'sine', gain = 0.3) {
+function playTone(freq, dur, type, gain) {
   if (!SETTINGS.soundEnabled) return;
+  type = type || 'sine'; gain = gain || 0.3;
   try {
-    const ctx = getAudioCtx();
+    const ctx = getCtx(); if (!ctx) return;
     const osc = ctx.createOscillator();
     const gn = ctx.createGain();
     osc.connect(gn); gn.connect(ctx.destination);
-    osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
     gn.gain.setValueAtTime(gain, ctx.currentTime);
-    gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.start(); osc.stop(ctx.currentTime + duration);
+    gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
   } catch(e) {}
 }
 
 function playSound(type) {
   if (!SETTINGS.soundEnabled) return;
-  const sounds = {
-    coin: () => { playTone(880, .1); setTimeout(() => playTone(1100, .1), 80); },
-    levelup: () => {
-      [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, .2), i*120));
-    },
-    achievement: () => {
-      [659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, .25,'square',.2), i*100));
-    },
-    complete: () => {
-      [523,659,784].forEach((f,i) => setTimeout(() => playTone(f, .3,'sine',.25), i*80));
-    },
-    click: () => playTone(440, .05, 'square', .1),
-    record: () => { playTone(880, .15); setTimeout(() => playTone(1320, .2), 100); },
-    error: () => { playTone(200, .15, 'sawtooth', .2); },
-  };
-  sounds[type] && sounds[type]();
+  if (type === 'coin') { playTone(880,.1); setTimeout(()=>playTone(1100,.1),80); }
+  else if (type === 'levelup') { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.2),i*120)); }
+  else if (type === 'achievement') { [659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'square',.2),i*100)); }
+  else if (type === 'complete') { [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,.3,'sine',.25),i*80)); }
+  else if (type === 'click') { playTone(440,.05,'square',.1); }
+  else if (type === 'record') { playTone(880,.15); setTimeout(()=>playTone(1320,.2),100); }
+  else if (type === 'error') { playTone(200,.15,'sawtooth',.2); }
 }
 
 function toggleSound() {
@@ -921,80 +786,100 @@ function toggleSound() {
   showToast(SETTINGS.soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   7. SPLASH / AUTH FLOW
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 7 - AUTH FLOW
+============================================================= */
 function showStep(step) {
   document.querySelectorAll('.splash-step').forEach(el => el.style.display = 'none');
-  const el = document.getElementById(`step-${step}`);
+  const el = document.getElementById('step-' + step);
   if (el) el.style.display = '';
 }
 
 function renderPlayerList() {
   const names = Object.keys(ALL_PLAYERS);
   const list = document.getElementById('player-list');
+  if (!list) return;
   if (names.length === 0) {
-    list.innerHTML = `<div style="color:var(--mu);font-size:.88rem;font-weight:700;padding:1rem;text-align:center">No players yet. Create one below!</div>`;
+    list.innerHTML = '<div style="color:var(--mu);font-size:.88rem;font-weight:700;padding:1rem;text-align:center">No players yet. Create one below!</div>';
     return;
   }
   list.innerHTML = names.map((name, i) => {
     const p = ALL_PLAYERS[name];
-    const done = p.days.filter(d=>d.completed).length;
-    const avatarColors = ['linear-gradient(135deg,#FF6B00,#FF3D5A)','linear-gradient(135deg,#00C2FF,#7B2FFF)','linear-gradient(135deg,#00E676,#00BFA5)','linear-gradient(135deg,#B44FFF,#FF6B00)'];
-    return `
-    <button class="player-btn" onclick="selectPlayer('${name}')">
-      <div class="player-btn-avatar" style="background:${avatarColors[i%avatarColors.length]}">${AVATARS[p.avatarIdx||0]}</div>
-      <div class="player-btn-info">
-        <div class="player-btn-name">${name}</div>
-        <div class="player-btn-stats">LVL ${getLevel(p)} · ${done}/10 days · ${p.coins}🪙</div>
-      </div>
-      <div class="player-btn-arrow">→</div>
-    </button>`;
+    const done = p.days ? p.days.filter(d=>d.completed).length : 0;
+    const av = AVATARS[p.avatarIdx||0];
+    const col = AV_COLORS[i % AV_COLORS.length];
+    // Escape name for use in onclick
+    const safeName = name.replace(/'/g, "\\'");
+    return '<button class="player-btn" onclick="selectPlayer(\'' + safeName + '\')">'
+      + '<div class="player-btn-av" style="background:' + col + '">' + av + '</div>'
+      + '<div class="player-btn-info">'
+      + '<div class="player-btn-name">' + escHtml(name) + '</div>'
+      + '<div class="player-btn-stats">LVL ' + getLevel(p) + ' - ' + done + '/10 days - ' + p.coins + '🪙</div>'
+      + '</div>'
+      + '<div style="color:var(--mu);font-size:1.2rem">→</div>'
+      + '</button>';
   }).join('');
 }
 
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function selectPlayer(name) {
+  if (!ALL_PLAYERS[name]) { showToast('❌ Player not found!'); return; }
   SESSION.currentPlayer = name;
-  document.getElementById('role-greeting').textContent = `HEY, ${name.toUpperCase()}!`;
+  const greet = document.getElementById('role-greeting');
+  if (greet) greet.textContent = 'HEY, ' + name.toUpperCase() + '!';
   showStep('role');
   playSound('click');
 }
 
 function createPlayer() {
-  const name = document.getElementById('new-player-name').value.trim();
+  const name = (document.getElementById('new-player-name').value || '').trim();
   if (!name) { showToast('❌ Enter a player name!'); return; }
   if (ALL_PLAYERS[name]) { showToast('❌ Player already exists!'); return; }
   ALL_PLAYERS[name] = createDefaultPlayer(name);
   savePlayers();
   SESSION.currentPlayer = name;
-  document.getElementById('role-greeting').textContent = `HEY, ${name.toUpperCase()}!`;
+  const greet = document.getElementById('role-greeting');
+  if (greet) greet.textContent = 'HEY, ' + name.toUpperCase() + '!';
   showStep('role');
   playSound('click');
 }
 
 function loginAsChild() {
   SESSION.role = 'child';
-  startGameScreen();
+  startGame();
   playSound('click');
 }
 
 function loginAsFather() {
-  const pwd = document.getElementById('login-pwd').value;
+  const pwd = (document.getElementById('login-pwd').value || '');
+  const err = document.getElementById('pwd-error');
   if (pwd !== ADMIN_PWD) {
-    document.getElementById('pwd-error').textContent = '❌ Wrong password. Try again.';
+    if (err) err.textContent = '❌ Wrong password. Try again.';
     playSound('error');
     document.getElementById('login-pwd').value = '';
     return;
   }
-  document.getElementById('pwd-error').textContent = '';
+  if (err) err.textContent = '';
   document.getElementById('login-pwd').value = '';
   SESSION.role = 'father';
-  startGameScreen();
+  startGame();
   playSound('levelup');
 }
 
-function startGameScreen() {
+// Allow pressing Enter/auto-submit on password field
+document.addEventListener('DOMContentLoaded', function() {
+  const loginPwd = document.getElementById('login-pwd');
+  if (loginPwd) {
+    loginPwd.addEventListener('input', function() {
+      if (this.value.length === 6) loginAsFather();
+    });
+  }
+});
+
+function startGame() {
   document.getElementById('splash').style.display = 'none';
   document.getElementById('game-screen').style.display = 'block';
   buildNav();
@@ -1002,25 +887,26 @@ function startGameScreen() {
   updateTopBar();
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   8. TOP BAR & NAV
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 8 - TOPBAR & NAV
+============================================================= */
 function updateTopBar() {
   const p = getPlayer();
   if (!p) return;
-  const avatarColors = ['linear-gradient(135deg,#FF6B00,#FF3D5A)','linear-gradient(135deg,#00C2FF,#7B2FFF)','linear-gradient(135deg,#00E676,#00BFA5)','linear-gradient(135deg,#B44FFF,#FF6B00)'];
   const idx = Object.keys(ALL_PLAYERS).indexOf(SESSION.currentPlayer);
-  document.getElementById('tb-avatar').style.background = avatarColors[idx%4];
-  document.getElementById('tb-avatar').textContent = AVATARS[p.avatarIdx||0];
-  document.getElementById('tb-name').textContent = p.name;
-  document.getElementById('tb-lv').textContent = `LVL ${getLevel(p)} · ${getLevelTitle(p)}`;
-  document.getElementById('tb-coins').textContent = p.coins;
-  document.getElementById('exp-mini-fill').style.width = getExpPct(p) + '%';
-  const badge = document.getElementById('tb-role-badge');
-  badge.textContent = isFather() ? '👨 DAD' : '🏀 PLAYER';
-  badge.className = 'role-badge ' + (isFather() ? 'father' : 'child');
-  document.getElementById('sound-btn').textContent = SETTINGS.soundEnabled ? '🔊' : '🔇';
+  const av = document.getElementById('tb-av');
+  if (av) { av.style.background = AV_COLORS[idx%4]; av.textContent = AVATARS[p.avatarIdx||0]; }
+  const el = (id) => document.getElementById(id);
+  if (el('tb-name')) el('tb-name').textContent = p.name;
+  if (el('tb-lv')) el('tb-lv').textContent = 'LVL ' + getLevel(p) + ' ' + getLvTitle(p);
+  if (el('tb-coins')) el('tb-coins').textContent = p.coins;
+  if (el('exp-mini-fill')) el('exp-mini-fill').style.width = getExpPct(p) + '%';
+  const badge = el('tb-role-badge');
+  if (badge) {
+    badge.textContent = isFather() ? '👨 DAD' : '🏀 PLAYER';
+    badge.className = 'role-badge ' + (isFather() ? 'father' : 'child');
+  }
+  if (el('sound-btn')) el('sound-btn').textContent = SETTINGS.soundEnabled ? '🔊' : '🔇';
 }
 
 function buildNav() {
@@ -1030,14 +916,15 @@ function buildNav() {
     {id:'progress',label:'📊 Stats'},
     {id:'badges',label:'🏆 Badges'},
     {id:'rewards',label:'🎁 Rewards'},
-    ...(isFather() ? [{id:'admin',label:'⚙️ Admin'}] : []),
-    ...Array.from({length:10},(_,i) => ({id:`day${i+1}`,label:`D${i+1}`,dayIdx:i})),
   ];
+  if (isFather()) tabs.push({id:'admin',label:'⚙️ Admin'});
+  for (let i=0;i<10;i++) tabs.push({id:'day'+(i+1), label:'D'+(i+1), dayIdx:i});
+
   document.getElementById('nav-bar').innerHTML = tabs.map(t => {
     let cls = 'nav-tab';
-    if (t.dayIdx !== undefined && p && p.days[t.dayIdx].completed) cls += ' done';
+    if (t.dayIdx !== undefined && p && p.days[t.dayIdx] && p.days[t.dayIdx].completed) cls += ' done';
     if (SESSION.currentTab === t.id) cls += ' active';
-    return `<button class="${cls}" onclick="renderTab('${t.id}')">${t.label}</button>`;
+    return '<button class="' + cls + '" onclick="renderTab(\'' + t.id + '\')">' + t.label + '</button>';
   }).join('');
 }
 
@@ -1048,82 +935,84 @@ function renderTab(id) {
   playSound('click');
   const area = document.getElementById('content');
   const p = getPlayer();
+  if (!p) return;
   if (id === 'dashboard') area.innerHTML = buildDashboard(p);
   else if (id === 'progress') area.innerHTML = buildProgress(p);
   else if (id === 'badges') area.innerHTML = buildBadges(p);
   else if (id === 'rewards') area.innerHTML = buildRewards(p);
   else if (id === 'admin') area.innerHTML = buildAdmin();
   else if (id.startsWith('day')) {
-    const dn = parseInt(id.replace('day',''));
+    const dn = parseInt(id.replace('day',''), 10);
     area.innerHTML = buildDayView(p, dn);
-    // Attach stat input listeners
     area.querySelectorAll('.stat-inp').forEach(inp => inp.addEventListener('change', onStatChange));
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   9. UI: DASHBOARD
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 9 - DASHBOARD
+============================================================= */
 function buildDashboard(p) {
   const lvl = getLevel(p), pct = getExpPct(p);
   const done = p.days.filter(d=>d.completed).length;
-  const unredeemed = getUnredeemedRewards(p).length;
+  const unredeemed = getUnredeemed(p).length;
   const nextDay = Math.min(done+1, 10);
-  return `
-  <div class="hero-card" style="margin-bottom:.9rem">
-    <div class="hero-badge">LEVEL ${lvl} · ${getLevelTitle(p)}</div>
-    <div class="hero-name ff-display">🏀 ${p.name}</div>
-    <div class="hero-subtitle">🔥 Basketball Warrior</div>
-    <div class="exp-bar-lbl"><span>EXP ${getExpInLevel(p)} / ${EXP_PER_LV}</span><span>LVL ${lvl+1} next</span></div>
-    <div class="exp-bar"><div class="exp-bar-fill" style="width:${pct}%"></div></div>
-  </div>
-  ${unredeemed > 0 ? `<div class="card" style="background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.25);margin-bottom:.9rem;cursor:pointer;text-align:center" onclick="renderTab('rewards')">
-    <div style="font-size:2rem;margin-bottom:.3rem">🎁</div>
-    <div style="font-weight:900;font-size:1rem">You have ${unredeemed} reward${unredeemed>1?'s':''} waiting!</div>
-    <div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-top:.2rem">${isFather()?'Tap to redeem':'Ask Dad to redeem for you!'}</div>
-  </div>` : ''}
-  <div class="section-title">SKILL LEVELS</div>
-  <div class="skills-grid">
-    ${buildSkillCard(p,'speed','⚡','Speed','linear-gradient(90deg,var(--or),var(--ye))')}
-    ${buildSkillCard(p,'jump','🦘','Jump','linear-gradient(90deg,var(--bl),#7B2FFF)')}
-    ${buildSkillCard(p,'stamina','🔁','Stamina','linear-gradient(90deg,var(--gr),#00BFA5)')}
-  </div>
-  <div class="section-title">STATS</div>
-  <div class="card">
-    <div class="stats-trio">
-      <div class="stat-big"><div class="stat-big-num" style="color:var(--or)">${done}</div><div class="stat-big-lbl">Days Done</div></div>
-      <div class="stat-big"><div class="stat-big-num" style="color:var(--ye)">${p.coins}</div><div class="stat-big-lbl">Coins</div></div>
-      <div class="stat-big"><div class="stat-big-num" style="color:var(--pu)">${p.exp}</div><div class="stat-big-lbl">Total EXP</div></div>
-    </div>
-    <div class="progress-bar-wrap">
-      <div style="display:flex;justify-content:space-between;font-size:.72rem;font-weight:800;color:var(--mu);margin-bottom:.35rem"><span>Challenge Progress</span><span>${done}/10</span></div>
-      <div class="progress-bar"><div class="progress-bar-fill" style="width:${done*10}%"></div></div>
-    </div>
-  </div>
-  <div class="section-title">TODAY'S MISSION</div>
-  <div class="card card-glow" style="cursor:pointer;text-align:center" onclick="renderTab('day${nextDay}')">
-    <div style="font-size:2.8rem;margin-bottom:.5rem">🏀</div>
-    <div class="ff-display" style="font-size:1.3rem;margin-bottom:.25rem">GO TO DAY ${nextDay}</div>
-    <div style="font-size:.82rem;color:var(--mu);font-weight:700">${DAY_THEMES[nextDay-1].title} – ${DAY_THEMES[nextDay-1].sub}</div>
-    <div style="margin-top:.9rem;display:inline-block;background:var(--or);border-radius:20px;padding:.38rem 1.1rem;font-weight:900;font-size:.88rem">TAP TO PLAY →</div>
-  </div>`;
+  let html = '';
+  html += '<div class="hero-card" style="margin-bottom:.9rem">'
+    + '<div class="hero-badge">LEVEL ' + lvl + ' - ' + getLvTitle(p) + '</div>'
+    + '<div class="hero-name ff">🏀 ' + escHtml(p.name) + '</div>'
+    + '<div class="hero-subtitle">🔥 Basketball Warrior</div>'
+    + '<div class="exp-bar-lbl"><span>EXP ' + getExpInLv(p) + ' / ' + EXP_PER_LV + '</span><span>LVL ' + (lvl+1) + ' next</span></div>'
+    + '<div class="exp-bar"><div class="exp-bar-fill" style="width:' + pct + '%"></div></div>'
+    + '</div>';
+
+  if (unredeemed > 0) {
+    html += '<div class="card" style="background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.25);margin-bottom:.9rem;cursor:pointer;text-align:center" onclick="renderTab(\'rewards\')">'
+      + '<div style="font-size:2rem;margin-bottom:.3rem">🎁</div>'
+      + '<div style="font-weight:900;font-size:1rem">You have ' + unredeemed + ' reward' + (unredeemed>1?'s':'') + ' waiting!</div>'
+      + '<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-top:.2rem">' + (isFather()?'Tap to redeem':'Ask Dad to redeem for you!') + '</div>'
+      + '</div>';
+  }
+
+  html += '<div class="section-title">SKILL LEVELS</div>'
+    + '<div class="skills-grid">'
+    + buildSkillCard(p,'speed','⚡','Speed','linear-gradient(90deg,var(--or),var(--ye))')
+    + buildSkillCard(p,'jump','🦘','Jump','linear-gradient(90deg,var(--bl),#7B2FFF)')
+    + buildSkillCard(p,'stamina','🔁','Stamina','linear-gradient(90deg,var(--gr),#00BFA5)')
+    + '</div>'
+    + '<div class="section-title">STATS</div>'
+    + '<div class="card">'
+    + '<div class="stats-trio">'
+    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--or)">' + done + '</div><div class="stat-big-lbl">Days Done</div></div>'
+    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--ye)">' + p.coins + '</div><div class="stat-big-lbl">Coins</div></div>'
+    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--pu)">' + p.exp + '</div><div class="stat-big-lbl">Total EXP</div></div>'
+    + '</div>'
+    + '<div class="progress-bar-wrap"><div style="display:flex;justify-content:space-between;font-size:.72rem;font-weight:800;color:var(--mu);margin-bottom:.35rem"><span>Challenge Progress</span><span>' + done + '/10</span></div>'
+    + '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + (done*10) + '%"></div></div></div>'
+    + '</div>'
+    + '<div class="section-title">TODAY\'S MISSION</div>'
+    + '<div class="card card-glow" style="cursor:pointer;text-align:center" onclick="renderTab(\'day' + nextDay + '\')">'
+    + '<div style="font-size:2.8rem;margin-bottom:.5rem">🏀</div>'
+    + '<div class="ff" style="font-size:1.3rem;margin-bottom:.25rem">GO TO DAY ' + nextDay + '</div>'
+    + '<div style="font-size:.82rem;color:var(--mu);font-weight:700">' + DAY_THEMES[nextDay-1].title + ' - ' + DAY_THEMES[nextDay-1].sub + '</div>'
+    + '<div style="margin-top:.9rem;display:inline-block;background:var(--or);border-radius:20px;padding:.38rem 1.1rem;font-weight:900;font-size:.88rem">TAP TO PLAY →</div>'
+    + '</div>';
+  return html;
 }
 
 function buildSkillCard(p, skill, icon, name, bar) {
-  const lvl = getSkillLevel(p, skill);
-  return `<div class="skill-card">
-    <div class="skill-icon">${icon}</div>
-    <div class="skill-nm">${name}</div>
-    <div class="skill-num" style="color:${skill==='speed'?'var(--or)':skill==='jump'?'var(--bl)':'var(--gr)'}">${lvl}</div>
-    <div class="skill-bar-wrap"><div class="skill-bar" style="width:${lvl*10}%;background:${bar}"></div></div>
-  </div>`;
+  const lvl = getSkillLv(p, skill);
+  const color = skill==='speed' ? 'var(--or)' : skill==='jump' ? 'var(--bl)' : 'var(--gr)';
+  return '<div class="skill-card">'
+    + '<div class="skill-icon">' + icon + '</div>'
+    + '<div class="skill-nm">' + name + '</div>'
+    + '<div class="skill-num" style="color:' + color + '">' + lvl + '</div>'
+    + '<div class="skill-bar-wrap"><div class="skill-bar" style="width:' + (lvl*10) + '%;background:' + bar + '"></div></div>'
+    + '</div>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   10. UI: DAY VIEW
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 10 - DAY VIEW
+============================================================= */
 function buildDayView(p, dayNum) {
   const dayIdx = dayNum - 1;
   const day = p.days[dayIdx];
@@ -1132,366 +1021,373 @@ function buildDayView(p, dayNum) {
   const done = p.days.filter(d=>d.completed).length;
   const isLocked = dayNum > done + 1;
 
-  if (isLocked) return `
-    <div class="day-header" data-day="${dayNum}" style="background:linear-gradient(135deg,#1e1e30,#2a2a3a)">
-      <div class="day-label">DAY ${dayNum}</div>
-      <div class="day-title ff-display">🔒 LOCKED</div>
-      <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:.2rem">Complete Day ${dayNum-1} to unlock!</div>
-    </div>
-    <div style="text-align:center;padding:3rem 1rem;color:var(--mu)">
-      <div style="font-size:4rem;margin-bottom:1rem">🔐</div>
-      <div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">Keep grinding!</div>
-      <div style="font-size:.88rem">Finish the previous day to unlock this challenge.</div>
-    </div>`;
+  if (isLocked) {
+    return '<div class="day-header" data-day="' + dayNum + '" style="background:linear-gradient(135deg,#1e1e30,#2a2a3a)">'
+      + '<div class="day-label">DAY ' + dayNum + '</div>'
+      + '<div class="day-title ff">🔒 LOCKED</div>'
+      + '<div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:.2rem">Complete Day ' + (dayNum-1) + ' to unlock!</div>'
+      + '</div>'
+      + '<div style="text-align:center;padding:3rem 1rem;color:var(--mu)">'
+      + '<div style="font-size:4rem;margin-bottom:1rem">🔐</div>'
+      + '<div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">Keep grinding!</div>'
+      + '<div style="font-size:.88rem">Finish the previous day to unlock this challenge.</div>'
+      + '</div>';
+  }
 
   if (dayNum === 10 && day.completed && !SESSION.editMode) return buildFinalBoss(p);
 
   const phys = missions.filter(m=>m.id!=='pvp');
   const physDone = phys.filter(m=>day.missions[m.id]).length;
   const pvp = missions.find(m=>m.id==='pvp');
-  const allPhysDone = physDone === phys.length;
-  const canComplete = allPhysDone;
-  const isEditable = isFather();
+  const canComplete = physDone === phys.length;
   const childLock = !isFather();
+  const isDisabled = childLock || (day.completed && !SESSION.editMode);
 
-  return `
-  <div class="day-header" data-day="${dayNum}" style="background:${theme.color}">
-    <div class="day-label">${dayNum===10?'👑 FINAL BOSS · ':''}DAY ${dayNum} / 10</div>
-    <div class="day-title ff-display">${theme.title}</div>
-    <div class="day-sub">${theme.sub}</div>
-  </div>
+  let html = '<div class="day-header" data-day="' + dayNum + '" style="background:' + theme.color + '">'
+    + '<div class="day-label">' + (dayNum===10?'👑 FINAL BOSS - ':'') + 'DAY ' + dayNum + ' / 10</div>'
+    + '<div class="day-title ff">' + theme.title + '</div>'
+    + '<div class="day-sub">' + theme.sub + '</div>'
+    + '</div>';
 
-  ${day.completed && isFather() && !SESSION.editMode ? `
-  <div class="edit-bar">
-    <span class="edit-bar-lbl">✅ Day completed · ${new Date(day.completedAt).toLocaleDateString()}</span>
-    <button class="btn btn-sm btn-ghost" onclick="requestEditMode(${dayNum})">✏️ Edit</button>
-  </div>` : ''}
+  if (day.completed && isFather() && !SESSION.editMode) {
+    html += '<div class="edit-bar">'
+      + '<span class="edit-bar-lbl">✅ Day completed - ' + new Date(day.completedAt||Date.now()).toLocaleDateString() + '</span>'
+      + '<button class="btn btn-sm btn-ghost" onclick="requestEditMode(' + dayNum + ')">✏️ Edit</button>'
+      + '</div>';
+  }
+  if (SESSION.editMode) {
+    html += '<div class="edit-bar" style="border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.07)">'
+      + '<span class="edit-bar-lbl" style="color:var(--rd)">✏️ EDIT MODE - Changes save automatically</span>'
+      + '<button class="btn btn-sm btn-ghost" onclick="exitEditMode(' + dayNum + ')">Done</button>'
+      + '</div>';
+  }
 
-  ${SESSION.editMode ? `
-  <div class="edit-bar" style="border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.07)">
-    <span class="edit-bar-lbl" style="color:var(--rd)">✏️ EDIT MODE – Changes save automatically</span>
-    <button class="btn btn-sm btn-ghost" onclick="exitEditMode(${dayNum})">✓ Done</button>
-  </div>` : ''}
+  html += '<div class="section-title">MISSIONS</div>';
+  phys.forEach(m => { html += buildMissionCard(m, day, dayNum, childLock); });
 
-  <div class="section-title">MISSIONS</div>
-  ${phys.map(m => buildMissionCard(m, day, dayNum, childLock)).join('')}
+  const statDisabled = isDisabled && !(isFather() && SESSION.editMode);
+  html += '<div class="section-title" style="margin-top:.9rem">TODAY\'S STATS</div>'
+    + '<div class="card">'
+    + '<div class="stats-input-grid">'
+    + buildStatInput(p, dayNum, 'speed', '⚡', 'sec', statDisabled)
+    + buildStatInput(p, dayNum, 'jump', '🦘', 'cm', statDisabled)
+    + buildStatInput(p, dayNum, 'stamina', '🔁', 'min', statDisabled)
+    + '</div>'
+    + (!isFather() ? '<div class="locked-tip">🔒 Stats entered by Dad</div>' : '')
+    + '</div>';
 
-  <div class="section-title" style="margin-top:.9rem">TODAY'S STATS</div>
-  <div class="card">
-    <div class="stats-input-grid">
-      ${buildStatInput(p, dayNum, 'speed', '⚡', 'sec', !isEditable && !SESSION.editMode || (day.completed && !SESSION.editMode && !isFather()))}
-      ${buildStatInput(p, dayNum, 'jump', '🦘', 'cm', !isEditable && !SESSION.editMode || (day.completed && !SESSION.editMode && !isFather()))}
-      ${buildStatInput(p, dayNum, 'stamina', '🔁', 'min', !isEditable && !SESSION.editMode || (day.completed && !SESSION.editMode && !isFather()))}
-    </div>
-    ${!isEditable ? `<div style="font-size:.72rem;color:var(--mu);font-weight:700;text-align:center;margin-top:.3rem">🔒 Stats entered by Dad</div>` : ''}
-  </div>
+  html += '<div class="section-title">1V1 BATTLE</div>'
+    + buildPvpCard(pvp, day, dayNum, childLock);
 
-  <div class="section-title">1V1 BATTLE</div>
-  ${buildPvpCard(pvp, day, dayNum, childLock)}
+  if (!day.completed) {
+    if (childLock) {
+      html += '<button class="btn-complete" onclick="childAction()">🔒 Ask Dad to complete</button>';
+    } else if (!canComplete) {
+      html += '<button class="btn-complete" onclick="showToast(\'Complete all missions first!\')">⚡ FINISH MISSIONS FIRST</button>';
+    } else {
+      html += '<button class="btn-complete" onclick="confirmCompleteDay(' + dayNum + ')">🔥 COMPLETE DAY ' + dayNum + '</button>';
+    }
+  } else {
+    html += '<button class="btn-complete completed" disabled>✅ DAY ' + dayNum + ' COMPLETE!</button>';
+  }
 
-  ${!day.completed ? `
-  <button class="btn-complete ${!canComplete?'':''}" onclick="${childLock?'childAction()':!canComplete?'showToast(\"⚡ Complete all missions first!\")':'confirmCompleteDay('+dayNum+')'}" ${day.completed?'disabled':''}>
-    ${canComplete ? '🔥 COMPLETE DAY '+dayNum : '⚡ FINISH MISSIONS FIRST'}
-  </button>` : `
-  <button class="btn-complete completed" disabled>✅ DAY ${dayNum} COMPLETE!</button>`}
-  `;
+  return html;
 }
 
 function buildMissionCard(m, day, dayNum, childLock) {
   const isDone = !!day.missions[m.id];
-  const lock = childLock ? ' locked-action' : '';
-  const clickFn = childLock ? 'childAction()' : `toggleMission(${dayNum},'${m.id}')`;
-  return `
-  <div class="mission-card ${isDone?'done':''}${lock}" onclick="${clickFn}">
-    <div class="mission-check">${isDone?'✓':''}</div>
-    <div class="mission-icon">${m.icon}</div>
-    <div class="mission-info">
-      <div class="mission-name">${m.name}</div>
-      <div class="mission-desc">${m.desc}</div>
-    </div>
-    <div class="mission-reward">+${m.exp} EXP</div>
-  </div>`;
+  const clickFn = childLock ? 'childAction()' : 'toggleMission(' + dayNum + ',\'' + m.id + '\')';
+  return '<div class="mission-card ' + (isDone?'done':'') + '" onclick="' + clickFn + '">'
+    + '<div class="mission-check">' + (isDone?'✓':'') + '</div>'
+    + '<div class="mission-icon">' + m.icon + '</div>'
+    + '<div class="mission-info">'
+    + '<div class="mission-name">' + m.name + '</div>'
+    + '<div class="mission-desc">' + m.desc + '</div>'
+    + '</div>'
+    + '<div class="mission-reward">+' + m.exp + ' EXP</div>'
+    + '</div>';
 }
 
 function buildStatInput(p, dayNum, skill, icon, unit, isDisabled) {
   const day = p.days[dayNum-1];
-  const val = day.stats[skill];
+  const val = day.stats[skill] || '';
   const prev = getPrevStat(p, dayNum, skill);
   const delta = getDeltaHtml(skill, val, prev);
-  const labels = {speed:'⚡ Speed',jump:'🦘 Jump',stamina:'🔁 Stamina'};
-  return `
-  <div class="stat-group">
-    <label>${labels[skill]}</label>
-    <input type="number" class="stat-inp" data-day="${dayNum}" data-skill="${skill}"
-      placeholder="0.0" value="${val}" step="0.1" min="0" ${isDisabled?'disabled':''}>
-    <div class="stat-unit">${unit}</div>
-    <div class="stat-delta" id="delta-${dayNum}-${skill}">${delta}</div>
-  </div>`;
+  const labels = {speed:'⚡ Speed', jump:'🦘 Jump', stamina:'🔁 Stamina'};
+  return '<div class="stat-group">'
+    + '<label>' + labels[skill] + '</label>'
+    + '<input type="number" class="stat-inp" data-day="' + dayNum + '" data-skill="' + skill + '"'
+    + ' placeholder="0.0" value="' + escHtml(val) + '" step="0.1" min="0"' + (isDisabled?' disabled':'') + '>'
+    + '<div class="stat-unit">' + unit + '</div>'
+    + '<div class="stat-delta" id="delta-' + dayNum + '-' + skill + '">' + delta + '</div>'
+    + '</div>';
 }
 
 function buildPvpCard(pvp, day, dayNum, childLock) {
   const res = day.pvpResult;
-  const disabled = childLock ? 'disabled' : '';
-  return `
-  <div class="pvp-card">
-    <div class="pvp-title ff-display">${pvp.icon} ${pvp.name}</div>
-    <div class="pvp-desc">${pvp.desc}</div>
-    <div class="pvp-grid">
-      <button class="pvp-btn pvp-win ${res==='win'?'sel':''}" ${disabled} onclick="${childLock?'childAction()':'setPvpResult('+dayNum+',\'win\')'}">🏆 I WON! +${pvp.coins}🪙</button>
-      <button class="pvp-btn pvp-lose ${res==='lose'?'sel':''}" ${disabled} onclick="${childLock?'childAction()':'setPvpResult('+dayNum+',\'lose\')'}">💪 Dad Won (+5🪙)</button>
-    </div>
-  </div>`;
+  const dis = childLock ? 'disabled' : '';
+  const winClick = childLock ? 'childAction()' : 'setPvpResult(' + dayNum + ',\'win\')';
+  const loseClick = childLock ? 'childAction()' : 'setPvpResult(' + dayNum + ',\'lose\')';
+  return '<div class="pvp-card">'
+    + '<div class="pvp-title ff">' + pvp.icon + ' ' + pvp.name + '</div>'
+    + '<div class="pvp-desc">' + pvp.desc + '</div>'
+    + '<div class="pvp-grid">'
+    + '<button class="pvp-btn pvp-win ' + (res==='win'?'sel':'') + '" ' + dis + ' onclick="' + winClick + '">🏆 I WON! +' + pvp.coins + '🪙</button>'
+    + '<button class="pvp-btn pvp-lose ' + (res==='lose'?'sel':'') + '" ' + dis + ' onclick="' + loseClick + '">💪 Dad Won (+5🪙)</button>'
+    + '</div></div>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   11. UI: PROGRESS
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 11 - PROGRESS
+============================================================= */
 function buildProgress(p) {
-  const sv = p.days.map(d => parseFloat(d.stats.speed)||null);
-  const jv = p.days.map(d => parseFloat(d.stats.jump)||null);
-  const tv = p.days.map(d => parseFloat(d.stats.stamina)||null);
-  return `
-  <div class="section-title">PERFORMANCE CHARTS</div>
-  ${buildChart('⚡ Sprint Speed (sec)', sv, 'var(--or)', true)}
-  ${buildChart('🦘 Vertical Jump (cm)', jv, 'var(--bl)', false)}
-  ${buildChart('🔁 Stamina (min)', tv, 'var(--gr)', true)}
-  <div class="section-title" style="margin-top:.5rem">DAY LOG</div>
-  ${p.days.map((d,i) => `
-  <div class="day-log-row">
-    <div class="day-log-num ${d.completed?'done':''}">${d.completed?'✓':(i+1)}</div>
-    <div style="flex:1">
-      <div class="day-log-title">${DAY_THEMES[i].title}</div>
-      <div class="day-log-stats">
-        ${d.stats.speed?`⚡${d.stats.speed}s`:'⚡–'}
-        ${d.stats.jump?` · 🦘${d.stats.jump}cm`:' · 🦘–'}
-        ${d.stats.stamina?` · 🔁${d.stats.stamina}min`:' · 🔁–'}
-      </div>
-    </div>
-    <div style="font-size:.78rem;font-weight:800;color:${d.completed?'var(--gr)':'var(--mu)'}">${d.completed?'✅':'–'}</div>
-  </div>`).join('')}`;
+  const sv = p.days.map(d => { const v=parseFloat(d.stats.speed); return isNaN(v)||v<=0?null:v; });
+  const jv = p.days.map(d => { const v=parseFloat(d.stats.jump); return isNaN(v)||v<=0?null:v; });
+  const tv = p.days.map(d => { const v=parseFloat(d.stats.stamina); return isNaN(v)||v<=0?null:v; });
+  let html = '<div class="section-title">PERFORMANCE CHARTS</div>'
+    + buildChart('⚡ Sprint Speed (sec)', sv, 'var(--or)', true)
+    + buildChart('🦘 Vertical Jump (cm)', jv, 'var(--bl)', false)
+    + buildChart('🔁 Stamina (min)', tv, 'var(--gr)', true)
+    + '<div class="section-title" style="margin-top:.5rem">DAY LOG</div>';
+  p.days.forEach((d,i) => {
+    html += '<div class="day-log-row">'
+      + '<div class="day-log-num ' + (d.completed?'done':'') + '">' + (d.completed?'✓':(i+1)) + '</div>'
+      + '<div style="flex:1"><div class="day-log-title">' + DAY_THEMES[i].title + '</div>'
+      + '<div class="day-log-stats">'
+      + (d.stats.speed ? '⚡' + d.stats.speed + 's' : '⚡-')
+      + (d.stats.jump ? ' - 🦘' + d.stats.jump + 'cm' : ' - 🦘-')
+      + (d.stats.stamina ? ' - 🔁' + d.stats.stamina + 'min' : ' - 🔁-')
+      + '</div></div>'
+      + '<div style="font-size:.78rem;font-weight:800;color:' + (d.completed?'var(--gr)':'var(--mu)') + '">' + (d.completed?'✅':'-') + '</div>'
+      + '</div>';
+  });
+  return html;
 }
 
 function buildChart(title, vals, color, lowerBetter) {
   const filt = vals.filter(v=>v!==null);
-  if (!filt.length) return `<div class="chart-card"><div class="chart-title">${title}</div><div style="text-align:center;color:var(--mu);font-size:.8rem;padding:.75rem">No data yet – complete some days!</div></div>`;
-  const max = Math.max(...filt), min = Math.min(...filt), range = max-min || 1;
-  return `
-  <div class="chart-card">
-    <div class="chart-title">${title}</div>
-    <div class="mini-chart">
-      ${vals.map((v,i) => {
-        if (v===null) return `<div class="bar-wrap"><div style="flex:1"></div><div class="bar-lbl">D${i+1}</div></div>`;
-        const prev = filt.slice(0, filt.indexOf(v)).at(-1);
-        const good = prev!==undefined && (lowerBetter ? v<prev : v>prev);
-        const pct = lowerBetter ? 1-(v-min)/range : (v-min)/range;
-        const h = Math.max(8, Math.min(88, pct*100));
-        return `<div class="bar-wrap">
-          <div class="bar-val">${v}</div>
-          <div class="bar-body" style="height:${h}%;background:${good?'var(--gr)':color};opacity:${v===null?.2:1}"></div>
-          <div class="bar-lbl">D${i+1}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
+  if (!filt.length) {
+    return '<div class="chart-card"><div class="chart-title">' + title + '</div>'
+      + '<div style="text-align:center;color:var(--mu);font-size:.8rem;padding:.75rem">No data yet - complete some days!</div></div>';
+  }
+  const maxV = Math.max(...filt), minV = Math.min(...filt), range = maxV-minV || 1;
+  let bars = '';
+  vals.forEach((v,i) => {
+    if (v===null) {
+      bars += '<div class="bar-wrap"><div style="flex:1"></div><div class="bar-lbl">D' + (i+1) + '</div></div>';
+      return;
+    }
+    // Find previous non-null
+    const prevVals = filt.slice(0, filt.indexOf(v));
+    const prevV = prevVals.length ? prevVals[prevVals.length-1] : undefined;
+    const good = prevV !== undefined && (lowerBetter ? v < prevV : v > prevV);
+    const pct = lowerBetter ? 1-(v-minV)/range : (v-minV)/range;
+    const h = Math.max(8, Math.min(88, pct*100));
+    bars += '<div class="bar-wrap">'
+      + '<div class="bar-val">' + v + '</div>'
+      + '<div class="bar-body" style="height:' + h + '%;background:' + (good?'var(--gr)':color) + '"></div>'
+      + '<div class="bar-lbl">D' + (i+1) + '</div>'
+      + '</div>';
+  });
+  return '<div class="chart-card"><div class="chart-title">' + title + '</div>'
+    + '<div class="mini-chart">' + bars + '</div></div>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   12. UI: BADGES
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 12 - BADGES
+============================================================= */
 function buildBadges(p) {
-  return `
-  <div class="section-title">ACHIEVEMENTS</div>
-  <div class="badges-grid">
-    ${ACHIEVEMENTS.map(a => `
-    <div class="badge-card ${p.achievements[a.id]?'unlocked':''}">
-      <div class="badge-ico">${a.icon}</div>
-      <div class="badge-nm">${a.name}</div>
-      <div class="badge-ds">${a.desc}</div>
-    </div>`).join('')}
-  </div>
-  <div style="margin-top:1rem;text-align:center;font-size:.75rem;color:var(--mu);font-weight:700">
-    ${Object.keys(p.achievements).length} / ${ACHIEVEMENTS.length} unlocked
-  </div>`;
+  let html = '<div class="section-title">ACHIEVEMENTS</div><div class="badges-grid">';
+  ACHIEVEMENTS.forEach(a => {
+    const unlocked = !!p.achievements[a.id];
+    html += '<div class="badge-card ' + (unlocked?'unlocked':'') + '">'
+      + '<div class="badge-ico">' + a.icon + '</div>'
+      + '<div class="badge-nm">' + a.name + '</div>'
+      + '<div class="badge-ds">' + a.desc + '</div>'
+      + '</div>';
+  });
+  html += '</div><div style="margin-top:1rem;text-align:center;font-size:.75rem;color:var(--mu);font-weight:700">'
+    + Object.keys(p.achievements).length + ' / ' + ACHIEVEMENTS.length + ' unlocked</div>';
+  return html;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   13. UI: REWARDS
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 13 - REWARDS
+============================================================= */
 function buildRewards(p) {
-  if (!p.rewards.length) return `
-    <div style="text-align:center;padding:3rem 1rem;color:var(--mu)">
-      <div style="font-size:4rem;margin-bottom:1rem">🎁</div>
-      <div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">No rewards yet!</div>
-      <div style="font-size:.88rem">Complete daily missions to earn rewards.</div>
-      <div style="margin-top:.5rem;font-size:.82rem">70%+ completion = reward day!</div>
-    </div>`;
-
-  const pending = p.rewards.filter(r=>!r.redeemed && r.type!=='none');
-  const past = p.rewards.filter(r=>r.redeemed || r.type==='none');
-
-  return `
-  ${pending.length > 0 ? `
-  <div class="section-title">PENDING REWARDS (${pending.length})</div>
-  ${pending.map(r => buildRewardCard(r, false)).join('')}` : ''}
-  ${past.length > 0 ? `
-  <div class="section-title" style="margin-top:.5rem">HISTORY</div>
-  ${past.map(r => buildRewardCard(r, true)).join('')}` : ''}
-  <div class="card" style="margin-top:.5rem;font-size:.8rem;color:var(--mu);font-weight:700;line-height:1.6">
-    <div style="font-weight:900;color:var(--tx);margin-bottom:.4rem">📊 Reward Tiers</div>
-    70–89% missions done → 🎮 30 min gaming + 💰 20.000đ<br>
-    90–100% missions done → 🎮 1 hour gaming + 💰 50.000đ
-  </div>`;
+  const rewards = p.rewards || [];
+  if (!rewards.length) {
+    return '<div style="text-align:center;padding:3rem 1rem;color:var(--mu)">'
+      + '<div style="font-size:4rem;margin-bottom:1rem">🎁</div>'
+      + '<div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">No rewards yet!</div>'
+      + '<div style="font-size:.88rem">Complete daily missions to earn rewards.</div>'
+      + '<div style="margin-top:.5rem;font-size:.82rem">70%+ completion = reward day!</div>'
+      + '</div>';
+  }
+  const pending = rewards.filter(r=>!r.redeemed && r.type!=='none');
+  const past = rewards.filter(r=>r.redeemed || r.type==='none');
+  let html = '';
+  if (pending.length) {
+    html += '<div class="section-title">PENDING REWARDS (' + pending.length + ')</div>';
+    pending.forEach(r => { html += buildRewardCard(r); });
+  }
+  if (past.length) {
+    html += '<div class="section-title" style="margin-top:.5rem">HISTORY</div>';
+    past.forEach(r => { html += buildRewardCard(r); });
+  }
+  html += '<div class="card" style="margin-top:.5rem;font-size:.8rem;color:var(--mu);font-weight:700;line-height:1.6">'
+    + '<div style="font-weight:900;color:var(--tx);margin-bottom:.4rem">📊 Reward Tiers</div>'
+    + '70-89% missions done → 🎮 30 min gaming + 💰 20.000d<br>'
+    + '90-100% missions done → 🎮 1 hour gaming + 💰 50.000d'
+    + '</div>';
+  return html;
 }
 
-function buildRewardCard(r, isPast) {
-  const icon = r.type==='big' ? '🏆' : r.type==='small' ? '⭐' : '💤';
+function buildRewardCard(r) {
+  const isPast = r.redeemed || r.type === 'none';
   const label = r.type==='big' ? 'BIG REWARD' : r.type==='small' ? 'REWARD' : 'NO REWARD';
-  return `
-  <div class="reward-card ${r.type} ${isPast||r.redeemed?'redeemed':''}">
-    <div class="reward-header">
-      <div class="reward-day">DAY ${r.dayNum} · ${r.pct}% completion</div>
-      ${r.type!=='none' ? `<div class="reward-type-badge ${r.type}">${label}</div>` : ''}
-    </div>
-    ${r.type!=='none' ? `
-    <div class="reward-items">
-      ${r.gameTime ? `<div class="reward-item">🎮 ${r.gameTime} gaming</div>` : ''}
-      ${r.money ? `<div class="reward-item">💰 ${r.money}</div>` : ''}
-    </div>
-    ${r.redeemed
-      ? `<div class="reward-status">✅ Redeemed ${r.redeemedAt ? '· '+new Date(r.redeemedAt).toLocaleDateString() : ''}</div>`
-      : isFather()
-        ? `<button class="btn btn-success btn-sm" onclick="redeemReward(${r.dayNum})">🎁 Redeem Now</button>`
-        : `<div style="font-size:.78rem;color:var(--mu);font-weight:700">🔒 Ask Dad to redeem!</div>`
-    }` : `<div style="font-size:.82rem;color:var(--mu);font-weight:700">Complete more missions next time!</div>`}
-  </div>`;
+  let html = '<div class="reward-card ' + r.type + ' ' + (isPast?'redeemed':'') + '">'
+    + '<div class="reward-header">'
+    + '<div class="reward-day">DAY ' + r.dayNum + ' - ' + r.pct + '% completion</div>'
+    + (r.type!=='none' ? '<div class="reward-type-badge ' + r.type + '">' + label + '</div>' : '')
+    + '</div>';
+  if (r.type !== 'none') {
+    html += '<div class="reward-items">'
+      + (r.gameTime ? '<div class="reward-item">🎮 ' + r.gameTime + ' gaming</div>' : '')
+      + (r.money ? '<div class="reward-item">💰 ' + r.money + '</div>' : '')
+      + '</div>';
+    if (r.redeemed) {
+      html += '<div class="reward-status">✅ Redeemed' + (r.redeemedAt ? ' - ' + new Date(r.redeemedAt).toLocaleDateString() : '') + '</div>';
+    } else if (isFather()) {
+      html += '<button class="btn btn-success btn-sm" onclick="redeemReward(' + r.dayNum + ')">🎁 Redeem Now</button>';
+    } else {
+      html += '<div style="font-size:.78rem;color:var(--mu);font-weight:700">🔒 Ask Dad to redeem!</div>';
+    }
+  } else {
+    html += '<div style="font-size:.82rem;color:var(--mu);font-weight:700">Complete more missions next time!</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function redeemReward(dayNum) {
   const p = getPlayer();
-  const r = p.rewards.find(rw => rw.dayNum === dayNum);
+  const r = (p.rewards||[]).find(rw => rw.dayNum === dayNum);
   if (!r || r.redeemed) return;
   r.redeemed = true; r.redeemedAt = Date.now();
   savePlayers();
   playSound('achievement');
-  showLevelUp('🎁', 'REWARD REDEEMED!', `Day ${dayNum}: ${r.gameTime||''} ${r.money ? '+ '+r.money : ''}`);
+  showLevelUp('🎁', 'REWARD REDEEMED!', 'Day ' + dayNum + ': ' + (r.gameTime||'') + (r.money ? ' + ' + r.money : ''));
   renderTab('rewards');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   14. UI: ADMIN PANEL
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 14 - ADMIN PANEL
+============================================================= */
 function buildAdmin() {
   const names = Object.keys(ALL_PLAYERS);
-  return `
-  <div class="section-title">PLAYER MANAGEMENT</div>
-  <div class="admin-section">
-    ${names.map(name => {
-      const p2 = ALL_PLAYERS[name];
-      const done = p2.days.filter(d=>d.completed).length;
-      const isCurrent = name === SESSION.currentPlayer;
-      return `
-      <div class="player-manage-row">
-        <div>
-          <div class="player-manage-name">${p2.avatarIdx!==undefined?AVATARS[p2.avatarIdx]:''} ${name} ${isCurrent?'<span style="font-size:.65rem;color:var(--gr);font-weight:700">· CURRENT</span>':''}</div>
-          <div class="player-manage-stats">LVL ${getLevel(p2)} · ${done}/10 days · ${p2.coins}🪙</div>
-        </div>
-        <div style="display:flex;gap:.4rem;">
-          ${!isCurrent ? `<button class="btn btn-sm btn-secondary" onclick="switchPlayer('${name}')">Switch</button>` : ''}
-          <button class="btn btn-sm btn-danger" onclick="confirmDelete('${name}')">🗑</button>
-        </div>
-      </div>`;
-    }).join('')}
-    <button class="btn btn-secondary" style="margin-top:.5rem" onclick="showAddPlayerModal()">➕ Add Player</button>
-  </div>
+  let rows = '';
+  names.forEach(name => {
+    const p2 = ALL_PLAYERS[name];
+    const done = (p2.days||[]).filter(d=>d.completed).length;
+    const isCur = name === SESSION.currentPlayer;
+    const safeName = name.replace(/'/g,"\\'");
+    rows += '<div class="player-manage-row">'
+      + '<div>'
+      + '<div class="player-manage-name">' + escHtml(name) + (isCur ? ' <span style="font-size:.65rem;color:var(--gr);font-weight:700">CURRENT</span>' : '') + '</div>'
+      + '<div class="player-manage-stats">LVL ' + getLevel(p2) + ' - ' + done + '/10 days - ' + p2.coins + '🪙</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:.4rem">'
+      + (!isCur ? '<button class="btn btn-sm btn-secondary" onclick="switchPlayer(\'' + safeName + '\')">Switch</button>' : '')
+      + '<button class="btn btn-sm btn-danger" onclick="confirmDelete(\'' + safeName + '\')">🗑</button>'
+      + '</div>'
+      + '</div>';
+  });
 
-  <div class="section-title">DATA SYNC</div>
-  <div class="admin-section">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem">
-      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="showExportModal()">📤 Export Data</button>
-      <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="showImportModal()">📥 Import Data</button>
-    </div>
-    <div style="font-size:.75rem;color:var(--mu);font-weight:700;line-height:1.5">
-      Export → copy JSON → paste on other device → Import to sync data across phones.
-    </div>
-  </div>
-
-  <div class="section-title">DANGER ZONE</div>
-  <div class="admin-section">
-    <button class="btn btn-danger" onclick="confirmResetPlayer()">🔄 Reset Current Player Data</button>
-  </div>`;
+  const fbConfigured = !!FB_URL;
+  return '<div class="section-title">PLAYER MANAGEMENT</div>'
+    + '<div class="admin-section">' + rows
+    + '<button class="btn btn-secondary" style="margin-top:.5rem" onclick="showAddPlayerModal()">➕ Add Player</button>'
+    + '</div>'
+    + '<div class="section-title">CLOUD SYNC</div>'
+    + '<div class="admin-section">'
+    + '<div style="background:' + (fbConfigured?'rgba(0,230,118,.07)':'rgba(255,255,255,.04)') + ';border:1px solid ' + (fbConfigured?'rgba(0,230,118,.2)':'rgba(255,255,255,.08)') + ';border-radius:12px;padding:.75rem;margin-bottom:.75rem;font-size:.78rem;font-weight:700">'
+    + (fbConfigured ? '🟢 Firebase connected: ' + FB_URL : '⚪ Firebase not configured. Edit FB_URL in the HTML to enable cloud sync.')
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem">'
+    + '<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="showExportModal()">📤 Export JSON</button>'
+    + '<button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="showImportModal()">📥 Import JSON</button>'
+    + '</div>'
+    + (fbConfigured ? '<button class="btn btn-secondary" onclick="forceSyncNow()">☁️ Force Sync Now</button>' : '')
+    + '</div>'
+    + '<div class="section-title">DANGER ZONE</div>'
+    + '<div class="admin-section">'
+    + '<button class="btn btn-danger" onclick="confirmResetPlayer()">🔄 Reset Current Player Data</button>'
+    + '</div>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   15. UI: FINAL BOSS
-═══════════════════════════════════════════════════════════════════ */
+function forceSyncNow() {
+  syncToFirebase().then(() => showToast('☁️ Sync complete!'));
+}
 
+/* =============================================================
+   PART 15 - FINAL BOSS
+============================================================= */
 function buildFinalBoss(p) {
   const d1 = p.days[0], d10 = p.days[9];
-  const compare = (skill, label, unit, lb) => {
+  let compares = '';
+  const skills = [{skill:'speed',label:'⚡ SPRINT SPEED',unit:'s',lb:true},{skill:'jump',label:'🦘 VERTICAL JUMP',unit:'cm',lb:false},{skill:'stamina',label:'🔁 STAMINA TIME',unit:'min',lb:true}];
+  skills.forEach(({skill,label,unit,lb}) => {
     const v1 = parseFloat(d1.stats[skill]), v10 = parseFloat(d10.stats[skill]);
-    if (isNaN(v1)||isNaN(v10)||v1<=0||v10<=0) return '';
+    if (isNaN(v1)||isNaN(v10)||v1<=0||v10<=0) return;
     const good = lb ? v10<v1 : v10>v1;
     const diff = v10-v1;
-    return `
-    <div style="margin-bottom:.65rem">
-      <div style="font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:.35rem">${label}</div>
-      <div class="compare-row">
-        <div class="compare-cell"><div class="compare-lbl">DAY 1</div><div class="compare-val ff-display">${v1}${unit}</div></div>
-        <div class="compare-vs">VS</div>
-        <div class="compare-cell ${good?'win':'lose'}"><div class="compare-lbl">DAY 10</div><div class="compare-val ff-display" style="color:${good?'var(--gr)':'var(--rd)'}">${v10}${unit}</div></div>
-      </div>
-      <div style="text-align:center;font-size:.75rem;font-weight:900;color:${good?'var(--gr)':'var(--mu)'}">
-        ${good?`▲ ${(diff>0?'+':'')}${diff.toFixed(1)}${unit} IMPROVED! 🔥`:`${(diff>0?'+':'')}${diff.toFixed(1)}${unit}`}
-      </div>
-    </div>`;
-  };
-  return `
-  <div class="boss-wrap">
-    <div class="boss-trophy">🏆</div>
-    <div class="boss-title">YOU DEFEATED YOUR OLD SELF!</div>
-    <div class="boss-sub">10 days. No excuses. Pure grind.</div>
-    ${compare('speed','⚡ SPRINT SPEED','s',true)}
-    ${compare('jump','🦘 VERTICAL JUMP','cm',false)}
-    ${compare('stamina','🔁 STAMINA TIME','min',true)}
-    <div class="card" style="margin-top:1rem;text-align:left">
-      <div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🎮 Total EXP</span><span style="font-weight:900;color:var(--or)">${p.exp} XP</span></div>
-      <div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🪙 Coins Earned</span><span style="font-weight:900;color:var(--ye)">${p.coins}</span></div>
-      <div class="final-stat-row"><span style="color:var(--mu);font-weight:700">⚡ Final Level</span><span style="font-weight:900;color:var(--pu)">LVL ${getLevel(p)} ${getLevelTitle(p)}</span></div>
-      <div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🏅 Badges</span><span style="font-weight:900;color:var(--gr)">${Object.keys(p.achievements).length} / ${ACHIEVEMENTS.length}</span></div>
-    </div>
-    <div class="boss-quote">"A champion is not born.<br>A champion is built –<br>one day at a time."</div>
-    ${isFather() ? `<button class="btn btn-ghost" onclick="SESSION.editMode=true;renderTab('day10')">✏️ Edit Day 10 Stats</button>` : ''}
-  </div>`;
+    const sign = diff>0?'+':'';
+    compares += '<div style="margin-bottom:.65rem">'
+      + '<div style="font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:.35rem">' + label + '</div>'
+      + '<div class="compare-row">'
+      + '<div class="compare-cell"><div class="compare-lbl">DAY 1</div><div class="compare-val ff">' + v1 + unit + '</div></div>'
+      + '<div class="compare-vs">VS</div>'
+      + '<div class="compare-cell ' + (good?'win':'lose') + '"><div class="compare-lbl">DAY 10</div><div class="compare-val ff" style="color:' + (good?'var(--gr)':'var(--rd)') + '">' + v10 + unit + '</div></div>'
+      + '</div>'
+      + '<div style="text-align:center;font-size:.75rem;font-weight:900;color:' + (good?'var(--gr)':'var(--mu)') + '">'
+      + (good ? '▲ ' + sign + diff.toFixed(1) + unit + ' IMPROVED! 🔥' : sign + diff.toFixed(1) + unit)
+      + '</div></div>';
+  });
+  return '<div class="boss-wrap">'
+    + '<div class="boss-trophy">🏆</div>'
+    + '<div class="boss-title">YOU DEFEATED YOUR OLD SELF!</div>'
+    + '<div class="boss-sub">10 days. No excuses. Pure grind.</div>'
+    + compares
+    + '<div class="card" style="margin-top:1rem;text-align:left">'
+    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🎮 Total EXP</span><span style="font-weight:900;color:var(--or)">' + p.exp + ' XP</span></div>'
+    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🪙 Coins</span><span style="font-weight:900;color:var(--ye)">' + p.coins + '</span></div>'
+    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">⚡ Final Level</span><span style="font-weight:900;color:var(--pu)">LVL ' + getLevel(p) + ' ' + getLvTitle(p) + '</span></div>'
+    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🏅 Badges</span><span style="font-weight:900;color:var(--gr)">' + Object.keys(p.achievements).length + ' / ' + ACHIEVEMENTS.length + '</span></div>'
+    + '</div>'
+    + '<div class="boss-quote">"A champion is not born.<br>A champion is built - one day at a time."</div>'
+    + (isFather() ? '<button class="btn btn-ghost" onclick="SESSION.editMode=true;renderTab(\'day10\')">✏️ Edit Day 10 Stats</button>' : '')
+    + '</div>';
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   16. INTERACTIONS
-═══════════════════════════════════════════════════════════════════ */
+/* =============================================================
+   PART 16 - INTERACTIONS
+============================================================= */
+function childAction() { showToast('🔒 Only Dad can do this!'); playSound('error'); }
 
-function childAction() {
-  showToast('🔒 Only Dad can do this!');
-  playSound('error');
-}
-
-/** Toggle a mission checkbox (father only) */
 function toggleMission(dayNum, skill) {
   if (!isFather()) { childAction(); return; }
-  const p = getPlayer();
+  const p = getPlayer(); if (!p) return;
   const day = p.days[dayNum-1];
   if (day.completed && !SESSION.editMode) return;
-
   const m = DAY_MISSIONS[dayNum-1].find(m=>m.id===skill);
+  if (!m) return;
+
   if (day.missions[skill]) {
-    // Untick: refund EXP & coins
     day.missions[skill] = false;
     p.exp = Math.max(0, p.exp - m.exp);
     p.coins = Math.max(0, p.coins - m.coins);
   } else {
-    // Tick: award EXP & coins
     day.missions[skill] = true;
     addExp(p, m.exp);
     addCoins(p, m.coins);
@@ -1501,20 +1397,17 @@ function toggleMission(dayNum, skill) {
   checkAchievements(p);
   savePlayers();
   updateTopBar();
-  renderTab(`day${dayNum}`);
+  renderTab('day' + dayNum);
 }
 
-/** Set 1v1 result */
 function setPvpResult(dayNum, result) {
   if (!isFather()) { childAction(); return; }
-  const p = getPlayer();
+  const p = getPlayer(); if (!p) return;
   const day = p.days[dayNum-1];
   if (day.completed && !SESSION.editMode) return;
-
   const pvp = DAY_MISSIONS[dayNum-1].find(m=>m.id==='pvp');
   const prev = day.pvpResult;
 
-  // Refund previous
   if (prev === 'win') { p.exp = Math.max(0,p.exp-pvp.exp); p.coins = Math.max(0,p.coins-pvp.coins); }
   if (prev === 'lose') { p.exp = Math.max(0,p.exp-5); p.coins = Math.max(0,p.coins-5); }
 
@@ -1530,15 +1423,15 @@ function setPvpResult(dayNum, result) {
     playSound('coin');
   }
   savePlayers();
-  renderTab(`day${dayNum}`);
+  renderTab('day' + dayNum);
 }
 
-/** Stat input handler (father only) */
 function onStatChange(e) {
-  if (!isFather() && !SESSION.editMode) return;
-  const dayNum = parseInt(e.target.dataset.day);
+  const p = getPlayer(); if (!p) return;
+  if (!isFather()) return;
+  const dayNum = parseInt(e.target.dataset.day, 10);
   const skill = e.target.dataset.skill;
-  const rawVal = e.target.value.trim();
+  const rawVal = (e.target.value || '').trim();
   const val = parseFloat(rawVal);
 
   if (rawVal !== '' && (isNaN(val) || val < 0)) {
@@ -1547,13 +1440,11 @@ function onStatChange(e) {
     return;
   }
 
-  const p = getPlayer();
   const day = p.days[dayNum-1];
   day.stats[skill] = rawVal;
 
-  // Check for record (only award once per skill per day)
   const prev = getPrevStat(p, dayNum, skill);
-  if (rawVal && prev) {
+  if (rawVal && prev !== null) {
     const lowerBetter = skill==='speed'||skill==='stamina';
     const improved = lowerBetter ? val<prev : val>prev;
     if (improved && !day.recordsAwarded[skill]) {
@@ -1565,75 +1456,66 @@ function onStatChange(e) {
       if (skill==='jump') unlockAchievement(p,'jump_booster');
       if (skill==='stamina') unlockAchievement(p,'iron_energy');
       unlockAchievement(p,'record_breaker');
-    } else if (improved && day.recordsAwarded[skill]) {
-      // Allow updating the record stat without re-awarding coins
     }
   }
 
-  // Update delta display
-  const deltaEl = document.getElementById(`delta-${dayNum}-${skill}`);
+  const deltaEl = document.getElementById('delta-' + dayNum + '-' + skill);
   if (deltaEl) deltaEl.innerHTML = getDeltaHtml(skill, rawVal, prev);
-
   savePlayers();
 }
 
-/** Request to edit a completed day */
 function requestEditMode(dayNum) {
-  showPasswordModal('Enter admin password to edit:', (pwd) => {
-    if (pwd !== ADMIN_PWD) { showToast('❌ Wrong password!'); playSound('error'); return; }
+  showPasswordModal('Enter admin password to edit:', function() {
     SESSION.editMode = true;
-    renderTab(`day${dayNum}`);
+    renderTab('day' + dayNum);
   });
 }
 
 function exitEditMode(dayNum) {
   SESSION.editMode = false;
-  renderTab(`day${dayNum}`);
+  renderTab('day' + dayNum);
 }
 
-/** Confirm day completion */
 function confirmCompleteDay(dayNum) {
   if (!isFather()) { childAction(); return; }
-  const p = getPlayer();
+  const p = getPlayer(); if (!p) return;
   const day = p.days[dayNum-1];
   const phys = DAY_MISSIONS[dayNum-1].filter(m=>m.id!=='pvp');
   if (!phys.every(m=>day.missions[m.id])) { showToast('❌ Complete all missions first!'); return; }
 
-  // Calculate reward before completing
   const reward = calcReward(day);
-  const rewardMsg = reward.type==='none' ? 'No reward this time – try harder tomorrow!' :
-    reward.type==='small' ? `🎮 ${reward.gameTime} gaming + 💰 ${reward.money} earned!` :
-    `🏆 ${reward.gameTime} gaming + 💰 ${reward.money} – AMAZING!`;
+  const rewardMsg = reward.type==='none' ? 'No reward this time - try harder tomorrow!'
+    : reward.type==='small' ? '🎮 ' + reward.gameTime + ' gaming + 💰 ' + reward.money + ' earned!'
+    : '🏆 ' + reward.gameTime + ' gaming + 💰 ' + reward.money + ' - AMAZING!';
+  const rewardIcon = reward.type==='big' ? '🏆' : reward.type==='small' ? '⭐' : '💪';
 
-  openModal(`
-    <div class="modal-title ff-display">✅ COMPLETE DAY ${dayNum}?</div>
-    <div style="text-align:center;margin-bottom:1.2rem">
-      <div style="font-size:3rem;margin-bottom:.5rem">${reward.type==='big'?'🏆':reward.type==='small'?'⭐':'💪'}</div>
-      <div style="font-weight:900;font-size:1rem;margin-bottom:.4rem">${reward.pct}% completion</div>
-      <div style="font-size:.88rem;color:var(--mu);font-weight:700">${rewardMsg}</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <button class="btn btn-secondary" onclick="closeModal()">← Back</button>
-      <button class="btn btn-primary" onclick="closeModal();completeDay(${dayNum})">Confirm ✓</button>
-    </div>`);
+  openModal('<div class="modal-title ff">✅ COMPLETE DAY ' + dayNum + '?</div>'
+    + '<div style="text-align:center;margin-bottom:1.2rem">'
+    + '<div style="font-size:3rem;margin-bottom:.5rem">' + rewardIcon + '</div>'
+    + '<div style="font-weight:900;font-size:1rem;margin-bottom:.4rem">' + reward.pct + '% completion</div>'
+    + '<div style="font-size:.88rem;color:var(--mu);font-weight:700">' + rewardMsg + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
+    + '<button class="btn btn-secondary" onclick="closeModal()">← Back</button>'
+    + '<button class="btn btn-primary" onclick="closeModal();completeDay(' + dayNum + ')">Confirm ✓</button>'
+    + '</div>');
 }
 
 function completeDay(dayNum) {
   if (!isFather()) return;
-  const p = getPlayer();
+  const p = getPlayer(); if (!p) return;
   const day = p.days[dayNum-1];
 
-  // Award completion EXP & coins
   addExp(p, 20); addCoins(p, 10);
   day.completed = true;
   day.completedAt = Date.now();
   SESSION.editMode = false;
 
-  // Calculate & store reward
   const reward = calcReward(day);
   reward.dayNum = dayNum;
   reward.redeemed = false;
   reward.redeemedAt = null;
+  if (!p.rewards) p.rewards = [];
   p.rewards.push(reward);
 
   checkAchievements(p);
@@ -1643,17 +1525,16 @@ function completeDay(dayNum) {
 
   if (dayNum === 10) {
     unlockAchievement(p, 'champion');
-    setTimeout(() => showLevelUp('👑','CHAMPION!','You completed the 10 Day Challenge! GOAT status achieved!'), 800);
+    setTimeout(function() { showLevelUp('👑','CHAMPION!','You completed the 10 Day Challenge! GOAT status achieved!'); }, 800);
   } else {
-    setTimeout(() => showLevelUp('🏀',`DAY ${dayNum} DONE!`,`${reward.type!=='none'?'Reward earned! ':''}Day ${dayNum+1} is now unlocked!`), 600);
+    setTimeout(function() { showLevelUp('🏀','DAY ' + dayNum + ' DONE!', (reward.type!=='none'?'Reward earned! ':'') + 'Day ' + (dayNum+1) + ' is now unlocked!'); }, 600);
   }
-  renderTab(`day${dayNum}`);
+  renderTab('day' + dayNum);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   17. ACHIEVEMENTS
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 17 - ACHIEVEMENTS
+============================================================= */
 function unlockAchievement(p, id) {
   if (p.achievements[id]) return;
   p.achievements[id] = Date.now();
@@ -1666,82 +1547,102 @@ function checkAchievements(p) {
   if (done >= 1) unlockAchievement(p,'first_day');
   if (done >= 5) unlockAchievement(p,'halfway');
   if (done >= 10) unlockAchievement(p,'champion');
-  // Streak
   let streak=0, max=0;
   p.days.forEach(d => { if(d.completed){streak++;max=Math.max(max,streak);}else{streak=0;} });
   if (max>=3) unlockAchievement(p,'streak_3');
   if (max>=5) unlockAchievement(p,'streak_5');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   18. MODAL SYSTEM
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 18 - MODAL SYSTEM
+   FIX: no more setTimeout patching. Use _pwdCb closure directly.
+============================================================= */
 function openModal(html) {
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-bg').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  _pwdCb = null;
+}
 function modalBgClick(e) { if (e.target===document.getElementById('modal-bg')) closeModal(); }
 
+// Called from modal button (must be on window)
+window._submitPwd = function() {
+  const inp = document.getElementById('modal-pwd');
+  const err = document.getElementById('modal-pwd-err');
+  const v = inp ? inp.value : '';
+  if (v === ADMIN_PWD) {
+    closeModal();
+    if (typeof _pwdCb === 'function') { const cb = _pwdCb; _pwdCb = null; cb(); }
+  } else {
+    if (err) err.textContent = '❌ Wrong password!';
+    if (inp) inp.value = '';
+    playSound('error');
+  }
+};
+
 function showPasswordModal(title, onSuccess) {
-  openModal(`
-    <div class="modal-title">🔐 ${title}</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="modal-pwd" placeholder="••••••" maxlength="6"
-      oninput="if(this.value.length===6)document.getElementById('modal-pwd-btn').click()">
-    <div class="pwd-error" id="modal-pwd-err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="modal-pwd-btn" onclick="
-        const v=document.getElementById('modal-pwd').value;
-        if(v==='${ADMIN_PWD}'){closeModal();} else {document.getElementById('modal-pwd-err').textContent='❌ Wrong password!';}
-      ">Unlock</button>
-    </div>`);
-  // Override success after correct pwd via data
-  window._pwdSuccessCb = onSuccess;
-  // Patch the btn
-  setTimeout(() => {
-    const btn = document.getElementById('modal-pwd-btn');
-    if (btn) btn.onclick = () => {
-      const v = document.getElementById('modal-pwd').value;
-      if (v === ADMIN_PWD) { closeModal(); onSuccess(v); }
-      else { document.getElementById('modal-pwd-err').textContent='❌ Wrong password!'; playSound('error'); }
-    };
-    const inp = document.getElementById('modal-pwd');
-    if (inp) inp.oninput = () => { if(inp.value.length===6) btn.click(); };
-  }, 50);
+  _pwdCb = onSuccess;
+  openModal('<div class="modal-title">🔐 ' + title + '</div>'
+    + '<input type="password" inputmode="numeric" class="pwd-input" id="modal-pwd" placeholder="......" maxlength="6" oninput="if(this.value.length===6)_submitPwd()">'
+    + '<div class="pwd-error" id="modal-pwd-err"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
+    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
+    + '<button class="btn btn-primary" onclick="_submitPwd()">Unlock</button>'
+    + '</div>');
 }
 
+// Called from modal button for adding player
+window._addPlayerFromModal = function() {
+  const inp = document.getElementById('modal-new-name');
+  const err = document.getElementById('modal-add-err');
+  const n = inp ? inp.value.trim() : '';
+  if (!n) { if(err) err.textContent = '❌ Enter a name!'; return; }
+  if (ALL_PLAYERS[n]) { if(err) err.textContent = '❌ Already exists!'; return; }
+  ALL_PLAYERS[n] = createDefaultPlayer(n);
+  savePlayers();
+  closeModal();
+  renderTab('admin');
+  showToast('✅ Player added!');
+};
+
 function showAddPlayerModal() {
-  openModal(`
-    <div class="modal-title ff-display">➕ ADD PLAYER</div>
-    <input type="text" class="new-player-input" id="modal-new-name" placeholder="Enter player name..." maxlength="20">
-    <div class="pwd-error" id="modal-add-err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="
-        const n=document.getElementById('modal-new-name').value.trim();
-        if(!n){document.getElementById('modal-add-err').textContent='❌ Enter a name!';return;}
-        if(window.ALL_PLAYERS[n]){document.getElementById('modal-add-err').textContent='❌ Already exists!';return;}
-        ALL_PLAYERS[n]=createDefaultPlayer(n);savePlayers();closeModal();renderTab('admin');showToast('✅ Player added!');
-      ">Create</button>
-    </div>`);
+  openModal('<div class="modal-title ff">➕ ADD PLAYER</div>'
+    + '<input type="text" class="new-player-input" id="modal-new-name" placeholder="Enter player name..." maxlength="20">'
+    + '<div class="pwd-error" id="modal-add-err"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
+    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
+    + '<button class="btn btn-primary" onclick="_addPlayerFromModal()">Create</button>'
+    + '</div>');
 }
 
 function confirmDelete(name) {
   if (name === SESSION.currentPlayer) { showToast('❌ Cannot delete current player!'); return; }
-  openModal(`
-    <div class="modal-title ff-display">🗑 Delete "${name}"?</div>
-    <div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">This cannot be undone!</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger" onclick="delete ALL_PLAYERS['${name}'];savePlayers();closeModal();renderTab('admin');showToast('✅ Deleted!');">Delete</button>
-    </div>`);
+  openModal('<div class="modal-title ff">🗑 Delete player?</div>'
+    + '<div style="text-align:center;margin-bottom:1rem;font-size:1.1rem;font-weight:900">' + escHtml(name) + '</div>'
+    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">This cannot be undone!</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
+    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
+    + '<button class="btn btn-danger" id="del-confirm-btn">Delete</button>'
+    + '</div>');
+  // Attach handler after render
+  setTimeout(function() {
+    const btn = document.getElementById('del-confirm-btn');
+    if (btn) btn.onclick = function() {
+      delete ALL_PLAYERS[name];
+      savePlayers();
+      closeModal();
+      renderTab('admin');
+      showToast('✅ Deleted!');
+    };
+  }, 20);
 }
 
 function confirmResetPlayer() {
-  showPasswordModal('Confirm reset with password:', () => {
+  showPasswordModal('Confirm reset with password:', function() {
     const name = SESSION.currentPlayer;
+    if (!name) return;
     ALL_PLAYERS[name] = createDefaultPlayer(name);
     savePlayers();
     renderTab('dashboard');
@@ -1751,6 +1652,7 @@ function confirmResetPlayer() {
 }
 
 function switchPlayer(name) {
+  if (!ALL_PLAYERS[name]) { showToast('❌ Player not found!'); return; }
   SESSION.currentPlayer = name;
   SESSION.editMode = false;
   SESSION.currentTab = 'dashboard';
@@ -1758,148 +1660,171 @@ function switchPlayer(name) {
   renderTab('dashboard');
   updateTopBar();
   closeModal();
-  showToast(`✅ Switched to ${name}`);
+  showToast('✅ Switched to ' + name);
 }
 
 function confirmLogout() {
-  openModal(`
-    <div class="modal-title ff-display">⇄ SWITCH PLAYER?</div>
-    <div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">Return to player select screen.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <button class="btn btn-secondary" onclick="closeModal()">Stay</button>
-      <button class="btn btn-primary" onclick="closeModal();goToSplash()">Switch →</button>
-    </div>`);
+  openModal('<div class="modal-title ff">⇄ SWITCH PLAYER?</div>'
+    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">Return to player select screen.</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
+    + '<button class="btn btn-secondary" onclick="closeModal()">Stay</button>'
+    + '<button class="btn btn-primary" onclick="closeModal();goToSplash()">Switch →</button>'
+    + '</div>');
 }
 
 function goToSplash() {
   SESSION.currentPlayer = null; SESSION.role = null; SESSION.editMode = false;
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('splash').style.display = '';
-  document.getElementById('step-password').style.display = 'none';
-  document.getElementById('login-pwd').value = '';
-  document.getElementById('pwd-error').textContent = '';
+  const pwdInp = document.getElementById('login-pwd');
+  const pwdErr = document.getElementById('pwd-error');
+  if (pwdInp) pwdInp.value = '';
+  if (pwdErr) pwdErr.textContent = '';
   renderPlayerList();
   showStep('welcome');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   19. SYNC: EXPORT / IMPORT
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+   PART 19 - EXPORT / IMPORT
+============================================================= */
 function showExportModal() {
   const json = JSON.stringify(ALL_PLAYERS, null, 2);
-  openModal(`
-    <div class="modal-title ff-display">📤 EXPORT DATA</div>
-    <div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Copy this JSON and paste it on your other device using Import.</div>
-    <textarea class="sync-textarea" id="export-ta" readonly>${json}</textarea>
+  openModal('<div class="modal-title ff">📤 EXPORT DATA</div>'
+    + '<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Copy this JSON and paste it on your other device to sync.</div>'
+    + '<textarea class="sync-textarea" id="export-ta" readonly></textarea>'
 
 ```
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem">
-  <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-  <button class="btn btn-primary" onclick="
-    const ta=document.getElementById('export-ta');
-    ta.select();ta.setSelectionRange(0,99999);
-    navigator.clipboard.writeText(ta.value).then(()=>showToast('✅ Copied to clipboard!')).catch(()=>{ta.select();document.execCommand('copy');showToast('✅ Copied!');});
-  ">📋 Copy</button>
-</div>`);
++ '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem">'
++ '<button class="btn btn-secondary" onclick="closeModal()">Close</button>'
++ '<button class="btn btn-primary" id="copy-btn">📋 Copy</button>'
++ '</div>');
 ```
 
+setTimeout(function() {
+const ta = document.getElementById(‘export-ta’);
+if (ta) ta.value = json;
+const btn = document.getElementById(‘copy-btn’);
+if (btn) btn.onclick = function() {
+if (ta) {
+ta.select(); ta.setSelectionRange(0,99999);
+navigator.clipboard.writeText(ta.value)
+.then(function() { showToast(‘✅ Copied to clipboard!’); })
+.catch(function() { try { document.execCommand(‘copy’); showToast(‘✅ Copied!’); } catch(e) {} });
+}
+};
+}, 30);
 }
 
 function showImportModal() {
-openModal(` <div class="modal-title ff-display">📥 IMPORT DATA</div> <div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Paste exported JSON here. Choose merge or replace.</div> <textarea class="sync-textarea" id="import-ta" placeholder="Paste JSON here..."></textarea> <div id="import-err" style="color:var(--rd);font-size:.78rem;font-weight:700;margin:.4rem 0;min-height:1em"></div> <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.3rem"> <button class="btn btn-secondary" onclick="importData('merge')">🔀 Merge</button> <button class="btn btn-danger" onclick="importData('replace')">♻️ Replace</button> </div> <div style="font-size:.7rem;color:var(--mu);margin-top:.5rem;font-weight:700">Merge: add new players, keep existing. Replace: overwrite ALL data.</div>`);
+openModal(’<div class="modal-title ff">📥 IMPORT DATA</div>’
++ ‘<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Paste exported JSON here. Choose merge or replace.</div>’
++ ‘<textarea class="sync-textarea" id="import-ta" placeholder="Paste JSON here..."></textarea>’
++ ‘<div id="import-err" style="color:var(--rd);font-size:.78rem;font-weight:700;margin:.4rem 0;min-height:1em"></div>’
++ ‘<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.3rem">’
++ ‘<button class="btn btn-secondary" onclick="importData(\'merge\')">🔀 Merge</button>’
++ ‘<button class="btn btn-danger" onclick="importData(\'replace\')">♻️ Replace All</button>’
++ ‘</div>’
++ ‘<div style="font-size:.7rem;color:var(--mu);margin-top:.5rem;font-weight:700">Merge: add new players. Replace: overwrite ALL data.</div>’);
 }
 
 function importData(mode) {
-const raw = document.getElementById(‘import-ta’).value.trim();
+const ta = document.getElementById(‘import-ta’);
+const err = document.getElementById(‘import-err’);
+const raw = ta ? ta.value.trim() : ‘’;
+if (!raw) { if(err) err.textContent = ‘❌ Paste data first!’; return; }
 let parsed;
 try { parsed = JSON.parse(raw); } catch(e) {
-document.getElementById(‘import-err’).textContent = ‘❌ Invalid JSON! Check the data.’;
+if(err) err.textContent = ‘❌ Invalid JSON! Check the data.’;
 playSound(‘error’); return;
 }
-if (typeof parsed !== ‘object’ || Array.isArray(parsed)) {
-document.getElementById(‘import-err’).textContent = ‘❌ Invalid format. Must be player data object.’;
-return;
+if (!parsed || typeof parsed !== ‘object’ || Array.isArray(parsed)) {
+if(err) err.textContent = ‘❌ Invalid format.’; return;
 }
-// Validate structure
+// Validate
 for (const [k,v] of Object.entries(parsed)) {
-if (typeof v.exp !== ‘number’ || !Array.isArray(v.days)) {
-document.getElementById(‘import-err’).textContent = `❌ Invalid player data for "${k}"`;
-return;
+if (!v || typeof v.exp !== ‘number’ || !Array.isArray(v.days)) {
+if(err) err.textContent = ‘❌ Invalid player data for “’ + escHtml(k) + ‘”’; return;
 }
 }
-if (mode === ‘replace’) {
-ALL_PLAYERS = parsed;
-} else {
-// Merge: keep existing, add new
-for (const [k,v] of Object.entries(parsed)) {
-if (!ALL_PLAYERS[k]) ALL_PLAYERS[k] = v;
-}
-}
+if (mode === ‘replace’) { ALL_PLAYERS = parsed; }
+else { for (const [k,v] of Object.entries(parsed)) { if (!ALL_PLAYERS[k]) ALL_PLAYERS[k] = v; } }
 savePlayers();
 closeModal();
 renderPlayerList();
-showToast(`✅ Import successful! (${Object.keys(parsed).length} players)`);
+showToast(‘✅ Import OK! (’ + Object.keys(parsed).length + ’ players)’);
 playSound(‘achievement’);
-if (SESSION.currentPlayer && !ALL_PLAYERS[SESSION.currentPlayer]) {
-goToSplash();
+if (SESSION.currentPlayer && ALL_PLAYERS[SESSION.currentPlayer]) {
+renderTab(‘dashboard’); updateTopBar();
 } else {
-renderTab(‘dashboard’);
-updateTopBar();
+goToSplash();
 }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-20. VISUAL FX
-═══════════════════════════════════════════════════════════════════ */
-
-let _toastTimeout;
+/* =============================================================
+PART 20 - VISUAL FX
+============================================================= */
+let _toastTmr;
 function showToast(msg) {
 const t = document.getElementById(‘toast’);
+if (!t) return;
 t.textContent = msg; t.classList.add(‘show’);
-clearTimeout(_toastTimeout);
-_toastTimeout = setTimeout(() => t.classList.remove(‘show’), 2300);
+clearTimeout(_toastTmr);
+_toastTmr = setTimeout(function() { t.classList.remove(‘show’); }, 2300);
 }
 
-let _achTimeout;
+let _achTmr;
 function showAchievementToast(a) {
 const t = document.getElementById(‘achievement-toast’);
-t.innerHTML = `${a.icon} Achievement: <strong>${a.name}</strong>`;
+if (!t) return;
+t.innerHTML = a.icon + ’ Achievement: <strong>’ + a.name + ‘</strong>’;
 t.classList.add(‘show’);
-clearTimeout(_achTimeout);
-_achTimeout = setTimeout(() => t.classList.remove(‘show’), 3000);
+clearTimeout(_achTmr);
+_achTmr = setTimeout(function() { t.classList.remove(‘show’); }, 3000);
 }
 
 function showLevelUp(emoji, title, msg) {
-document.getElementById(‘lu-emoji’).textContent = emoji;
-document.getElementById(‘lu-title’).textContent = title;
-document.getElementById(‘lu-msg’).textContent = msg;
-document.getElementById(‘levelup-overlay’).classList.add(‘show’);
+const el = (id) => document.getElementById(id);
+if (el(‘lu-emoji’)) el(‘lu-emoji’).textContent = emoji;
+if (el(‘lu-title’)) el(‘lu-title’).textContent = title;
+if (el(‘lu-msg’)) el(‘lu-msg’).textContent = msg;
+const ov = el(‘levelup-overlay’);
+if (ov) ov.classList.add(‘show’);
 }
-function closeLevelUp() { document.getElementById(‘levelup-overlay’).classList.remove(‘show’); }
+function closeLevelUp() {
+const ov = document.getElementById(‘levelup-overlay’);
+if (ov) ov.classList.remove(‘show’);
+}
 
-function spawnConfetti(count = 40) {
+function spawnConfetti(count) {
+count = count || 40;
 const colors = [’#FF6B00’,’#FFD600’,’#00E676’,’#00C2FF’,’#B44FFF’,’#FF3D5A’];
-for (let i = 0; i < count; i++) {
+for (let i=0; i<count; i++) {
 const el = document.createElement(‘div’);
 el.className = ‘confetti’;
-el.style.cssText = `left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;animation-duration:${1.2+Math.random()*2}s;animation-delay:${Math.random()*0.6}s;`;
+el.style.cssText = ‘left:’ + (Math.random()*100) + ‘vw;top:-10px;background:’ + colors[Math.floor(Math.random()*colors.length)] + ‘;width:’ + (4+Math.random()*8) + ‘px;height:’ + (4+Math.random()*8) + ‘px;animation-duration:’ + (1.2+Math.random()*2) + ‘s;animation-delay:’ + (Math.random()*0.6) + ‘s;’;
 document.body.appendChild(el);
-setTimeout(() => el.remove(), 3500);
+setTimeout(function() { el.remove(); }, 3500);
 }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-21. INIT
-═══════════════════════════════════════════════════════════════════ */
-
+/* =============================================================
+PART 21 - INIT
+============================================================= */
 (function init() {
-loadPlayers();
 loadSettings();
+loadPlayers();
+
+// Load from Firebase then refresh the player list
+loadFromFirebase().then(function(loaded) {
+renderPlayerList();
+});
+
 renderPlayerList();
 showStep(‘welcome’);
-// Close modal on Escape
-document.addEventListener(‘keydown’, e => { if (e.key===‘Escape’) { closeModal(); closeLevelUp(); } });
+
+document.addEventListener(‘keydown’, function(e) {
+if (e.key === ‘Escape’) { closeModal(); closeLevelUp(); }
+});
 })();
 </script>
 
