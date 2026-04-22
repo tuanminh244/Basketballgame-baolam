@@ -332,12 +332,15 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
   <!-- NEW PLAYER -->
 
   <div class="splash-step" id="step-new-player" style="display:none">
-    <button class="btn-back" onclick="showStep('welcome')">← Back</button>
-    <div class="splash-ball" style="font-size:4rem;margin-top:1rem">🏀</div>
+    <button class="btn-back" onclick="showStep('welcome')">&#8592; Back</button>
+    <div class="splash-ball" style="font-size:4rem;margin-top:1rem">&#127936;</div>
     <div class="splash-title" style="font-size:2.5rem;margin-bottom:1.5rem">NEW PLAYER</div>
     <div class="splash-stl">PLAYER NAME</div>
-    <input type="text" class="new-player-input" id="new-player-name" placeholder="Enter player name..." maxlength="20">
-    <button class="btn btn-primary" style="max-width:400px;margin:0 auto" onclick="createPlayer()">CREATE PLAYER →</button>
+    <input type="text" class="new-player-input" id="new-player-name"
+      placeholder="Enter player name..." maxlength="20"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();createPlayer();}">
+    <div id="new-player-err" style="color:#FF3D5A;font-size:.85rem;font-weight:800;min-height:1.4em;margin-bottom:.4rem;text-align:center"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="createPlayer()">CREATE PLAYER &#8594;</button>
   </div>
 
   <!-- ROLE SELECT -->
@@ -368,7 +371,9 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
     <div style="font-size:3rem;margin:1rem 0">🔐</div>
     <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">ADMIN ACCESS</div>
     <div class="splash-sub" style="margin-bottom:1.5rem">Enter 6-digit password</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6">
+    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6"
+      oninput="if(this.value.length===6)loginAsFather()"
+      onkeydown="if(event.key==='Enter')loginAsFather()">
     <div class="pwd-error" id="pwd-error"></div>
     <button class="btn btn-primary" style="max-width:400px;margin:0 auto" onclick="loginAsFather()">UNLOCK →</button>
   </div>
@@ -792,7 +797,15 @@ function toggleSound() {
 function showStep(step) {
   document.querySelectorAll('.splash-step').forEach(el => el.style.display = 'none');
   const el = document.getElementById('step-' + step);
-  if (el) el.style.display = '';
+  if (el) el.style.display = 'block';
+  // Auto-focus the name input when showing new player step
+  if (step === 'new-player') {
+    const inp = document.getElementById('new-player-name');
+    if (inp) setTimeout(function() { inp.focus(); }, 50);
+  }
+  // Clear error when navigating
+  const errEl = document.getElementById('new-player-err');
+  if (errEl) errEl.textContent = '';
 }
 
 function renderPlayerList() {
@@ -835,12 +848,23 @@ function selectPlayer(name) {
 }
 
 function createPlayer() {
-  const name = (document.getElementById('new-player-name').value || '').trim();
-  if (!name) { showToast('❌ Enter a player name!'); return; }
-  if (ALL_PLAYERS[name]) { showToast('❌ Player already exists!'); return; }
+  const inp = document.getElementById('new-player-name');
+  const errEl = document.getElementById('new-player-err');
+  const name = inp ? inp.value.trim() : '';
+  if (errEl) errEl.textContent = '';
+  if (!name) {
+    if (errEl) errEl.textContent = '❌ Please enter a player name!';
+    if (inp) inp.focus();
+    return;
+  }
+  if (ALL_PLAYERS[name]) {
+    if (errEl) errEl.textContent = '❌ Player "' + name + '" already exists!';
+    return;
+  }
   ALL_PLAYERS[name] = createDefaultPlayer(name);
   savePlayers();
   SESSION.currentPlayer = name;
+  if (inp) inp.value = '';
   const greet = document.getElementById('role-greeting');
   if (greet) greet.textContent = 'HEY, ' + name.toUpperCase() + '!';
   showStep('role');
@@ -870,14 +894,7 @@ function loginAsFather() {
 }
 
 // Allow pressing Enter/auto-submit on password field
-document.addEventListener('DOMContentLoaded', function() {
-  const loginPwd = document.getElementById('login-pwd');
-  if (loginPwd) {
-    loginPwd.addEventListener('input', function() {
-      if (this.value.length === 6) loginAsFather();
-    });
-  }
-});
+// Note: auto-submit for login-pwd is set via oninput attribute directly on the input element
 
 function startGame() {
   document.getElementById('splash').style.display = 'none';
