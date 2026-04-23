@@ -326,38 +326,36 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
     <div class="splash-sub">10 DAY CHALLENGE v3</div>
     <div class="splash-stl">SELECT PLAYER</div>
     <div class="player-list" id="player-list"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="showStep('new-player')">➕ Add New Player</button>
+    <button class="btn btn-primary" id="btn-goto-new-player" style="width:100%;margin-top:.5rem">➕ Add New Player</button>
     <div id="sync-status-splash" style="margin-top:1rem;font-size:.72rem;color:var(--mu);font-weight:700;min-height:1.2em"></div>
   </div>
 
   <!-- NEW PLAYER -->
 
   <div class="splash-step" id="step-new-player" style="display:none">
-    <button class="btn-back" onclick="showStep('welcome')">&#8592; Back</button>
-    <div style="font-size:3rem;margin:.5rem 0">&#127936;</div>
+    <button class="btn-back" id="btn-new-player-back">← Back</button>
+    <div style="font-size:3rem;margin:.5rem 0">🏀</div>
     <div class="splash-title" style="font-size:2rem;margin-bottom:.8rem">NEW PLAYER</div>
     <div class="splash-stl">PLAYER NAME</div>
-    <input type="text" class="new-player-input" id="new-player-name"
-      placeholder="Enter player name..." maxlength="20"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();createPlayer();}">
-    <div id="new-player-err" style="color:#FF3D5A;font-size:.85rem;font-weight:800;min-height:1.4em;margin-bottom:.4rem;text-align:center"></div>
-    <button class="btn btn-primary" style="width:100%" onclick="createPlayer()">CREATE PLAYER &#8594;</button>
+    <input type="text" class="new-player-input" id="new-player-name" placeholder="Enter player name..." maxlength="20">
+    <div id="new-player-err" style="color:#FF3D5A;font-size:.85rem;font-weight:800;min-height:1.4em;margin:.4rem 0;text-align:center"></div>
+    <button class="btn btn-primary" id="btn-create-player" style="width:100%">CREATE PLAYER →</button>
   </div>
 
   <!-- ROLE SELECT -->
 
   <div class="splash-step" id="step-role" style="display:none">
-    <button class="btn-back" onclick="showStep('welcome')">← Back</button>
+    <button class="btn-back" id="btn-role-back">← Back</button>
     <div style="font-size:3rem;margin:1rem 0">👋</div>
     <div class="splash-title" style="font-size:2.2rem;margin-bottom:.4rem" id="role-greeting">HEY!</div>
     <div class="splash-sub">Who are you?</div>
     <div class="role-grid">
-      <div class="role-card child" onclick="loginAsChild()">
+      <div class="role-card child" id="btn-login-child">
         <div class="role-icon">🏀</div>
         <div class="role-name">Bao Lam</div>
         <div class="role-desc">VIEW progress &amp; missions</div>
       </div>
-      <div class="role-card father" onclick="showStep('password')">
+      <div class="role-card father" id="btn-goto-password">
         <div class="role-icon">👨</div>
         <div class="role-name">Dad (Admin)</div>
         <div class="role-desc">MANAGE everything</div>
@@ -368,15 +366,13 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
   <!-- PASSWORD -->
 
   <div class="splash-step" id="step-password" style="display:none">
-    <button class="btn-back" onclick="showStep('role')">← Back</button>
+    <button class="btn-back" id="btn-password-back">← Back</button>
     <div style="font-size:3rem;margin:1rem 0">🔐</div>
     <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">ADMIN ACCESS</div>
     <div class="splash-sub" style="margin-bottom:1.5rem">Enter 6-digit password</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6"
-      oninput="if(this.value.length===6)loginAsFather()"
-      onkeydown="if(event.key==='Enter')loginAsFather()">
+    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6">
     <div class="pwd-error" id="pwd-error"></div>
-    <button class="btn btn-primary" style="max-width:400px;margin:0 auto" onclick="loginAsFather()">UNLOCK →</button>
+    <button class="btn btn-primary" id="btn-do-login" style="max-width:400px;margin:0 auto">UNLOCK →</button>
   </div>
 </div>
 
@@ -1828,12 +1824,32 @@ loadSettings();
 loadPlayers();
 
 // Load from Firebase then refresh the player list
-loadFromFirebase().then(function(loaded) {
-renderPlayerList();
-});
+loadFromFirebase().then(function() { renderPlayerList(); });
 
 renderPlayerList();
 showStep(‘welcome’);
+
+// ── Splash button wiring (no inline onclick needed) ──────────
+var ge = function(id) { return document.getElementById(id); };
+
+ge(‘btn-goto-new-player’).addEventListener(‘click’, function() { showStep(‘new-player’); });
+ge(‘btn-new-player-back’).addEventListener(‘click’, function() { showStep(‘welcome’); });
+ge(‘btn-create-player’).addEventListener(‘click’, function() { createPlayer(); });
+ge(‘new-player-name’).addEventListener(‘keydown’, function(e) {
+if (e.key === ‘Enter’) { e.preventDefault(); createPlayer(); }
+});
+ge(‘btn-role-back’).addEventListener(‘click’, function() { showStep(‘welcome’); });
+ge(‘btn-login-child’).addEventListener(‘click’, function() { loginAsChild(); });
+ge(‘btn-goto-password’).addEventListener(‘click’, function() { showStep(‘password’); });
+ge(‘btn-password-back’).addEventListener(‘click’, function() { showStep(‘role’); });
+ge(‘btn-do-login’).addEventListener(‘click’, function() { loginAsFather(); });
+ge(‘login-pwd’).addEventListener(‘input’, function() {
+if (this.value.length === 6) loginAsFather();
+});
+ge(‘login-pwd’).addEventListener(‘keydown’, function(e) {
+if (e.key === ‘Enter’) loginAsFather();
+});
+// ─────────────────────────────────────────────────────────────
 
 document.addEventListener(‘keydown’, function(e) {
 if (e.key === ‘Escape’) { closeModal(); closeLevelUp(); }
