@@ -317,63 +317,42 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
 <!-- ===== SPLASH ===== -->
 
 <div id="splash">
-  <!-- WELCOME -->
+
+  <!-- HOME: pick who you are -->
+
   <div class="splash-step" id="step-welcome">
     <div class="splash-ring" style="width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
     <div class="splash-ring" style="width:360px;height:360px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
     <div class="splash-ball">🏀</div>
     <div class="splash-title">BASKETBALL<br>POWER UP</div>
-    <div class="splash-sub">10 DAY CHALLENGE v3</div>
-    <div class="splash-stl">SELECT PLAYER</div>
-    <div class="player-list" id="player-list"></div>
-    <button class="btn btn-primary" id="btn-goto-new-player" style="width:100%;margin-top:.5rem">➕ Add New Player</button>
-    <div id="sync-status-splash" style="margin-top:1rem;font-size:.72rem;color:var(--mu);font-weight:700;min-height:1.2em"></div>
-  </div>
-
-  <!-- NEW PLAYER -->
-
-  <div class="splash-step" id="step-new-player" style="display:none">
-    <button class="btn-back" id="btn-new-player-back">← Back</button>
-    <div style="font-size:3rem;margin:.5rem 0">🏀</div>
-    <div class="splash-title" style="font-size:2rem;margin-bottom:.8rem">NEW PLAYER</div>
-    <div class="splash-stl">PLAYER NAME</div>
-    <input type="text" class="new-player-input" id="new-player-name" placeholder="Enter player name..." maxlength="20">
-    <div id="new-player-err" style="color:#FF3D5A;font-size:.85rem;font-weight:800;min-height:1.4em;margin:.4rem 0;text-align:center"></div>
-    <button class="btn btn-primary" id="btn-create-player" style="width:100%">CREATE PLAYER →</button>
-  </div>
-
-  <!-- ROLE SELECT -->
-
-  <div class="splash-step" id="step-role" style="display:none">
-    <button class="btn-back" id="btn-role-back">← Back</button>
-    <div style="font-size:3rem;margin:1rem 0">👋</div>
-    <div class="splash-title" style="font-size:2.2rem;margin-bottom:.4rem" id="role-greeting">HEY!</div>
-    <div class="splash-sub">Who are you?</div>
-    <div class="role-grid">
-      <div class="role-card child" id="btn-login-child">
+    <div class="splash-sub">10 DAY CHALLENGE</div>
+    <div class="splash-stl">AI LA BAN?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%;max-width:400px;margin:0 auto">
+      <div class="role-card child" id="btn-login-baolam">
         <div class="role-icon">🏀</div>
-        <div class="role-name">Bao Lam</div>
-        <div class="role-desc">VIEW progress &amp; missions</div>
+        <div class="role-name" style="font-size:1.1rem">Bao Lam</div>
+        <div class="role-desc">Xem tien do<br>va nhiem vu</div>
       </div>
       <div class="role-card father" id="btn-goto-password">
         <div class="role-icon">👨</div>
-        <div class="role-name">Dad (Admin)</div>
-        <div class="role-desc">MANAGE everything</div>
+        <div class="role-name" style="font-size:1.1rem">Bo</div>
+        <div class="role-desc">Quan ly<br>toan bo</div>
       </div>
     </div>
   </div>
 
-  <!-- PASSWORD -->
+  <!-- PASSWORD (Bo only) -->
 
   <div class="splash-step" id="step-password" style="display:none">
-    <button class="btn-back" id="btn-password-back">← Back</button>
-    <div style="font-size:3rem;margin:1rem 0">🔐</div>
-    <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">ADMIN ACCESS</div>
-    <div class="splash-sub" style="margin-bottom:1.5rem">Enter 6-digit password</div>
+    <button class="btn-back" id="btn-password-back">← Quay lai</button>
+    <div style="font-size:3rem;margin:1.5rem 0 .8rem">🔐</div>
+    <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">XAC NHAN BO</div>
+    <div class="splash-sub" style="margin-bottom:1.5rem">Nhap mat khau 6 so</div>
     <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6">
     <div class="pwd-error" id="pwd-error"></div>
-    <button class="btn btn-primary" id="btn-do-login" style="max-width:400px;margin:0 auto">UNLOCK →</button>
+    <button class="btn btn-primary" id="btn-do-login" style="width:100%">MO KHOA →</button>
   </div>
+
 </div>
 
 <!-- ===== GAME SCREEN ===== -->
@@ -870,16 +849,17 @@ function loginAsChild() {
 }
 
 function loginAsFather() {
-  const pwd = (document.getElementById('login-pwd').value || '');
-  const err = document.getElementById('pwd-error');
+  var pwd = (document.getElementById('login-pwd').value || '');
+  var err = document.getElementById('pwd-error');
   if (pwd !== ADMIN_PWD) {
-    if (err) err.textContent = '❌ Wrong password. Try again.';
+    if (err) err.textContent = '❌ Sai mat khau. Thu lai!';
     playSound('error');
     document.getElementById('login-pwd').value = '';
     return;
   }
   if (err) err.textContent = '';
   document.getElementById('login-pwd').value = '';
+  SESSION.currentPlayer = 'Bo';
   SESSION.role = 'father';
   startGame();
   playSound('levelup');
@@ -1673,8 +1653,8 @@ function switchPlayer(name) {
 }
 
 function confirmLogout() {
-  openModal('<div class="modal-title ff">⇄ SWITCH PLAYER?</div>'
-    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">Return to player select screen.</div>'
+  openModal('<div class="modal-title ff">⇄ DOI NGUOI DUNG?</div>'
+    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">Quay ve man hinh chon nguoi dung.</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
     + '<button class="btn btn-secondary" onclick="closeModal()">Stay</button>'
     + '<button class="btn btn-primary" onclick="closeModal();goToSplash()">Switch →</button>'
@@ -1685,11 +1665,10 @@ function goToSplash() {
   SESSION.currentPlayer = null; SESSION.role = null; SESSION.editMode = false;
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('splash').style.display = '';
-  const pwdInp = document.getElementById('login-pwd');
-  const pwdErr = document.getElementById('pwd-error');
+  var pwdInp = document.getElementById('login-pwd');
+  var pwdErr = document.getElementById('pwd-error');
   if (pwdInp) pwdInp.value = '';
   if (pwdErr) pwdErr.textContent = '';
-  renderPlayerList();
   showStep('welcome');
 }
 
@@ -1823,33 +1802,54 @@ PART 21 - INIT
 loadSettings();
 loadPlayers();
 
-// Load from Firebase then refresh the player list
-loadFromFirebase().then(function() { renderPlayerList(); });
+// ── Ensure the 2 fixed players always exist ──────────────
+if (!ALL_PLAYERS[‘Bo’]) {
+ALL_PLAYERS[‘Bo’] = createDefaultPlayer(‘Bo’);
+ALL_PLAYERS[‘Bo’].avatarIdx = 6; // lion
+}
+if (!ALL_PLAYERS[‘Bao Lam’]) {
+ALL_PLAYERS[‘Bao Lam’] = createDefaultPlayer(‘Bao Lam’);
+ALL_PLAYERS[‘Bao Lam’].avatarIdx = 0; // basketball
+}
+savePlayers();
+// ─────────────────────────────────────────────────────────
 
-renderPlayerList();
+// Load from Firebase then do nothing extra (players already seeded)
+loadFromFirebase();
+
 showStep(‘welcome’);
 
-// ── Splash button wiring (no inline onclick needed) ──────────
+// ── Button wiring ─────────────────────────────────────────
 var ge = function(id) { return document.getElementById(id); };
 
-ge(‘btn-goto-new-player’).addEventListener(‘click’, function() { showStep(‘new-player’); });
-ge(‘btn-new-player-back’).addEventListener(‘click’, function() { showStep(‘welcome’); });
-ge(‘btn-create-player’).addEventListener(‘click’, function() { createPlayer(); });
-ge(‘new-player-name’).addEventListener(‘keydown’, function(e) {
-if (e.key === ‘Enter’) { e.preventDefault(); createPlayer(); }
+// Bao Lam: login directly as child, no password
+ge(‘btn-login-baolam’).addEventListener(‘click’, function() {
+SESSION.currentPlayer = ‘Bao Lam’;
+SESSION.role = ‘child’;
+startGame();
+playSound(‘click’);
 });
-ge(‘btn-role-back’).addEventListener(‘click’, function() { showStep(‘welcome’); });
-ge(‘btn-login-child’).addEventListener(‘click’, function() { loginAsChild(); });
-ge(‘btn-goto-password’).addEventListener(‘click’, function() { showStep(‘password’); });
-ge(‘btn-password-back’).addEventListener(‘click’, function() { showStep(‘role’); });
+
+// Bo: show password screen
+ge(‘btn-goto-password’).addEventListener(‘click’, function() {
+showStep(‘password’);
+});
+
+ge(‘btn-password-back’).addEventListener(‘click’, function() {
+showStep(‘welcome’);
+ge(‘login-pwd’).value = ‘’;
+ge(‘pwd-error’).textContent = ‘’;
+});
+
 ge(‘btn-do-login’).addEventListener(‘click’, function() { loginAsFather(); });
+
 ge(‘login-pwd’).addEventListener(‘input’, function() {
 if (this.value.length === 6) loginAsFather();
 });
 ge(‘login-pwd’).addEventListener(‘keydown’, function(e) {
 if (e.key === ‘Enter’) loginAsFather();
 });
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 
 document.addEventListener(‘keydown’, function(e) {
 if (e.key === ‘Escape’) { closeModal(); closeLevelUp(); }
