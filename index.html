@@ -1,383 +1,352 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Basketball Power Up v3</title>
+<title>Basketball Power Up</title>
 <style>
-/* BUG FIX: @import MUST be the very first rule in a CSS block */
 @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nunito:wght@700;800;900&display=swap');
-
-/* ===== DESIGN TOKENS ===== */
 :root {
-–or: #FF6B00; –orl: #FF9A3C; –ye: #FFD600;
-–dk: #0D0D1A; –dkr: #080810; –cd: #161628; –cd2: #1E1E35;
-–bl: #00C2FF; –gr: #00E676; –pu: #B44FFF; –rd: #FF3D5A;
-–tx: #F0F0FF; –mu: #8888AA;
-–radius: 14px; –tr: 0.22s cubic-bezier(.4,0,.2,1);
+  --or:#FF6B00;--orl:#FF9A3C;--ye:#FFD600;
+  --dk:#0D0D1A;--dkr:#080810;--cd:#161628;--cd2:#1E1E35;
+  --bl:#00C2FF;--gr:#00E676;--pu:#B44FFF;--rd:#FF3D5A;
+  --tx:#F0F0FF;--mu:#8888AA;
+  --r:14px;--ease:.22s cubic-bezier(.4,0,.2,1);
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html { scroll-behavior:smooth; }
-body {
-font-family:‘Nunito’,system-ui,-apple-system,sans-serif;
-background:var(–dkr); color:var(–tx); min-height:100vh; overflow-x:hidden;
-background-image:
-radial-gradient(ellipse 90% 50% at 50% -10%, rgba(255,107,0,.12) 0%, transparent 60%),
-url(“data:image/svg+xml,%3Csvg width=‘60’ height=‘60’ viewBox=‘0 0 60 60’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cg fill=’%23ffffff’ fill-opacity=‘0.018’%3E%3Cpath d=‘M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z’/%3E%3C/g%3E%3C/svg%3E”);
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:var(--dkr);color:var(--tx);min-height:100vh;overflow-x:hidden;
+  background-image:radial-gradient(ellipse 90% 50% at 50% -10%,rgba(255,107,0,.12) 0%,transparent 60%);
 }
-.ff { font-family:‘Black Han Sans’,‘Arial Black’,Impact,sans-serif; }
+.ff{font-family:'Black Han Sans',Impact,sans-serif;}
 
-/* ===== SPLASH / LOGIN ===== */
-#splash {
-display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-min-height:100vh; padding:2rem 1.5rem; text-align:center; position:relative;
-overflow-x:hidden; overflow-y:auto;
+/* ── SPLASH ── */
+#splash{
+min-height:100vh;display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+padding:2rem 1.5rem;text-align:center;
+overflow-x:hidden;overflow-y:auto;
 }
-.splash-step { width:100%; max-width:400px; margin:auto; padding-bottom:1rem; }
-.splash-ring { position:absolute; border-radius:50%; border:1px solid rgba(255,107,0,.07); pointer-events:none; }
-.splash-ball { font-size:4rem; animation:bounce 1.3s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(255,107,0,.7)); margin-bottom:.5rem; }
-.splash-title {
+.s-ball{font-size:4rem;animation:bounce 1.3s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(255,107,0,.7));margin-bottom:.6rem;}
+.s-title{
 font-family:‘Black Han Sans’,Impact,sans-serif;
-font-size:clamp(2rem,9vw,4rem); line-height:1; letter-spacing:-1px; margin-bottom:.3rem;
-background:linear-gradient(135deg,var(–or),var(–ye),var(–or)); background-size:200%;
--webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite;
+font-size:clamp(2rem,9vw,3.5rem);line-height:1;letter-spacing:-1px;margin-bottom:.3rem;
+background:linear-gradient(135deg,var(–or),var(–ye),var(–or));background-size:200%;
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;
 }
-.splash-sub { font-size:.85rem; color:var(–mu); letter-spacing:3px; text-transform:uppercase; font-weight:800; margin-bottom:1.2rem; }
-.splash-stl { font-size:.7rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(–orl); margin-bottom:.75rem; }
-.player-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:1rem; }
-.player-btn {
-display:flex; align-items:center; gap:.8rem;
-background:var(–cd); border:1px solid rgba(255,255,255,.07); border-radius:var(–radius);
-padding:.9rem 1rem; cursor:pointer; transition:all var(–tr); text-align:left; width:100%; color:var(–tx);
-}
-.player-btn:hover { border-color:var(–or); background:rgba(255,107,0,.08); }
-.player-btn-av { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
-.player-btn-info { flex:1; }
-.player-btn-name { font-weight:900; font-size:1rem; }
-.player-btn-stats { font-size:.72rem; color:var(–mu); font-weight:700; margin-top:.1rem; }
-.role-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1rem; }
-.role-card {
-background:var(–cd); border:2px solid rgba(255,255,255,.07); border-radius:18px;
-padding:1.5rem 1rem; cursor:pointer; transition:all var(–tr); text-align:center;
-}
-.role-card:hover { transform:translateY(-3px); }
-.role-card.father:hover { border-color:var(–or); background:rgba(255,107,0,.08); }
-.role-card.child:hover { border-color:var(–bl); background:rgba(0,194,255,.08); }
-.role-icon { font-size:2.8rem; margin-bottom:.5rem; }
-.role-name { font-weight:900; font-size:1.05rem; margin-bottom:.25rem; }
-.role-desc { font-size:.72rem; color:var(–mu); font-weight:700; }
-.pwd-input {
-width:100%; padding:1rem; background:var(–cd); border:2px solid rgba(255,255,255,.1);
-border-radius:var(–radius); color:var(–tx); font-size:1.5rem; font-weight:900;
-text-align:center; letter-spacing:.5rem; font-family:monospace; outline:none;
-transition:border-color var(–tr); margin-bottom:1rem;
-}
-.pwd-input:focus { border-color:var(–or); }
-.pwd-error { color:var(–rd); font-size:.85rem; font-weight:700; margin-bottom:.7rem; min-height:1.2em; }
-.new-player-input {
-width:100%; padding:.9rem 1rem; background:var(–cd); border:2px solid rgba(255,255,255,.08);
-border-radius:var(–radius); color:var(–tx); font-size:1rem; font-weight:800;
-font-family:inherit; outline:none; transition:border-color var(–tr); margin-bottom:.75rem;
-}
-.new-player-input:focus { border-color:var(–or); }
+.s-sub{font-size:.8rem;color:var(–mu);letter-spacing:3px;text-transform:uppercase;font-weight:800;margin-bottom:1.8rem;}
+.s-label{font-size:.7rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(–orl);margin-bottom:.8rem;}
 
-/* ===== BUTTONS ===== */
-.btn {
-display:block; width:100%; padding:.95rem 1rem; border:none; border-radius:var(–radius);
-font-family:inherit; font-weight:900; font-size:1rem; cursor:pointer;
-transition:all var(–tr); text-align:center;
+/* 2 big user buttons */
+.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%;max-width:380px;}
+.user-btn{
+background:var(–cd);border:2px solid rgba(255,255,255,.09);border-radius:18px;
+padding:1.6rem 1rem;cursor:pointer;transition:all var(–ease);text-align:center;
+color:var(–tx);font-family:inherit;
 }
-.btn:active { transform:scale(.97); }
-.btn-primary { background:linear-gradient(135deg,var(–or),var(–orl)); color:#fff; box-shadow:0 6px 24px rgba(255,107,0,.35); }
-.btn-primary:hover { box-shadow:0 10px 32px rgba(255,107,0,.55); transform:translateY(-2px); }
-.btn-secondary { background:var(–cd2); color:var(–tx); border:1px solid rgba(255,255,255,.08); }
-.btn-secondary:hover { background:var(–cd); }
-.btn-success { background:linear-gradient(135deg,var(–gr),#00BFA5); color:#000; }
-.btn-success:hover { box-shadow:0 8px 24px rgba(0,230,118,.3); transform:translateY(-2px); }
-.btn-danger { background:linear-gradient(135deg,var(–rd),#c62a47); color:#fff; }
-.btn-sm { padding:.55rem .9rem; font-size:.8rem; width:auto; display:inline-flex; align-items:center; gap:.3rem; }
-.btn-ghost { background:transparent; color:var(–mu); border:1px solid rgba(255,255,255,.08); }
-.btn-ghost:hover { color:var(–tx); border-color:rgba(255,255,255,.2); }
-.btn-back { display:inline-flex; align-items:center; gap:.4rem; background:none; border:none; color:var(–mu); font-size:.85rem; font-weight:800; cursor:pointer; padding:.5rem 0; transition:color var(–tr); }
-.btn-back:hover { color:var(–tx); }
+.user-btn:hover,.user-btn:active{transform:translateY(-3px);}
+.user-btn.child:hover,.user-btn.child:active{border-color:var(–bl);background:rgba(0,194,255,.1);}
+.user-btn.dad:hover,.user-btn.dad:active{border-color:var(–or);background:rgba(255,107,0,.1);}
+.user-btn-icon{font-size:2.8rem;margin-bottom:.5rem;}
+.user-btn-name{font-weight:900;font-size:1.05rem;margin-bottom:.25rem;}
+.user-btn-desc{font-size:.7rem;color:var(–mu);font-weight:700;line-height:1.4;}
 
-/* ===== TOPBAR ===== */
-#topbar {
-position:sticky; top:0; z-index:100;
-background:rgba(8,8,16,.96); backdrop-filter:blur(12px);
+/* password screen */
+#screen-pwd{display:none;width:100%;max-width:380px;}
+.pwd-input{
+width:100%;padding:1rem;background:var(–cd);border:2px solid rgba(255,255,255,.1);
+border-radius:var(–r);color:var(–tx);font-size:1.5rem;font-weight:900;
+text-align:center;letter-spacing:.5rem;font-family:monospace;outline:none;
+transition:border-color var(–ease);margin-bottom:1rem;
+}
+.pwd-input:focus{border-color:var(–or);}
+.pwd-err{color:var(–rd);font-size:.85rem;font-weight:800;min-height:1.2em;margin-bottom:.6rem;text-align:center;}
+.btn-back-link{
+background:none;border:none;color:var(–mu);font-size:.85rem;font-weight:800;
+cursor:pointer;padding:.5rem 0;margin-bottom:1.2rem;display:block;font-family:inherit;
+}
+.btn-back-link:hover{color:var(–tx);}
+
+/* ── COMMON BUTTONS ── */
+.btn{
+display:block;width:100%;padding:.9rem 1rem;border:none;border-radius:var(–r);
+font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;
+transition:all var(–ease);text-align:center;
+}
+.btn:active{transform:scale(.97);}
+.btn-pr{background:linear-gradient(135deg,var(–or),var(–orl));color:#fff;box-shadow:0 6px 24px rgba(255,107,0,.35);}
+.btn-pr:hover{box-shadow:0 10px 32px rgba(255,107,0,.55);transform:translateY(-2px);}
+.btn-sc{background:var(–cd2);color:var(–tx);border:1px solid rgba(255,255,255,.08);}
+.btn-sc:hover{background:var(–cd);}
+.btn-ok{background:linear-gradient(135deg,var(–gr),#00BFA5);color:#000;}
+.btn-ok:hover{box-shadow:0 8px 24px rgba(0,230,118,.3);transform:translateY(-2px);}
+.btn-danger{background:linear-gradient(135deg,var(–rd),#c62a47);color:#fff;}
+.btn-sm{padding:.5rem .85rem;font-size:.78rem;width:auto;display:inline-flex;align-items:center;gap:.3rem;}
+.btn-ghost{background:transparent;color:var(–mu);border:1px solid rgba(255,255,255,.08);}
+.btn-ghost:hover{color:var(–tx);}
+
+/* ── TOPBAR ── */
+#topbar{
+position:sticky;top:0;z-index:100;
+background:rgba(8,8,16,.96);backdrop-filter:blur(12px);
 border-bottom:1px solid rgba(255,107,0,.18);
-padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
+padding:.6rem .9rem;display:flex;align-items:center;gap:.55rem;
 }
-.tb-player { display:flex; align-items:center; gap:.55rem; flex:1; min-width:0; }
-.tb-av { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
-.tb-info { min-width:0; }
-.tb-name { font-weight:900; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tb-lv { font-size:.65rem; color:var(–orl); font-weight:800; }
-.tb-right { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
-.coin-pill { display:flex; align-items:center; gap:.3rem; background:var(–cd); border-radius:20px; padding:.28rem .6rem; font-weight:900; font-size:.85rem; border:1px solid rgba(255,214,0,.15); }
-.exp-mini { width:72px; }
-.exp-mini-lbl { font-size:.55rem; color:var(–mu); font-weight:800; text-transform:uppercase; }
-.exp-mini-bar { height:6px; background:var(–cd2); border-radius:3px; overflow:hidden; margin-top:2px; }
-.exp-mini-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:3px; transition:width .7s ease; }
-.tb-btns { display:flex; gap:.3rem; }
-.icon-btn { width:34px; height:34px; border-radius:10px; background:var(–cd); border:1px solid rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; transition:all var(–tr); color:var(–mu); }
-.icon-btn:hover { background:var(–cd2); color:var(–tx); }
-.role-badge { display:inline-flex; align-items:center; gap:.25rem; padding:.2rem .55rem; border-radius:20px; font-size:.6rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; flex-shrink:0; }
-.role-badge.father { background:rgba(255,107,0,.15); color:var(–orl); border:1px solid rgba(255,107,0,.25); }
-.role-badge.child { background:rgba(0,194,255,.12); color:var(–bl); border:1px solid rgba(0,194,255,.2); }
-/* Sync status dot */
-#sync-dot { width:8px; height:8px; border-radius:50%; background:var(–mu); flex-shrink:0; transition:background .4s; }
-#sync-dot.syncing { background:var(–ye); animation:pulse 1s ease-in-out infinite; }
-#sync-dot.synced { background:var(–gr); }
-#sync-dot.error { background:var(–rd); }
+.tb-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;}
+.tb-info{flex:1;min-width:0;}
+.tb-name{font-weight:900;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-lv{font-size:.62rem;color:var(–orl);font-weight:800;}
+.tb-right{display:flex;align-items:center;gap:.45rem;flex-shrink:0;}
+.coin-pill{display:flex;align-items:center;gap:.28rem;background:var(–cd);border-radius:20px;padding:.25rem .55rem;font-weight:900;font-size:.82rem;border:1px solid rgba(255,214,0,.15);}
+.exp-mini{width:68px;}
+.exp-mini-lbl{font-size:.52rem;color:var(–mu);font-weight:800;text-transform:uppercase;}
+.exp-mini-bar{height:5px;background:var(–cd2);border-radius:3px;overflow:hidden;margin-top:2px;}
+.exp-mini-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:3px;transition:width .7s ease;}
+.role-badge{display:inline-flex;align-items:center;gap:.2rem;padding:.18rem .5rem;border-radius:20px;font-size:.58rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;}
+.role-badge.father{background:rgba(255,107,0,.15);color:var(–orl);border:1px solid rgba(255,107,0,.25);}
+.role-badge.child{background:rgba(0,194,255,.12);color:var(–bl);border:1px solid rgba(0,194,255,.2);}
+.icon-btn{width:32px;height:32px;border-radius:9px;background:var(–cd);border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:.95rem;cursor:pointer;transition:all var(–ease);color:var(–mu);}
+.icon-btn:hover{background:var(–cd2);color:var(–tx);}
 
-/* ===== NAV ===== */
-#nav-bar { display:flex; overflow-x:auto; gap:.35rem; padding:.65rem .9rem; background:var(–dk); border-bottom:1px solid rgba(255,255,255,.05); scrollbar-width:none; flex-shrink:0; }
-#nav-bar::-webkit-scrollbar { display:none; }
-.nav-tab { flex-shrink:0; padding:.45rem .8rem; border-radius:20px; font-weight:900; font-size:.75rem; cursor:pointer; border:none; background:var(–cd2); color:var(–mu); transition:all var(–tr); white-space:nowrap; }
-.nav-tab.active { background:var(–or); color:#fff; }
-.nav-tab.done { background:rgba(0,230,118,.12); color:var(–gr); }
-.nav-tab.done.active { background:var(–gr); color:#000; }
+/* ── NAV ── */
+#nav-bar{display:flex;overflow-x:auto;gap:.32rem;padding:.6rem .9rem;background:var(–dk);border-bottom:1px solid rgba(255,255,255,.05);scrollbar-width:none;}
+#nav-bar::-webkit-scrollbar{display:none;}
+.nav-tab{flex-shrink:0;padding:.4rem .75rem;border-radius:20px;font-weight:900;font-size:.73rem;cursor:pointer;border:none;background:var(–cd2);color:var(–mu);transition:all var(–ease);white-space:nowrap;}
+.nav-tab.active{background:var(–or);color:#fff;}
+.nav-tab.done{background:rgba(0,230,118,.12);color:var(–gr);}
+.nav-tab.done.active{background:var(–gr);color:#000;}
 
-/* ===== CONTENT ===== */
-#content { padding:.9rem; padding-bottom:5rem; }
-.section-title { font-size:.65rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; color:var(–orl); margin-bottom:.7rem; display:flex; align-items:center; gap:.5rem; }
-.section-title::after { content:’’; flex:1; height:1px; background:rgba(255,255,255,.05); }
-.card { background:var(–cd); border-radius:18px; padding:1.25rem; border:1px solid rgba(255,255,255,.05); margin-bottom:.8rem; }
-.card-glow { border-color:rgba(255,107,0,.2); background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(180,79,255,.04)); }
+/* ── CONTENT ── */
+#content{padding:.9rem;padding-bottom:5rem;}
+.sec{font-size:.63rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(–orl);margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem;}
+.sec::after{content:’’;flex:1;height:1px;background:rgba(255,255,255,.05);}
+.card{background:var(–cd);border-radius:18px;padding:1.2rem;border:1px solid rgba(255,255,255,.05);margin-bottom:.8rem;}
+.card-glow{border-color:rgba(255,107,0,.2);background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(180,79,255,.04));}
 
-/* ===== DASHBOARD ===== */
-.hero-card { background:linear-gradient(135deg,rgba(255,107,0,.14),rgba(180,79,255,.08)); border:1px solid rgba(255,107,0,.22); border-radius:20px; padding:1.4rem; margin-bottom:.9rem; text-align:center; position:relative; overflow:hidden; }
-.hero-card::before { content:‘🏀’; position:absolute; font-size:8rem; opacity:.05; right:-1rem; top:-1rem; pointer-events:none; }
-.hero-badge { display:inline-block; background:linear-gradient(135deg,var(–or),var(–ye)); color:#000; font-weight:900; font-size:.7rem; padding:.22rem .7rem; border-radius:20px; letter-spacing:2px; text-transform:uppercase; margin-bottom:.5rem; }
-.hero-name { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2rem; margin-bottom:.2rem; }
-.hero-subtitle { color:var(–orl); font-size:.82rem; font-weight:800; margin-bottom:1rem; }
-.exp-bar-lbl { display:flex; justify-content:space-between; font-size:.72rem; font-weight:800; color:var(–mu); margin-bottom:.35rem; }
-.exp-bar { height:14px; background:rgba(255,255,255,.07); border-radius:7px; overflow:hidden; position:relative; }
-.exp-bar-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:7px; transition:width .9s cubic-bezier(.4,0,.2,1); position:relative; }
-.exp-bar-fill::after { content:’’; position:absolute; right:0; top:0; bottom:0; width:6px; background:rgba(255,255,255,.5); border-radius:3px; animation:pulse 1.5s ease-in-out infinite; }
-.skills-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.55rem; margin-bottom:.9rem; }
-.skill-card { background:var(–cd2); border-radius:14px; padding:.85rem .6rem; text-align:center; border:1px solid rgba(255,255,255,.04); transition:transform var(–tr); }
-.skill-card:hover { transform:translateY(-2px); }
-.skill-icon { font-size:1.7rem; margin-bottom:.25rem; }
-.skill-nm { font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.35rem; }
-.skill-num { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.5rem; line-height:1; }
-.skill-bar-wrap { height:5px; background:rgba(255,255,255,.07); border-radius:3px; margin-top:.4rem; overflow:hidden; }
-.skill-bar { height:100%; border-radius:3px; transition:width .7s ease; }
-.stats-trio { display:flex; justify-content:space-around; text-align:center; gap:.5rem; margin-bottom:1rem; }
-.stat-big { flex:1; }
-.stat-big-num { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2.3rem; line-height:1; }
-.stat-big-lbl { font-size:.65rem; color:var(–mu); font-weight:800; text-transform:uppercase; margin-top:.2rem; }
-.progress-bar-wrap { margin-top:1rem; }
-.progress-bar { height:10px; background:rgba(255,255,255,.06); border-radius:5px; overflow:hidden; }
-.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(–or),var(–ye)); border-radius:5px; transition:width .8s ease; }
+/* ── DASHBOARD ── */
+.hero{background:linear-gradient(135deg,rgba(255,107,0,.14),rgba(180,79,255,.08));border:1px solid rgba(255,107,0,.22);border-radius:20px;padding:1.3rem;margin-bottom:.9rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:‘🏀’;position:absolute;font-size:7rem;opacity:.05;right:-1rem;top:-1rem;pointer-events:none;}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(–or),var(–ye));color:#000;font-weight:900;font-size:.68rem;padding:.2rem .65rem;border-radius:20px;letter-spacing:2px;text-transform:uppercase;margin-bottom:.45rem;}
+.hero-name{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.9rem;margin-bottom:.2rem;}
+.hero-sub{color:var(–orl);font-size:.8rem;font-weight:800;margin-bottom:.9rem;}
+.exp-lbl{display:flex;justify-content:space-between;font-size:.7rem;font-weight:800;color:var(–mu);margin-bottom:.32rem;}
+.exp-bar{height:13px;background:rgba(255,255,255,.07);border-radius:7px;overflow:hidden;}
+.exp-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:7px;transition:width .9s ease;}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.52rem;margin-bottom:.9rem;}
+.skill-c{background:var(–cd2);border-radius:13px;padding:.8rem .55rem;text-align:center;border:1px solid rgba(255,255,255,.04);}
+.skill-icon{font-size:1.65rem;margin-bottom:.22rem;}
+.skill-nm{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.3rem;}
+.skill-num{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.4rem;line-height:1;}
+.skill-bar{height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:.35rem;overflow:hidden;}
+.skill-fill{height:100%;border-radius:2px;transition:width .7s ease;}
+.stats3{display:flex;justify-content:space-around;text-align:center;gap:.5rem;margin-bottom:1rem;}
+.stat-big-num{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:2.2rem;line-height:1;}
+.stat-big-lbl{font-size:.62rem;color:var(–mu);font-weight:800;text-transform:uppercase;margin-top:.18rem;}
+.prog-bar{height:9px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–ye));border-radius:5px;transition:width .8s ease;}
 
-/* ===== DAY VIEW ===== */
-.day-header { border-radius:18px; padding:1.2rem 1.4rem; margin-bottom:.9rem; position:relative; overflow:hidden; }
-.day-header::after { content:attr(data-day); position:absolute; right:.8rem; top:50%; transform:translateY(-50%); font-family:‘Black Han Sans’,Impact,sans-serif; font-size:5rem; color:rgba(255,255,255,.08); pointer-events:none; }
-.day-label { font-size:.65rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; opacity:.8; margin-bottom:.2rem; }
-.day-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.65rem; line-height:1.1; }
-.day-sub { font-size:.82rem; opacity:.75; margin-top:.2rem; }
-.mission-card { background:var(–cd); border-radius:14px; padding:.95rem; margin-bottom:.5rem; display:flex; align-items:center; gap:.8rem; border:1px solid rgba(255,255,255,.05); transition:all var(–tr); cursor:pointer; }
-.mission-card.done { background:rgba(0,230,118,.06); border-color:rgba(0,230,118,.2); }
-.mission-card:hover:not(.done) { background:rgba(255,255,255,.03); }
-.mission-check { width:28px; height:28px; border-radius:8px; border:2px solid rgba(255,255,255,.14); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:all var(–tr); }
-.mission-card.done .mission-check { background:var(–gr); border-color:var(–gr); animation:checkPop .3s cubic-bezier(.4,0,.2,1); }
-.mission-icon { font-size:1.4rem; }
-.mission-info { flex:1; }
-.mission-name { font-weight:900; font-size:.92rem; }
-.mission-desc { font-size:.73rem; color:var(–mu); margin-top:.12rem; }
-.mission-reward { background:rgba(255,214,0,.1); border:1px solid rgba(255,214,0,.2); border-radius:8px; padding:.18rem .5rem; font-size:.68rem; font-weight:900; color:var(–ye); white-space:nowrap; flex-shrink:0; }
-.stats-input-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.55rem; margin-bottom:.5rem; }
-.stat-group label { display:block; font-size:.62rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.28rem; }
-.stat-inp { width:100%; padding:.6rem .4rem; background:var(–cd2); border:1px solid rgba(255,255,255,.07); border-radius:10px; color:var(–tx); font-family:inherit; font-weight:900; font-size:1rem; text-align:center; outline:none; transition:border-color var(–tr); }
-.stat-inp:focus { border-color:var(–or); box-shadow:0 0 0 3px rgba(255,107,0,.12); }
-.stat-inp:disabled { opacity:.45; cursor:not-allowed; }
-.stat-unit { font-size:.6rem; color:var(–mu); text-align:center; margin-top:.18rem; }
-.stat-delta { font-size:.65rem; font-weight:800; text-align:center; margin-top:.15rem; min-height:1em; }
-.dlt-good { color:var(–gr); } .dlt-bad { color:var(–rd); } .dlt-neu { color:var(–mu); }
-.pvp-card { background:linear-gradient(135deg,rgba(180,79,255,.12),rgba(0,194,255,.08)); border:1px solid rgba(180,79,255,.22); border-radius:16px; padding:1.1rem; margin-bottom:.55rem; }
-.pvp-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.05rem; margin-bottom:.5rem; }
-.pvp-desc { font-size:.82rem; color:var(–mu); margin-bottom:.9rem; }
-.pvp-grid { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
-.pvp-btn { padding:.7rem; border:2px solid transparent; border-radius:12px; font-weight:900; font-size:.9rem; cursor:pointer; transition:all var(–tr); font-family:inherit; }
-.pvp-win { background:var(–gr); color:#000; }
-.pvp-lose { background:var(–cd2); color:var(–mu); border-color:rgba(255,255,255,.08); }
-.pvp-win.sel { box-shadow:0 0 0 3px rgba(0,230,118,.4); transform:scale(1.02); }
-.pvp-lose.sel { color:var(–tx); border-color:rgba(255,255,255,.25); }
-.pvp-btn:disabled { opacity:.4; cursor:not-allowed; }
-.btn-complete { width:100%; padding:.95rem; border:none; border-radius:14px; font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.25rem; cursor:pointer; transition:all var(–tr); letter-spacing:1px; margin-top:.3rem; background:linear-gradient(135deg,var(–or),var(–orl)); color:#fff; box-shadow:0 6px 20px rgba(255,107,0,.32); }
-.btn-complete:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,107,0,.5); }
-.btn-complete:disabled { opacity:.45; cursor:not-allowed; transform:none; }
-.btn-complete.completed { background:linear-gradient(135deg,var(–gr),#00BFA5); box-shadow:0 6px 20px rgba(0,230,118,.28); cursor:default; }
-.edit-bar { display:flex; align-items:center; justify-content:space-between; background:rgba(255,107,0,.07); border:1px solid rgba(255,107,0,.18); border-radius:12px; padding:.6rem .9rem; margin-bottom:.7rem; }
-.edit-bar-lbl { font-size:.78rem; font-weight:800; color:var(–orl); }
-.locked-tip { font-size:.72rem; color:var(–mu); font-weight:700; text-align:center; margin-top:.3rem; }
+/* ── DAY VIEW ── */
+.day-hd{border-radius:18px;padding:1.1rem 1.3rem;margin-bottom:.9rem;position:relative;overflow:hidden;}
+.day-hd::after{content:attr(data-day);position:absolute;right:.7rem;top:50%;transform:translateY(-50%);font-family:‘Black Han Sans’,Impact,sans-serif;font-size:4.5rem;color:rgba(255,255,255,.08);pointer-events:none;}
+.day-label{font-size:.62rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;opacity:.8;margin-bottom:.18rem;}
+.day-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.55rem;line-height:1.1;}
+.day-sub{font-size:.8rem;opacity:.75;margin-top:.18rem;}
+.mission{background:var(–cd);border-radius:13px;padding:.88rem;margin-bottom:.48rem;display:flex;align-items:center;gap:.75rem;border:1px solid rgba(255,255,255,.05);transition:all var(–ease);cursor:pointer;}
+.mission.done{background:rgba(0,230,118,.06);border-color:rgba(0,230,118,.2);}
+.mission:hover:not(.done){background:rgba(255,255,255,.03);}
+.m-check{width:26px;height:26px;border-radius:7px;border:2px solid rgba(255,255,255,.14);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:all var(–ease);}
+.mission.done .m-check{background:var(–gr);border-color:var(–gr);}
+.m-icon{font-size:1.35rem;}
+.m-info{flex:1;}
+.m-name{font-weight:900;font-size:.9rem;}
+.m-desc{font-size:.7rem;color:var(–mu);margin-top:.1rem;}
+.m-reward{background:rgba(255,214,0,.1);border:1px solid rgba(255,214,0,.2);border-radius:7px;padding:.15rem .45rem;font-size:.65rem;font-weight:900;color:var(–ye);white-space:nowrap;flex-shrink:0;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.4rem;}
+.stat-g label{display:block;font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.25rem;}
+.stat-inp{width:100%;padding:.55rem .35rem;background:var(–cd2);border:1px solid rgba(255,255,255,.07);border-radius:9px;color:var(–tx);font-family:inherit;font-weight:900;font-size:.95rem;text-align:center;outline:none;transition:border-color var(–ease);}
+.stat-inp:focus{border-color:var(–or);}
+.stat-inp:disabled{opacity:.4;cursor:not-allowed;}
+.stat-unit{font-size:.58rem;color:var(–mu);text-align:center;margin-top:.15rem;}
+.stat-delta{font-size:.62rem;font-weight:800;text-align:center;margin-top:.12rem;min-height:.9em;}
+.dg{color:var(–gr);}.db{color:var(–rd);}.dn{color:var(–mu);}
+.pvp-c{background:linear-gradient(135deg,rgba(180,79,255,.12),rgba(0,194,255,.08));border:1px solid rgba(180,79,255,.22);border-radius:15px;padding:1rem;margin-bottom:.5rem;}
+.pvp-t{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1rem;margin-bottom:.45rem;}
+.pvp-d{font-size:.8rem;color:var(–mu);margin-bottom:.85rem;}
+.pvp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+.pvp-btn{padding:.65rem;border:2px solid transparent;border-radius:11px;font-weight:900;font-size:.88rem;cursor:pointer;transition:all var(–ease);font-family:inherit;}
+.pvp-win{background:var(–gr);color:#000;}
+.pvp-lose{background:var(–cd2);color:var(–mu);border-color:rgba(255,255,255,.08);}
+.pvp-win.sel{box-shadow:0 0 0 3px rgba(0,230,118,.4);transform:scale(1.02);}
+.pvp-lose.sel{color:var(–tx);border-color:rgba(255,255,255,.25);}
+.pvp-btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-complete{width:100%;padding:.9rem;border:none;border-radius:13px;font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.2rem;cursor:pointer;transition:all var(–ease);margin-top:.28rem;background:linear-gradient(135deg,var(–or),var(–orl));color:#fff;box-shadow:0 6px 20px rgba(255,107,0,.32);}
+.btn-complete:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,107,0,.5);}
+.btn-complete:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.btn-complete.done{background:linear-gradient(135deg,var(–gr),#00BFA5);box-shadow:0 6px 20px rgba(0,230,118,.28);cursor:default;}
+.edit-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.18);border-radius:11px;padding:.55rem .85rem;margin-bottom:.65rem;}
+.edit-lbl{font-size:.75rem;font-weight:800;color:var(–orl);}
+.locked-tip{font-size:.7rem;color:var(–mu);font-weight:700;text-align:center;margin-top:.28rem;}
 
-/* ===== PROGRESS / CHART ===== */
-.chart-card { background:var(–cd); border-radius:16px; padding:1rem; margin-bottom:.8rem; border:1px solid rgba(255,255,255,.05); }
-.chart-title { font-weight:900; font-size:.82rem; margin-bottom:.65rem; }
-.mini-chart { height:90px; display:flex; align-items:flex-end; gap:3px; padding:0 .3rem; }
-.bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
-.bar-val { font-size:.55rem; font-weight:900; color:var(–tx); white-space:nowrap; }
-.bar-body { width:100%; border-radius:4px 4px 0 0; min-height:4px; transition:height .6s ease; }
-.bar-lbl { font-size:.58rem; color:var(–mu); font-weight:800; }
-.day-log-row { display:flex; align-items:center; gap:.75rem; background:var(–cd2); border-radius:12px; padding:.65rem .9rem; margin-bottom:.4rem; }
-.day-log-num { width:30px; height:30px; border-radius:8px; background:var(–cd); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.85rem; flex-shrink:0; }
-.day-log-num.done { background:var(–gr); color:#000; }
-.day-log-stats { flex:1; font-size:.75rem; color:var(–mu); font-weight:700; }
-.day-log-title { font-weight:900; font-size:.85rem; margin-bottom:.1rem; }
+/* ── CHARTS ── */
+.chart-c{background:var(–cd);border-radius:15px;padding:.9rem;margin-bottom:.75rem;border:1px solid rgba(255,255,255,.05);}
+.chart-t{font-weight:900;font-size:.8rem;margin-bottom:.6rem;}
+.mini-chart{height:85px;display:flex;align-items:flex-end;gap:3px;padding:0 .25rem;}
+.bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bv{font-size:.52rem;font-weight:900;white-space:nowrap;}
+.bb{width:100%;border-radius:3px 3px 0 0;min-height:4px;}
+.bl{font-size:.55rem;color:var(–mu);font-weight:800;}
+.log-row{display:flex;align-items:center;gap:.7rem;background:var(–cd2);border-radius:11px;padding:.6rem .85rem;margin-bottom:.38rem;}
+.log-num{width:28px;height:28px;border-radius:7px;background:var(–cd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.82rem;flex-shrink:0;}
+.log-num.done{background:var(–gr);color:#000;}
+.log-title{font-weight:900;font-size:.83rem;margin-bottom:.08rem;}
+.log-stats{font-size:.72rem;color:var(–mu);font-weight:700;}
 
-/* ===== BADGES ===== */
-.badges-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
-.badge-card { background:var(–cd2); border-radius:14px; padding:.85rem .6rem; text-align:center; border:1px solid rgba(255,255,255,.04); transition:all var(–tr); }
-.badge-card.unlocked { background:rgba(255,214,0,.07); border-color:rgba(255,214,0,.28); }
-.badge-ico { font-size:2rem; margin-bottom:.28rem; filter:grayscale(1); opacity:.28; transition:all var(–tr); }
-.badge-card.unlocked .badge-ico { filter:grayscale(0); opacity:1; }
-.badge-nm { font-size:.62rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:var(–mu); }
-.badge-card.unlocked .badge-nm { color:var(–ye); }
-.badge-ds { font-size:.58rem; color:var(–mu); margin-top:.18rem; }
+/* ── BADGES ── */
+.badges-g{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;}
+.badge-c{background:var(–cd2);border-radius:13px;padding:.8rem .55rem;text-align:center;border:1px solid rgba(255,255,255,.04);transition:all var(–ease);}
+.badge-c.unlocked{background:rgba(255,214,0,.07);border-color:rgba(255,214,0,.28);}
+.badge-ico{font-size:1.9rem;margin-bottom:.25rem;filter:grayscale(1);opacity:.28;transition:all var(–ease);}
+.badge-c.unlocked .badge-ico{filter:grayscale(0);opacity:1;}
+.badge-nm{font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(–mu);}
+.badge-c.unlocked .badge-nm{color:var(–ye);}
+.badge-ds{font-size:.56rem;color:var(–mu);margin-top:.15rem;}
 
-/* ===== REWARDS ===== */
-.reward-card { background:var(–cd); border-radius:16px; padding:1.1rem; margin-bottom:.65rem; border:1px solid rgba(255,255,255,.05); }
-.reward-card.redeemed { opacity:.55; }
-.reward-card.big { border-color:rgba(255,214,0,.25); background:rgba(255,214,0,.04); }
-.reward-card.small { border-color:rgba(0,194,255,.2); background:rgba(0,194,255,.03); }
-.reward-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
-.reward-day { font-size:.65rem; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(–mu); }
-.reward-type-badge { padding:.2rem .6rem; border-radius:20px; font-size:.65rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; }
-.reward-type-badge.big { background:rgba(255,214,0,.15); color:var(–ye); }
-.reward-type-badge.small { background:rgba(0,194,255,.12); color:var(–bl); }
-.reward-items { display:flex; gap:.55rem; margin-bottom:.75rem; flex-wrap:wrap; }
-.reward-item { display:flex; align-items:center; gap:.35rem; background:var(–cd2); border-radius:10px; padding:.4rem .7rem; font-weight:800; font-size:.85rem; }
-.reward-status { font-size:.75rem; color:var(–gr); font-weight:800; }
+/* ── REWARDS ── */
+.rw-c{background:var(–cd);border-radius:15px;padding:1rem;margin-bottom:.6rem;border:1px solid rgba(255,255,255,.05);}
+.rw-c.redeemed{opacity:.55;}
+.rw-c.big{border-color:rgba(255,214,0,.25);background:rgba(255,214,0,.04);}
+.rw-c.small{border-color:rgba(0,194,255,.2);background:rgba(0,194,255,.03);}
+.rw-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem;}
+.rw-day{font-size:.62rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(–mu);}
+.rw-badge{padding:.18rem .55rem;border-radius:20px;font-size:.62rem;font-weight:900;text-transform:uppercase;}
+.rw-badge.big{background:rgba(255,214,0,.15);color:var(–ye);}
+.rw-badge.small{background:rgba(0,194,255,.12);color:var(–bl);}
+.rw-items{display:flex;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap;}
+.rw-item{display:flex;align-items:center;gap:.3rem;background:var(–cd2);border-radius:9px;padding:.38rem .65rem;font-weight:800;font-size:.83rem;}
+.rw-status{font-size:.72rem;color:var(–gr);font-weight:800;}
 
-/* ===== ADMIN ===== */
-.admin-section { margin-bottom:1.2rem; }
-.player-manage-row { display:flex; align-items:center; gap:.75rem; background:var(–cd); border-radius:14px; padding:.8rem 1rem; margin-bottom:.45rem; border:1px solid rgba(255,255,255,.05); }
-.player-manage-name { flex:1; font-weight:900; }
-.player-manage-stats { font-size:.72rem; color:var(–mu); font-weight:700; }
-.sync-textarea { width:100%; min-height:120px; background:var(–cd2); border:1px solid rgba(255,255,255,.08); border-radius:12px; color:var(–tx); font-family:monospace; font-size:.75rem; padding:.75rem; resize:vertical; outline:none; line-height:1.5; }
-.sync-textarea:focus { border-color:var(–or); }
+/* ── ADMIN ── */
+.admin-sec{margin-bottom:1.1rem;}
+.pm-row{display:flex;align-items:center;gap:.7rem;background:var(–cd);border-radius:13px;padding:.75rem .95rem;margin-bottom:.42rem;border:1px solid rgba(255,255,255,.05);}
+.pm-name{flex:1;font-weight:900;}
+.pm-stats{font-size:.7rem;color:var(–mu);font-weight:700;}
+.sync-ta{width:100%;min-height:110px;background:var(–cd2);border:1px solid rgba(255,255,255,.08);border-radius:11px;color:var(–tx);font-family:monospace;font-size:.73rem;padding:.7rem;resize:vertical;outline:none;line-height:1.5;}
+.sync-ta:focus{border-color:var(–or);}
 
-/* ===== FINAL BOSS ===== */
-.boss-wrap { text-align:center; padding:1.5rem 0; }
-.boss-trophy { font-size:5rem; animation:bounce 1.5s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(255,214,0,.5)); }
-.boss-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:clamp(1.8rem,7vw,3rem); margin:.6rem 0 .3rem; background:linear-gradient(135deg,var(–or),var(–ye)); background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite; }
-.boss-sub { color:var(–mu); font-size:.95rem; font-weight:800; margin-bottom:1.5rem; }
-.compare-row { display:grid; grid-template-columns:1fr auto 1fr; gap:.4rem; margin-bottom:.75rem; align-items:center; }
-.compare-cell { background:var(–cd); border-radius:14px; padding:.9rem; text-align:center; }
-.compare-cell.win { background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); }
-.compare-cell.lose { background:rgba(255,61,90,.06); border:1px solid rgba(255,61,90,.15); }
-.compare-lbl { font-size:.6rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.3rem; }
-.compare-val { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.4rem; }
-.compare-vs { font-weight:900; color:var(–orl); font-size:.82rem; text-align:center; }
-.boss-quote { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.2rem; color:var(–ye); margin:1.5rem 0; line-height:1.4; }
-.final-stat-row { display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
-.final-stat-row:last-child { border-bottom:none; }
+/* ── BOSS ── */
+.boss-wrap{text-align:center;padding:1.5rem 0;}
+.boss-trophy{font-size:5rem;animation:bounce 1.5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(255,214,0,.5));}
+.boss-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:clamp(1.7rem,6.5vw,2.8rem);margin:.5rem 0 .28rem;background:linear-gradient(135deg,var(–or),var(–ye));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;}
+.boss-sub{color:var(–mu);font-size:.92rem;font-weight:800;margin-bottom:1.4rem;}
+.cmp-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.38rem;margin-bottom:.7rem;align-items:center;}
+.cmp-cell{background:var(–cd);border-radius:13px;padding:.85rem;text-align:center;}
+.cmp-cell.win{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);}
+.cmp-cell.lose{background:rgba(255,61,90,.06);border:1px solid rgba(255,61,90,.15);}
+.cmp-lbl{font-size:.58rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(–mu);margin-bottom:.28rem;}
+.cmp-val{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.35rem;}
+.cmp-vs{font-weight:900;color:var(–orl);font-size:.8rem;text-align:center;}
+.boss-quote{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.15rem;color:var(–ye);margin:1.4rem 0;line-height:1.4;}
+.fsr{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.fsr:last-child{border-bottom:none;}
 
-/* ===== MODAL ===== */
-#modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.82); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
-#modal-bg.open { opacity:1; pointer-events:all; }
-#modal-box { background:var(–cd); border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:85vh; overflow-y:auto; padding:1.5rem 1.2rem; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
-#modal-bg.open #modal-box { transform:translateY(0); }
-.modal-handle { width:40px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 1.2rem; }
-.modal-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:1.4rem; margin-bottom:1rem; text-align:center; }
+/* ── MODAL ── */
+#modal-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+#modal-bg.open{opacity:1;pointer-events:all;}
+#modal-box{background:var(–cd);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:1.4rem 1.1rem;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+#modal-bg.open #modal-box{transform:translateY(0);}
+.m-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 1.1rem;}
+.m-title{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:1.35rem;margin-bottom:1rem;text-align:center;}
 
-/* ===== OVERLAYS ===== */
-#levelup-overlay { position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; }
-#levelup-overlay.show { opacity:1; pointer-events:all; }
-.levelup-card { background:var(–cd); border-radius:24px; padding:2.5rem 2rem; text-align:center; max-width:320px; width:90%; border:2px solid var(–or); box-shadow:0 0 80px rgba(255,107,0,.25),0 0 120px rgba(255,107,0,.1); transform:scale(0); transition:transform .4s cubic-bezier(.4,0,.2,1); }
-#levelup-overlay.show .levelup-card { transform:scale(1); }
-.lu-emoji { font-size:4rem; display:block; margin-bottom:.8rem; animation:bounce 1s ease-in-out infinite; }
-.lu-title { font-family:‘Black Han Sans’,Impact,sans-serif; font-size:2.2rem; background:linear-gradient(135deg,var(–or),var(–ye)); background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite; margin-bottom:.4rem; }
-.lu-msg { color:var(–mu); font-size:.92rem; font-weight:700; margin-bottom:1.5rem; }
-#achievement-toast { position:fixed; bottom:5.5rem; left:50%; transform:translateX(-50%) translateY(20px); background:linear-gradient(135deg,rgba(255,214,0,.15),rgba(255,107,0,.1)); border:1px solid rgba(255,214,0,.3); border-radius:30px; padding:.6rem 1.2rem; font-weight:900; font-size:.85rem; z-index:400; opacity:0; transition:all .3s; white-space:nowrap; backdrop-filter:blur(8px); }
-#achievement-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-#toast { position:fixed; bottom:5rem; left:50%; transform:translateX(-50%) translateY(10px); background:var(–cd); border:1px solid rgba(255,107,0,.25); border-radius:30px; padding:.55rem 1.1rem; font-weight:800; font-size:.85rem; z-index:399; opacity:0; transition:all .3s; white-space:nowrap; }
-#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+/* ── OVERLAYS ── */
+#lu-ov{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+#lu-ov.show{opacity:1;pointer-events:all;}
+.lu-card{background:var(–cd);border-radius:22px;padding:2.3rem 1.8rem;text-align:center;max-width:310px;width:90%;border:2px solid var(–or);box-shadow:0 0 70px rgba(255,107,0,.22);transform:scale(0);transition:transform .4s cubic-bezier(.4,0,.2,1);}
+#lu-ov.show .lu-card{transform:scale(1);}
+.lu-e{font-size:3.8rem;display:block;margin-bottom:.75rem;animation:bounce 1s ease-in-out infinite;}
+.lu-t{font-family:‘Black Han Sans’,Impact,sans-serif;font-size:2rem;background:linear-gradient(135deg,var(–or),var(–ye));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;margin-bottom:.38rem;}
+.lu-m{color:var(–mu);font-size:.9rem;font-weight:700;margin-bottom:1.4rem;}
+#ach-toast{position:fixed;bottom:5.3rem;left:50%;transform:translateX(-50%) translateY(18px);background:linear-gradient(135deg,rgba(255,214,0,.15),rgba(255,107,0,.1));border:1px solid rgba(255,214,0,.3);border-radius:30px;padding:.55rem 1.1rem;font-weight:900;font-size:.83rem;z-index:400;opacity:0;transition:all .3s;white-space:nowrap;backdrop-filter:blur(8px);}
+#ach-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast{position:fixed;bottom:4.8rem;left:50%;transform:translateX(-50%) translateY(8px);background:var(–cd);border:1px solid rgba(255,107,0,.25);border-radius:30px;padding:.5rem 1rem;font-weight:800;font-size:.83rem;z-index:399;opacity:0;transition:all .3s;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* ===== FX ===== */
-.confetti { position:fixed; pointer-events:none; z-index:800; border-radius:2px; animation:confettiFall linear forwards; }
-.coin-float { position:fixed; pointer-events:none; z-index:800; font-weight:900; font-size:.95rem; color:var(–ye); animation:floatUp 1.2s ease-out forwards; }
+/* ── FX ── */
+.confetti{position:fixed;pointer-events:none;z-index:800;border-radius:2px;animation:cfal linear forwards;}
+#sync-dot{width:7px;height:7px;border-radius:50%;background:var(–mu);flex-shrink:0;transition:background .4s;}
+#sync-dot.syncing{background:var(–ye);animation:pulse 1s ease-in-out infinite;}
+#sync-dot.synced{background:var(–gr);}
+#sync-dot.error{background:var(–rd);}
 
-/* ===== KEYFRAMES ===== */
-@keyframes bounce { 0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-22px) scale(1.08);} }
-@keyframes shimmer { 0%{background-position:0%}100%{background-position:200%} }
-@keyframes pulse { 0%,100%{opacity:.5}50%{opacity:1} }
-@keyframes checkPop { 0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.3)}100%{transform:scale(1)} }
-@keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
-@keyframes floatUp { 0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)} }
+@keyframes bounce{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.07);}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes cfal{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 </style>
 
 </head>
 <body>
 
-<!-- ===== SPLASH ===== -->
+<!-- ══════════════════════ SPLASH ══════════════════════ -->
 
 <div id="splash">
 
-  <!-- HOME: pick who you are -->
+  <!-- Screen 1: choose user -->
 
-  <div class="splash-step" id="step-welcome">
-    <div class="splash-ring" style="width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-    <div class="splash-ring" style="width:360px;height:360px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-    <div class="splash-ball">🏀</div>
-    <div class="splash-title">BASKETBALL<br>POWER UP</div>
-    <div class="splash-sub">10 DAY CHALLENGE</div>
-    <div class="splash-stl">AI LA BAN?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%;max-width:400px;margin:0 auto">
-      <div class="role-card child" id="btn-login-baolam">
-        <div class="role-icon">🏀</div>
-        <div class="role-name" style="font-size:1.1rem">Bao Lam</div>
-        <div class="role-desc">Xem tien do<br>va nhiem vu</div>
-      </div>
-      <div class="role-card father" id="btn-goto-password">
-        <div class="role-icon">👨</div>
-        <div class="role-name" style="font-size:1.1rem">Bo</div>
-        <div class="role-desc">Quan ly<br>toan bo</div>
-      </div>
+  <div id="screen-home">
+    <div class="s-ball">🏀</div>
+    <div class="s-title">BASKETBALL<br>POWER UP</div>
+    <div class="s-sub">10 DAY CHALLENGE</div>
+    <div class="s-label">AI LA BAN?</div>
+    <div class="user-grid">
+      <button type="button" class="user-btn child" id="btn-baolam">
+        <div class="user-btn-icon">🏀</div>
+        <div class="user-btn-name">Bao Lam</div>
+        <div class="user-btn-desc">Xem tien do<br>va nhiem vu</div>
+      </button>
+      <button type="button" class="user-btn dad" id="btn-bo">
+        <div class="user-btn-icon">👨</div>
+        <div class="user-btn-name">Bo</div>
+        <div class="user-btn-desc">Quan ly<br>toan bo</div>
+      </button>
     </div>
   </div>
 
-  <!-- PASSWORD (Bo only) -->
+  <!-- Screen 2: password for Bo -->
 
-  <div class="splash-step" id="step-password" style="display:none">
-    <button class="btn-back" id="btn-password-back">← Quay lai</button>
-    <div style="font-size:3rem;margin:1.5rem 0 .8rem">🔐</div>
-    <div class="splash-title" style="font-size:2rem;margin-bottom:.4rem">XAC NHAN BO</div>
-    <div class="splash-sub" style="margin-bottom:1.5rem">Nhap mat khau 6 so</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="login-pwd" placeholder="......" maxlength="6">
-    <div class="pwd-error" id="pwd-error"></div>
-    <button class="btn btn-primary" id="btn-do-login" style="width:100%">MO KHOA →</button>
+  <div id="screen-pwd">
+    <button type="button" class="btn-back-link" id="btn-pwd-back">← Quay lai</button>
+    <div style="font-size:3rem;margin-bottom:.8rem">🔐</div>
+    <div class="s-title" style="font-size:2rem;margin-bottom:.3rem">XAC NHAN BO</div>
+    <div class="s-sub">Nhap mat khau 6 so</div>
+    <input type="password" inputmode="numeric" id="login-pwd" class="pwd-input" placeholder="......" maxlength="6" autocomplete="off">
+    <div id="pwd-err" class="pwd-err"></div>
+    <button type="button" class="btn btn-pr" id="btn-do-login">MO KHOA →</button>
   </div>
 
 </div>
 
-<!-- ===== GAME SCREEN ===== -->
+<!-- ══════════════════════ GAME ══════════════════════ -->
 
-<div id="game-screen" style="display:none">
+<div id="game" style="display:none">
   <div id="topbar">
-    <div class="tb-player">
-      <div class="tb-av" id="tb-av">🏀</div>
-      <div class="tb-info">
-        <div class="tb-name" id="tb-name">-</div>
-        <div class="tb-lv" id="tb-lv">LVL 1 ROOKIE</div>
-      </div>
+    <div class="tb-av" id="tb-av">🏀</div>
+    <div class="tb-info">
+      <div class="tb-name" id="tb-name">-</div>
+      <div class="tb-lv" id="tb-lv">LVL 1 ROOKIE</div>
     </div>
     <div class="tb-right">
       <div class="exp-mini">
         <div class="exp-mini-lbl">EXP</div>
-        <div class="exp-mini-bar"><div class="exp-mini-fill" id="exp-mini-fill" style="width:0%"></div></div>
+        <div class="exp-mini-bar"><div class="exp-mini-fill" id="exp-fill" style="width:0%"></div></div>
       </div>
       <div class="coin-pill">🪙<span id="tb-coins">0</span></div>
-      <div class="role-badge" id="tb-role-badge">-</div>
-      <div id="sync-dot" title="Sync status"></div>
-      <div class="tb-btns">
-        <div class="icon-btn" id="sound-btn" onclick="toggleSound()" title="Sound">🔊</div>
-        <div class="icon-btn" onclick="confirmLogout()" title="Switch player">⇄</div>
-      </div>
+      <div class="role-badge" id="tb-badge">-</div>
+      <div id="sync-dot"></div>
+      <div class="icon-btn" id="sound-btn" title="Sound">🔊</div>
+      <div class="icon-btn" id="btn-logout" title="Switch">⇄</div>
     </div>
   </div>
   <div id="nav-bar"></div>
@@ -386,62 +355,33 @@ padding:.65rem .9rem; display:flex; align-items:center; gap:.6rem;
 
 <!-- MODAL -->
 
-<div id="modal-bg" onclick="modalBgClick(event)">
-  <div id="modal-box">
-    <div class="modal-handle"></div>
-    <div id="modal-body"></div>
-  </div>
-</div>
-
-<!-- LEVEL UP OVERLAY -->
-
-<div id="levelup-overlay">
-  <div class="levelup-card">
-    <span class="lu-emoji" id="lu-emoji">⚡</span>
-    <div class="lu-title" id="lu-title">LEVEL UP!</div>
-    <div class="lu-msg" id="lu-msg">You are getting stronger!</div>
-    <button class="btn btn-primary" onclick="closeLevelUp()">🔥 LET'S GO!</button>
-  </div>
-</div>
-
-<div id="achievement-toast"></div>
+<div id="modal-bg"><div id="modal-box"><div class="m-handle"></div><div id="modal-body"></div></div></div>
+<!-- LEVEL UP -->
+<div id="lu-ov"><div class="lu-card"><span class="lu-e" id="lu-e">⚡</span><div class="lu-t" id="lu-t">LEVEL UP!</div><div class="lu-m" id="lu-m">You are getting stronger!</div><button type="button" class="btn btn-pr" id="btn-lu-ok">🔥 LET'S GO!</button></div></div>
+<div id="ach-toast"></div>
 <div id="toast"></div>
 
 <script>
-/* =============================================================
-   PART 0 - FIREBASE CONFIG
-   Fill in your Firebase project details to enable cloud sync.
-   Leave FB_URL empty ('') to use localStorage only.
-   =============================================================
-   HOW TO SET UP (free):
-   1. Go to https://console.firebase.google.com
-   2. Create project → Realtime Database → Create database
-   3. Rules: set read/write to true for testing
-      { "rules": { ".read": true, ".write": true } }
-   4. Copy your database URL below (ends with .firebaseio.com)
-============================================================= */
-const FB_URL = '';   // e.g. 'https://my-project-default-rtdb.firebaseio.com'
-const FB_PATH = '/bpu_game';   // data path in the database
-const FB_SECRET = '';  // optional: database secret for auth (Admin SDK)
+'use strict';
 
-/* =============================================================
-   PART 1 - CONSTANTS
-============================================================= */
-const ADMIN_PWD = '141089';
-const LS_KEY = 'bpu_v3_players';
-const LS_SETTINGS = 'bpu_v3_settings';
-const EXP_PER_LV = 200;
+/* ══════════════════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════════════════ */
+var ADMIN_PWD = '141089';
+var LS_KEY    = 'bpu4_data';
+var LS_SET    = 'bpu4_settings';
+var EXP_PER_LV = 200;
+var FB_URL    = '';   // optional Firebase Realtime DB URL
+var FB_PATH   = '/bpu_game';
 
-const LEVEL_TITLES = ['ROOKIE','BALLER','SHOOTER','POINT GUARD','SMALL FWD','POWER FWD','CENTER','ALL-STAR','MVP','LEGEND','GOAT'];
-const AVATARS = ['🏀','⭐','🔥','💎','👑','⚡','🦁','🐉','🏆','🌟'];
-const AV_COLORS = [
-  'linear-gradient(135deg,#FF6B00,#FF3D5A)',
-  'linear-gradient(135deg,#00C2FF,#7B2FFF)',
-  'linear-gradient(135deg,#00E676,#00BFA5)',
-  'linear-gradient(135deg,#B44FFF,#FF6B00)'
-];
+/* ══════════════════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════════════════ */
+var LV_TITLES = ['ROOKIE','BALLER','SHOOTER','POINT GUARD','SMALL FWD','POWER FWD','CENTER','ALL-STAR','MVP','LEGEND','GOAT'];
+var AVATARS   = ['🏀','⭐','🔥','💎','👑','⚡','🦁','🐉','🏆','🌟'];
+var AV_COLS   = ['linear-gradient(135deg,#FF6B00,#FF3D5A)','linear-gradient(135deg,#00C2FF,#7B2FFF)','linear-gradient(135deg,#00E676,#00BFA5)','linear-gradient(135deg,#B44FFF,#FF6B00)'];
 
-const DAY_THEMES = [
+var DAY_THEMES = [
   {title:'FIRST STEP',sub:'Begin your journey, rookie!',color:'linear-gradient(135deg,#FF6B00,#FF3D5A)'},
   {title:'SPEED DRILL',sub:'How fast can you go?',color:'linear-gradient(135deg,#FF9A3C,#FF6B00)'},
   {title:'SKY LIMIT',sub:'Jump higher than yesterday!',color:'linear-gradient(135deg,#00C2FF,#7B2FFF)'},
@@ -451,73 +391,23 @@ const DAY_THEMES = [
   {title:'CHAIN REACTION',sub:'Every rep counts!',color:'linear-gradient(135deg,#FF3D5A,#B44FFF)'},
   {title:'BEAST MODE',sub:'Push beyond your limits!',color:'linear-gradient(135deg,#00C2FF,#00E676)'},
   {title:'FINAL PREP',sub:'Tomorrow is the big day...',color:'linear-gradient(135deg,#FF6B00,#FFD600)'},
-  {title:'FINAL BOSS',sub:'DEFEAT YOUR OLD SELF!',color:'linear-gradient(135deg,#B44FFF,#FF6B00,#FFD600)'},
+  {title:'FINAL BOSS',sub:'DEFEAT YOUR OLD SELF!',color:'linear-gradient(135deg,#B44FFF,#FF6B00,#FFD600)'}
 ];
 
-const DAY_MISSIONS = [
-  [
-    {id:'speed',icon:'⚡',name:'Sprint Challenge',desc:'3x 30m sprints. Rest 90s between.',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Jump & Land',desc:'10 squat jumps + measure vertical.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Endurance Run',desc:'Run 800m at steady pace.',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'1v1 vs Dad',desc:'First to 7 baskets. Game time!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Speed Ladder',desc:'Footwork drill x5 rounds. Fast feet!',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Box Jumps',desc:'15 box jumps x3 sets.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Shuttle Run',desc:'5x shuttle baseline to half court.',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'1v1 Rematch',desc:'First to 5. Winner picks next drill!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Explosive Start',desc:'10x standing start to 15m sprint.',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Vert Training',desc:'Wall touch x15 - rest - repeat x3.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Full Court Run',desc:'10 full court runs (jog back).',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'Trick Shot Duel',desc:'3 trick shot spots. Most makes wins!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Chase Drill',desc:'Dad starts 2m ahead - catch him!',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Depth Jump',desc:'Step off box - immediate jump x10.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'1km Time Trial',desc:'Best time today. Remember it!',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'3-Point Contest',desc:'10 shots from 3-point line. Count!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Sprint Intervals',desc:'Sprint 20s, Walk 40s x8 rounds.',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Power Skip',desc:'Power skip x30m x4 rounds.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Suicide Drills',desc:'Baseline to free throw to half to end x5.',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'Mid-Week Battle',desc:'Full game to 11. Celebrate halfway!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Reaction Speed',desc:'Dad signals - you explode. 10 reps.',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Standing Long Jump',desc:'Measure how far you jump forward.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'2-Ball Dribble Run',desc:'Dribble 2 balls x full court x5.',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'Clutch Free Throw',desc:'10 free throws. Each counts!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Zigzag Sprint',desc:'Cone course zigzag x6 rounds.',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Continuous Jump',desc:'Max jumps in 30s. Beat your record!',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Endurance Push',desc:'Run 1.2km. Did you beat Day 4?',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'Around the World',desc:'Classic around-the-world. Winner takes all!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Beast Sprint',desc:'4x 40m sprint. Fastest time counts!',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Plyometric Combo',desc:'5x squat jump + 5x box jump x4 sets.',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Iron Man Run',desc:'Jog 2km without stopping.',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'No-Rules Challenge',desc:'Make up your own game. Most fun wins!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'Sprint Prep',desc:'Final sprint set. 5x 30m. Feeling fast?',exp:40,coins:8},
-    {id:'jump',icon:'🦘',name:'Jump Benchmark',desc:'3 max vert attempts. Pick your best!',exp:40,coins:8},
-    {id:'stamina',icon:'🔁',name:'Endurance Prep',desc:'Easy 1km jog. Save energy for Day 10!',exp:40,coins:8},
-    {id:'pvp',icon:'🏀',name:'Mini Tournament',desc:'3 rounds of H-O-R-S-E. Get hyped!',exp:20,coins:10}
-  ],
-  [
-    {id:'speed',icon:'⚡',name:'FINAL SPRINT',desc:'5x 30m - beat your Day 1 time!',exp:60,coins:20},
-    {id:'jump',icon:'🦘',name:'FINAL JUMP',desc:'Max vertical. Have you grown wings?',exp:60,coins:20},
-    {id:'stamina',icon:'🔁',name:'FINAL RUN',desc:'1km - smash your personal record!',exp:60,coins:20},
-    {id:'pvp',icon:'🏀',name:'BOSS BATTLE',desc:'EPIC 1v1 to 11. Legacy on the line!',exp:40,coins:30}
-  ]
+var DAY_MISSIONS = [
+  [{id:'speed',icon:'⚡',name:'Sprint Challenge',desc:'3x 30m sprints. Rest 90s between.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Jump & Land',desc:'10 squat jumps + measure vertical.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Endurance Run',desc:'Run 800m at steady pace.',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'1v1 vs Dad',desc:'First to 7 baskets. Game time!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Speed Ladder',desc:'Footwork drill x5 rounds.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Box Jumps',desc:'15 box jumps x3 sets.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Shuttle Run',desc:'5x shuttle baseline to half court.',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'1v1 Rematch',desc:'First to 5. Winner picks next drill!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Explosive Start',desc:'10x standing start to 15m sprint.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Vert Training',desc:'Wall touch x15, rest, repeat x3.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Full Court Run',desc:'10 full court runs (jog back).',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'Trick Shot Duel',desc:'3 trick shot spots. Most makes wins!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Chase Drill',desc:'Dad starts 2m ahead - catch him!',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Depth Jump',desc:'Step off box, jump immediately x10.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'1km Time Trial',desc:'Best time today. Remember it!',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'3-Point Contest',desc:'10 shots from 3-point line.',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Sprint Intervals',desc:'Sprint 20s, Walk 40s x8 rounds.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Power Skip',desc:'Power skip x30m x4 rounds.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Suicide Drills',desc:'Baseline to free throw to half to end x5.',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'Mid-Week Battle',desc:'Full game to 11. Celebrate halfway!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Reaction Speed',desc:'Dad signals - you explode. 10 reps.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Standing Long Jump',desc:'Measure how far you jump forward.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'2-Ball Dribble Run',desc:'Dribble 2 balls x full court x5.',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'Clutch Free Throw',desc:'10 free throws. Each counts!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Zigzag Sprint',desc:'Cone course zigzag x6 rounds.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Continuous Jump',desc:'Max jumps in 30s. Beat your record!',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Endurance Push',desc:'Run 1.2km. Did you beat Day 4?',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'Around the World',desc:'Classic around-the-world. Winner takes all!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Beast Sprint',desc:'4x 40m sprint. Fastest time counts!',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Plyometric Combo',desc:'5x squat jump + 5x box jump x4 sets.',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Iron Man Run',desc:'Jog 2km without stopping.',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'No-Rules Challenge',desc:'Make up your own game!',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'Sprint Prep',desc:'Final sprint set. 5x 30m.',exp:40,coins:8},{id:'jump',icon:'🦘',name:'Jump Benchmark',desc:'3 max vert attempts. Pick your best!',exp:40,coins:8},{id:'stamina',icon:'🔁',name:'Endurance Prep',desc:'Easy 1km jog. Save energy for Day 10!',exp:40,coins:8},{id:'pvp',icon:'🏀',name:'Mini Tournament',desc:'3 rounds of H-O-R-S-E.',exp:20,coins:10}],
+  [{id:'speed',icon:'⚡',name:'FINAL SPRINT',desc:'5x 30m - beat your Day 1 time!',exp:60,coins:20},{id:'jump',icon:'🦘',name:'FINAL JUMP',desc:'Max vertical. Have you grown wings?',exp:60,coins:20},{id:'stamina',icon:'🔁',name:'FINAL RUN',desc:'1km - smash your personal record!',exp:60,coins:20},{id:'pvp',icon:'🏀',name:'BOSS BATTLE',desc:'EPIC 1v1 to 11. Legacy on the line!',exp:40,coins:30}]
 ];
 
-const ACHIEVEMENTS = [
+var ACHIEVEMENTS = [
   {id:'first_day',icon:'🌟',name:'First Step',desc:'Complete Day 1'},
   {id:'speed_hunter',icon:'⚡',name:'Speed Hunter',desc:'Improve sprint time'},
   {id:'jump_booster',icon:'🦘',name:'Jump Booster',desc:'Improve vertical jump'},
@@ -527,1333 +417,764 @@ const ACHIEVEMENTS = [
   {id:'streak_5',icon:'💎',name:'Diamond Grind',desc:'5 days in a row'},
   {id:'halfway',icon:'🎯',name:'Halfway Hero',desc:'Complete Day 5'},
   {id:'record_breaker',icon:'🏆',name:'Record Breaker',desc:'Beat a personal record'},
-  {id:'champion',icon:'👑',name:'CHAMPION',desc:'Complete all 10 days!'},
+  {id:'champion',icon:'👑',name:'CHAMPION',desc:'Complete all 10 days!'}
 ];
 
-/* =============================================================
-   PART 2 - STATE
-============================================================= */
-const SESSION = {currentPlayer:null, role:null, currentTab:'dashboard', editMode:false};
-let SETTINGS = {soundEnabled:true};
-let ALL_PLAYERS = {};
-// Password modal callback store
-let _pwdCb = null;
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+var SESSION = {player: null, role: null, tab: 'dashboard', editMode: false};
+var SETTINGS = {sound: true};
+var PLAYERS  = {};
+var _pwdCb   = null;
 
-function saveSettings() { try { localStorage.setItem(LS_SETTINGS, JSON.stringify(SETTINGS)); } catch(e){} }
-function loadSettings() { try { const s = JSON.parse(localStorage.getItem(LS_SETTINGS)||'{}'); SETTINGS = Object.assign(SETTINGS, s); } catch(e){} }
-
-function savePlayers() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(ALL_PLAYERS)); } catch(e) {}
-  syncToFirebase();  // also push to cloud
+/* ══════════════════════════════════════════════════════════
+   PERSIST
+══════════════════════════════════════════════════════════ */
+function saveAll() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(PLAYERS)); } catch(e) {}
+  fbPush();
 }
-
-function loadPlayers() {
+function loadAll() {
   try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) ALL_PLAYERS = JSON.parse(raw) || {};
-  } catch(e) { ALL_PLAYERS = {}; }
-  // Ensure ALL_PLAYERS is a plain object
-  if (typeof ALL_PLAYERS !== 'object' || Array.isArray(ALL_PLAYERS)) ALL_PLAYERS = {};
-}
-
-function createDefaultPlayer(name) {
-  return {
-    name,
-    exp: 0,
-    coins: 0,
-    avatarIdx: Math.floor(Math.random() * AVATARS.length),
-    days: Array.from({length:10}, (_,i) => ({
-      dayNum: i+1, completed: false, completedAt: null,
-      missions: {}, pvpResult: null,
-      stats: {speed:'', jump:'', stamina:''},
-      recordsAwarded: {}, reward: null,
-    })),
-    achievements: {},
-    rewards: [],
-  };
-}
-
-/* =============================================================
-   PART 3 - FIREBASE CLOUD SYNC
-   Uses Firebase Realtime Database REST API (no SDK required).
-   Falls back gracefully to localStorage when offline or unconfigured.
-============================================================= */
-
-let _syncTimer = null;
-let _isSyncing = false;
-
-function setSyncStatus(status) {
-  // status: 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
-  const dot = document.getElementById('sync-dot');
-  if (!dot) return;
-  dot.className = '';
-  if (status === 'syncing') { dot.classList.add('syncing'); dot.title = 'Syncing...'; }
-  else if (status === 'synced') { dot.classList.add('synced'); dot.title = 'Synced to cloud'; }
-  else if (status === 'error') { dot.classList.add('error'); dot.title = 'Sync error (using local)'; }
-  else { dot.title = FB_URL ? 'Not synced' : 'Cloud sync not configured'; }
-
-  // Also update splash status
-  const sp = document.getElementById('sync-status-splash');
-  if (sp) {
-    if (!FB_URL) sp.textContent = 'Cloud sync: not configured (localStorage only)';
-    else if (status === 'synced') sp.textContent = 'Cloud: connected';
-    else if (status === 'error') sp.textContent = 'Cloud: offline - using local data';
-    else sp.textContent = 'Cloud: connecting...';
-  }
-}
-
-function fbEndpoint() {
-  if (!FB_URL) return null;
-  const base = FB_URL.replace(/\/$/, '');
-  const auth = FB_SECRET ? '?auth=' + FB_SECRET : '';
-  return base + FB_PATH + '.json' + auth;
-}
-
-async function syncToFirebase() {
-  if (!FB_URL || _isSyncing) return;
-  _isSyncing = true;
-  setSyncStatus('syncing');
-  try {
-    const url = fbEndpoint();
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(ALL_PLAYERS),
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    setSyncStatus('synced');
-  } catch(e) {
-    setSyncStatus('error');
-  } finally {
-    _isSyncing = false;
-  }
-}
-
-async function loadFromFirebase() {
-  if (!FB_URL) { setSyncStatus('idle'); return false; }
-  setSyncStatus('syncing');
-  try {
-    const url = fbEndpoint();
-    const res = await fetch(url, {method:'GET', headers:{'Accept':'application/json'}});
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length > 0) {
-      // Validate each player entry
-      let valid = true;
-      for (const [k,v] of Object.entries(data)) {
-        if (!v || typeof v.exp !== 'number' || !Array.isArray(v.days)) { valid = false; break; }
-      }
-      if (valid) {
-        // Merge: cloud wins for existing keys, keep any local-only players
-        for (const [k,v] of Object.entries(data)) { ALL_PLAYERS[k] = v; }
-        localStorage.setItem(LS_KEY, JSON.stringify(ALL_PLAYERS));
-        setSyncStatus('synced');
-        return true;
-      }
-    }
-    setSyncStatus('synced'); // empty db is valid
-    return false;
-  } catch(e) {
-    setSyncStatus('error');
-    return false; // fallback to localStorage (already loaded)
-  }
-}
-
-/* =============================================================
-   PART 4 - GAME LOGIC
-============================================================= */
-function getPlayer() { return ALL_PLAYERS[SESSION.currentPlayer] || null; }
-function isFather() { return SESSION.role === 'father'; }
-
-function getLevel(p) { return Math.min(10, Math.floor((p||getPlayer()).exp / EXP_PER_LV)); }
-function getLvTitle(p) { return LEVEL_TITLES[getLevel(p||getPlayer())]; }
-function getExpInLv(p) { return (p||getPlayer()).exp % EXP_PER_LV; }
-function getExpPct(p) { return (getExpInLv(p||getPlayer()) / EXP_PER_LV) * 100; }
-function getSkillLv(p, skill) { return Math.min(10, p.days.filter(d => d.missions[skill]).length); }
-
-function addExp(p, amt) {
-  const prev = getLevel(p);
-  p.exp += amt;
-  updateTopBar();
-  if (getLevel(p) > prev) {
-    playSound('levelup');
-    setTimeout(() => showLevelUp('⚡', 'LEVEL ' + getLevel(p) + '!', 'You are now a ' + getLvTitle(p) + '!'), 600);
-  }
-}
-
-function addCoins(p, amt) {
-  p.coins += amt;
-  playSound('coin');
-  updateTopBar();
-}
-
-function getPrevStat(p, dayNum, skill) {
-  for (let i = dayNum-2; i >= 0; i--) {
-    const v = parseFloat(p.days[i].stats[skill]);
-    if (!isNaN(v) && v > 0) return v;
-  }
-  return null;
-}
-
-function getDeltaHtml(skill, val, prev) {
-  if (!val || prev === null || isNaN(parseFloat(val))) return '';
-  const cur = parseFloat(val), diff = cur - prev;
-  const lowerBetter = skill === 'speed' || skill === 'stamina';
-  const good = lowerBetter ? diff < 0 : diff > 0;
-  const sign = diff > 0 ? '+' : '';
-  const cls = diff === 0 ? 'dlt-neu' : good ? 'dlt-good' : 'dlt-bad';
-  const tag = diff === 0 ? '=' : good ? 'RECORD!' : 'lower';
-  return '<span class="' + cls + '">' + sign + diff.toFixed(1) + ' ' + tag + '</span>';
-}
-
-/* =============================================================
-   PART 5 - REWARD SYSTEM
-============================================================= */
-function calcReward(dayData) {
-  const physDone = ['speed','jump','stamina'].filter(s => dayData.missions[s]).length;
-  const pvpDone = dayData.pvpResult !== null ? 1 : 0;
-  const pct = Math.round((physDone / 3) * 80 + pvpDone * 20);
-  if (pct < 70) return {type:'none', pct, gameTime:null, money:null};
-  if (pct < 90) return {type:'small', pct, gameTime:'30 min', money:'20.000d'};
-  return {type:'big', pct, gameTime:'1 hour', money:'50.000d'};
-}
-
-function getUnredeemed(p) {
-  return (p.rewards||[]).filter(r => r.type !== 'none' && !r.redeemed);
-}
-
-/* =============================================================
-   PART 6 - SOUND SYSTEM
-============================================================= */
-let _audioCtx = null;
-function getCtx() {
-  if (!_audioCtx) {
-    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  return _audioCtx;
-}
-
-function playTone(freq, dur, type, gain) {
-  if (!SETTINGS.soundEnabled) return;
-  type = type || 'sine'; gain = gain || 0.3;
-  try {
-    const ctx = getCtx(); if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gn = ctx.createGain();
-    osc.connect(gn); gn.connect(ctx.destination);
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gn.gain.setValueAtTime(gain, ctx.currentTime);
-    gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    osc.start(); osc.stop(ctx.currentTime + dur);
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p === 'object' && !Array.isArray(p)) PLAYERS = p; }
   } catch(e) {}
 }
+function saveSett() { try { localStorage.setItem(LS_SET, JSON.stringify(SETTINGS)); } catch(e) {} }
+function loadSett() { try { var s = JSON.parse(localStorage.getItem(LS_SET)||'{}'); SETTINGS = Object.assign(SETTINGS, s); } catch(e) {} }
 
-function playSound(type) {
-  if (!SETTINGS.soundEnabled) return;
-  if (type === 'coin') { playTone(880,.1); setTimeout(()=>playTone(1100,.1),80); }
-  else if (type === 'levelup') { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.2),i*120)); }
-  else if (type === 'achievement') { [659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'square',.2),i*100)); }
-  else if (type === 'complete') { [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,.3,'sine',.25),i*80)); }
-  else if (type === 'click') { playTone(440,.05,'square',.1); }
-  else if (type === 'record') { playTone(880,.15); setTimeout(()=>playTone(1320,.2),100); }
-  else if (type === 'error') { playTone(200,.15,'sawtooth',.2); }
+/* ══════════════════════════════════════════════════════════
+   FIREBASE (optional)
+══════════════════════════════════════════════════════════ */
+var _syncing = false;
+function syncDot(s) {
+  var d = document.getElementById('sync-dot'); if (!d) return;
+  d.className = s === 'ok' ? 'synced' : s === 'busy' ? 'syncing' : s === 'err' ? 'error' : '';
+}
+function fbPush() {
+  if (!FB_URL || _syncing) return;
+  _syncing = true; syncDot('busy');
+  fetch(FB_URL.replace(/\/$/,'') + FB_PATH + '.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(PLAYERS)})
+    .then(function(r){ _syncing=false; syncDot(r.ok?'ok':'err'); })
+    .catch(function(){ _syncing=false; syncDot('err'); });
+}
+function fbPull() {
+  if (!FB_URL) return;
+  syncDot('busy');
+  fetch(FB_URL.replace(/\/$/,'') + FB_PATH + '.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        Object.keys(data).forEach(function(k){ if (data[k] && typeof data[k].exp === 'number') PLAYERS[k] = data[k]; });
+        localStorage.setItem(LS_KEY, JSON.stringify(PLAYERS));
+        seedPlayers(); syncDot('ok');
+      }
+    })
+    .catch(function(){ syncDot('err'); });
 }
 
+/* ══════════════════════════════════════════════════════════
+   PLAYER FACTORY
+══════════════════════════════════════════════════════════ */
+function newPlayer(name, avIdx) {
+  return {
+    name: name, exp: 0, coins: 0, avatarIdx: avIdx || 0,
+    days: Array.from({length:10}, function(_,i) {
+      return {dayNum:i+1, completed:false, completedAt:null, missions:{}, pvpResult:null,
+              stats:{speed:'',jump:'',stamina:''}, recordsAwarded:{}, reward:null};
+    }),
+    achievements: {}, rewards: []
+  };
+}
+function seedPlayers() {
+  if (!PLAYERS['Bo'])      { PLAYERS['Bo']      = newPlayer('Bo', 6);      }
+  if (!PLAYERS['Bao Lam']) { PLAYERS['Bao Lam'] = newPlayer('Bao Lam', 0); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GAME HELPERS
+══════════════════════════════════════════════════════════ */
+function P()     { return PLAYERS[SESSION.player] || null; }
+function isDAD() { return SESSION.role === 'father'; }
+function g(id)   { return document.getElementById(id); }
+function h(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function lv(p)    { p=p||P(); return Math.min(10, Math.floor(p.exp / EXP_PER_LV)); }
+function lvT(p)   { return LV_TITLES[lv(p||P())]; }
+function expIn(p) { p=p||P(); return p.exp % EXP_PER_LV; }
+function expPct(p){ p=p||P(); return (expIn(p) / EXP_PER_LV) * 100; }
+function skillLv(p, sk) { return Math.min(10, p.days.filter(function(d){ return d.missions[sk]; }).length); }
+
+function addExp(p, n) {
+  var prev = lv(p); p.exp += n; updateTopBar();
+  if (lv(p) > prev) { snd('levelup'); setTimeout(function(){ showLU('⚡','LEVEL '+lv(p)+'!','You are now a '+lvT(p)+'!'); }, 600); }
+}
+function addCoins(p, n) { p.coins += n; snd('coin'); updateTopBar(); }
+
+function prevStat(p, dayNum, sk) {
+  for (var i=dayNum-2; i>=0; i--) { var v=parseFloat(p.days[i].stats[sk]); if (!isNaN(v) && v>0) return v; }
+  return null;
+}
+function deltaHtml(sk, val, prev) {
+  if (!val || prev===null || isNaN(parseFloat(val))) return '';
+  var cur=parseFloat(val), diff=cur-prev, lb=sk==='speed'||sk==='stamina';
+  var good=lb?diff<0:diff>0, sign=diff>0?'+':'';
+  var cls=diff===0?'dn':good?'dg':'db', tag=diff===0?'=':good?'RECORD!':'lower';
+  return '<span class="'+cls+'">'+sign+diff.toFixed(1)+' '+tag+'</span>';
+}
+
+/* ══════════════════════════════════════════════════════════
+   REWARD
+══════════════════════════════════════════════════════════ */
+function calcRw(day) {
+  var pd=['speed','jump','stamina'].filter(function(s){ return day.missions[s]; }).length;
+  var pct=Math.round((pd/3)*80 + (day.pvpResult!==null?1:0)*20);
+  if (pct<70) return {type:'none',pct:pct,gameTime:null,money:null};
+  if (pct<90) return {type:'small',pct:pct,gameTime:'30 min',money:'20.000d'};
+  return {type:'big',pct:pct,gameTime:'1 hour',money:'50.000d'};
+}
+
+/* ══════════════════════════════════════════════════════════
+   SOUND
+══════════════════════════════════════════════════════════ */
+var _ac = null;
+function ac() { if (!_ac) try { _ac = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} return _ac; }
+function tone(f,d,t,g) {
+  if (!SETTINGS.sound) return;
+  try {
+    var ctx=ac(); if(!ctx) return;
+    var o=ctx.createOscillator(), gn=ctx.createGain();
+    o.connect(gn); gn.connect(ctx.destination);
+    o.type=t||'sine'; o.frequency.setValueAtTime(f,ctx.currentTime);
+    gn.gain.setValueAtTime(g||.3,ctx.currentTime);
+    gn.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);
+    o.start(); o.stop(ctx.currentTime+d);
+  } catch(e){}
+}
+function snd(t) {
+  if (!SETTINGS.sound) return;
+  if (t==='coin')   { tone(880,.1); setTimeout(function(){ tone(1100,.1); },80); }
+  if (t==='levelup'){ [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ tone(f,.2); },i*120); }); }
+  if (t==='ach')    { [659,784,1047].forEach(function(f,i){ setTimeout(function(){ tone(f,.25,'square',.2); },i*100); }); }
+  if (t==='done')   { [523,659,784].forEach(function(f,i){ setTimeout(function(){ tone(f,.3,'sine',.25); },i*80); }); }
+  if (t==='click')  { tone(440,.05,'square',.1); }
+  if (t==='rec')    { tone(880,.15); setTimeout(function(){ tone(1320,.2); },100); }
+  if (t==='err')    { tone(200,.15,'sawtooth',.2); }
+}
 function toggleSound() {
-  SETTINGS.soundEnabled = !SETTINGS.soundEnabled;
-  saveSettings();
-  document.getElementById('sound-btn').textContent = SETTINGS.soundEnabled ? '🔊' : '🔇';
-  showToast(SETTINGS.soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF');
+  SETTINGS.sound = !SETTINGS.sound; saveSett();
+  g('sound-btn').textContent = SETTINGS.sound ? '🔊' : '🔇';
+  toast(SETTINGS.sound ? '🔊 Sound ON' : '🔇 Sound OFF');
 }
 
-/* =============================================================
-   PART 7 - AUTH FLOW
-============================================================= */
-function showStep(step) {
-  document.querySelectorAll('.splash-step').forEach(el => el.style.display = 'none');
-  const el = document.getElementById('step-' + step);
-  if (el) el.style.display = 'block';
-  // Clear error when navigating
-  const errEl = document.getElementById('new-player-err');
-  if (errEl) errEl.textContent = '';
+/* ══════════════════════════════════════════════════════════
+   SPLASH FLOW  (simple show/hide 2 screens)
+══════════════════════════════════════════════════════════ */
+function showHome() {
+  g('screen-home').style.display = '';
+  g('screen-pwd').style.display  = 'none';
+  g('login-pwd').value = '';
+  g('pwd-err').textContent = '';
 }
-
-function renderPlayerList() {
-  const names = Object.keys(ALL_PLAYERS);
-  const list = document.getElementById('player-list');
-  if (!list) return;
-  if (names.length === 0) {
-    list.innerHTML = '<div style="color:var(--mu);font-size:.88rem;font-weight:700;padding:1rem;text-align:center">No players yet. Create one below!</div>';
-    return;
-  }
-  list.innerHTML = names.map((name, i) => {
-    const p = ALL_PLAYERS[name];
-    const done = p.days ? p.days.filter(d=>d.completed).length : 0;
-    const av = AVATARS[p.avatarIdx||0];
-    const col = AV_COLORS[i % AV_COLORS.length];
-    // Escape name for use in onclick
-    const safeName = name.replace(/'/g, "\\'");
-    return '<button class="player-btn" onclick="selectPlayer(\'' + safeName + '\')">'
-      + '<div class="player-btn-av" style="background:' + col + '">' + av + '</div>'
-      + '<div class="player-btn-info">'
-      + '<div class="player-btn-name">' + escHtml(name) + '</div>'
-      + '<div class="player-btn-stats">LVL ' + getLevel(p) + ' - ' + done + '/10 days - ' + p.coins + '🪙</div>'
-      + '</div>'
-      + '<div style="color:var(--mu);font-size:1.2rem">→</div>'
-      + '</button>';
-  }).join('');
+function showPwd() {
+  g('screen-home').style.display = 'none';
+  g('screen-pwd').style.display  = '';
 }
-
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function selectPlayer(name) {
-  if (!ALL_PLAYERS[name]) { showToast('❌ Player not found!'); return; }
-  SESSION.currentPlayer = name;
-  const greet = document.getElementById('role-greeting');
-  if (greet) greet.textContent = 'HEY, ' + name.toUpperCase() + '!';
-  showStep('role');
-  playSound('click');
-}
-
-function createPlayer() {
-  const inp = document.getElementById('new-player-name');
-  const errEl = document.getElementById('new-player-err');
-  const name = inp ? inp.value.trim() : '';
-  if (errEl) errEl.textContent = '';
-  if (!name) {
-    if (errEl) errEl.textContent = '❌ Please enter a player name!';
-    if (inp) inp.focus();
-    return;
-  }
-  if (ALL_PLAYERS[name]) {
-    if (errEl) errEl.textContent = '❌ Player "' + name + '" already exists!';
-    return;
-  }
-  ALL_PLAYERS[name] = createDefaultPlayer(name);
-  savePlayers();
-  SESSION.currentPlayer = name;
-  if (inp) inp.value = '';
-  const greet = document.getElementById('role-greeting');
-  if (greet) greet.textContent = 'HEY, ' + name.toUpperCase() + '!';
-  showStep('role');
-  playSound('click');
-}
-
-function loginAsChild() {
-  SESSION.role = 'child';
+function loginBaoLam() {
+  SESSION.player = 'Bao Lam';
+  SESSION.role   = 'child';
   startGame();
-  playSound('click');
 }
-
-function loginAsFather() {
-  var pwd = (document.getElementById('login-pwd').value || '');
-  var err = document.getElementById('pwd-error');
+function loginBo() {
+  var pwd = g('login-pwd').value || '';
   if (pwd !== ADMIN_PWD) {
-    if (err) err.textContent = '❌ Sai mat khau. Thu lai!';
-    playSound('error');
-    document.getElementById('login-pwd').value = '';
-    return;
+    g('pwd-err').textContent = 'Sai mat khau. Thu lai!';
+    g('login-pwd').value = '';
+    snd('err'); return;
   }
-  if (err) err.textContent = '';
-  document.getElementById('login-pwd').value = '';
-  SESSION.currentPlayer = 'Bo';
-  SESSION.role = 'father';
+  SESSION.player = 'Bo';
+  SESSION.role   = 'father';
   startGame();
-  playSound('levelup');
+  snd('levelup');
 }
-
-// Allow pressing Enter/auto-submit on password field
-// Note: auto-submit for login-pwd is set via oninput attribute directly on the input element
-
 function startGame() {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'block';
-  buildNav();
-  renderTab('dashboard');
-  updateTopBar();
+  g('splash').style.display = 'none';
+  g('game').style.display   = 'block';
+  buildNav(); renderTab('dashboard'); updateTopBar();
+}
+function goSplash() {
+  SESSION.player = null; SESSION.role = null; SESSION.editMode = false;
+  g('game').style.display   = 'none';
+  g('splash').style.display = '';
+  showHome();
 }
 
-/* =============================================================
-   PART 8 - TOPBAR & NAV
-============================================================= */
+/* ══════════════════════════════════════════════════════════
+   TOPBAR & NAV
+══════════════════════════════════════════════════════════ */
 function updateTopBar() {
-  const p = getPlayer();
-  if (!p) return;
-  const idx = Object.keys(ALL_PLAYERS).indexOf(SESSION.currentPlayer);
-  const av = document.getElementById('tb-av');
-  if (av) { av.style.background = AV_COLORS[idx%4]; av.textContent = AVATARS[p.avatarIdx||0]; }
-  const el = (id) => document.getElementById(id);
-  if (el('tb-name')) el('tb-name').textContent = p.name;
-  if (el('tb-lv')) el('tb-lv').textContent = 'LVL ' + getLevel(p) + ' ' + getLvTitle(p);
-  if (el('tb-coins')) el('tb-coins').textContent = p.coins;
-  if (el('exp-mini-fill')) el('exp-mini-fill').style.width = getExpPct(p) + '%';
-  const badge = el('tb-role-badge');
-  if (badge) {
-    badge.textContent = isFather() ? '👨 DAD' : '🏀 PLAYER';
-    badge.className = 'role-badge ' + (isFather() ? 'father' : 'child');
-  }
-  if (el('sound-btn')) el('sound-btn').textContent = SETTINGS.soundEnabled ? '🔊' : '🔇';
+  var p = P(); if (!p) return;
+  var idx = Object.keys(PLAYERS).indexOf(SESSION.player);
+  g('tb-av').style.background = AV_COLS[idx%4];
+  g('tb-av').textContent      = AVATARS[p.avatarIdx||0];
+  g('tb-name').textContent    = p.name;
+  g('tb-lv').textContent      = 'LVL '+lv(p)+' '+lvT(p);
+  g('tb-coins').textContent   = p.coins;
+  g('exp-fill').style.width   = expPct(p)+'%';
+  var b = g('tb-badge');
+  b.textContent = isDAD() ? '👨 DAD' : '🏀 PLAYER';
+  b.className   = 'role-badge '+(isDAD()?'father':'child');
+  g('sound-btn').textContent  = SETTINGS.sound ? '🔊' : '🔇';
 }
 
 function buildNav() {
-  const p = getPlayer();
-  const tabs = [
-    {id:'dashboard',label:'🏠 Home'},
-    {id:'progress',label:'📊 Stats'},
-    {id:'badges',label:'🏆 Badges'},
-    {id:'rewards',label:'🎁 Rewards'},
-  ];
-  if (isFather()) tabs.push({id:'admin',label:'⚙️ Admin'});
-  for (let i=0;i<10;i++) tabs.push({id:'day'+(i+1), label:'D'+(i+1), dayIdx:i});
-
-  document.getElementById('nav-bar').innerHTML = tabs.map(t => {
-    let cls = 'nav-tab';
-    if (t.dayIdx !== undefined && p && p.days[t.dayIdx] && p.days[t.dayIdx].completed) cls += ' done';
-    if (SESSION.currentTab === t.id) cls += ' active';
-    return '<button class="' + cls + '" onclick="renderTab(\'' + t.id + '\')">' + t.label + '</button>';
+  var p = P();
+  var tabs = [{id:'dashboard',label:'🏠 Home'},{id:'progress',label:'📊 Stats'},{id:'badges',label:'🏆 Badges'},{id:'rewards',label:'🎁 Rewards'}];
+  if (isDAD()) tabs.push({id:'admin',label:'⚙️ Admin'});
+  for (var i=0;i<10;i++) tabs.push({id:'day'+(i+1),label:'D'+(i+1),di:i});
+  g('nav-bar').innerHTML = tabs.map(function(t){
+    var cls='nav-tab';
+    if (t.di!==undefined && p && p.days[t.di] && p.days[t.di].completed) cls+=' done';
+    if (SESSION.tab===t.id) cls+=' active';
+    return '<button type="button" class="'+cls+'" onclick="renderTab(\''+t.id+'\')">'+t.label+'</button>';
   }).join('');
 }
 
 function renderTab(id) {
-  SESSION.currentTab = id;
-  SESSION.editMode = false;
-  buildNav();
-  playSound('click');
-  const area = document.getElementById('content');
-  const p = getPlayer();
-  if (!p) return;
-  if (id === 'dashboard') area.innerHTML = buildDashboard(p);
-  else if (id === 'progress') area.innerHTML = buildProgress(p);
-  else if (id === 'badges') area.innerHTML = buildBadges(p);
-  else if (id === 'rewards') area.innerHTML = buildRewards(p);
-  else if (id === 'admin') area.innerHTML = buildAdmin();
-  else if (id.startsWith('day')) {
-    const dn = parseInt(id.replace('day',''), 10);
-    area.innerHTML = buildDayView(p, dn);
-    area.querySelectorAll('.stat-inp').forEach(inp => inp.addEventListener('change', onStatChange));
+  SESSION.tab = id; SESSION.editMode = false;
+  buildNav(); snd('click');
+  var area = g('content'), p = P(); if (!p) return;
+  if (id==='dashboard') area.innerHTML = buildDash(p);
+  else if (id==='progress') area.innerHTML = buildProg(p);
+  else if (id==='badges')   area.innerHTML = buildBadges(p);
+  else if (id==='rewards')  area.innerHTML = buildRewards(p);
+  else if (id==='admin')    area.innerHTML = buildAdmin();
+  else if (id.indexOf('day')===0) {
+    var dn=parseInt(id.replace('day',''),10);
+    area.innerHTML = buildDay(p,dn);
+    area.querySelectorAll('.stat-inp').forEach(function(el){ el.addEventListener('change', onStatChange); });
   }
 }
 
-/* =============================================================
-   PART 9 - DASHBOARD
-============================================================= */
-function buildDashboard(p) {
-  const lvl = getLevel(p), pct = getExpPct(p);
-  const done = p.days.filter(d=>d.completed).length;
-  const unredeemed = getUnredeemed(p).length;
-  const nextDay = Math.min(done+1, 10);
-  let html = '';
-  html += '<div class="hero-card" style="margin-bottom:.9rem">'
-    + '<div class="hero-badge">LEVEL ' + lvl + ' - ' + getLvTitle(p) + '</div>'
-    + '<div class="hero-name ff">🏀 ' + escHtml(p.name) + '</div>'
-    + '<div class="hero-subtitle">🔥 Basketball Warrior</div>'
-    + '<div class="exp-bar-lbl"><span>EXP ' + getExpInLv(p) + ' / ' + EXP_PER_LV + '</span><span>LVL ' + (lvl+1) + ' next</span></div>'
-    + '<div class="exp-bar"><div class="exp-bar-fill" style="width:' + pct + '%"></div></div>'
-    + '</div>';
-
-  if (unredeemed > 0) {
-    html += '<div class="card" style="background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.25);margin-bottom:.9rem;cursor:pointer;text-align:center" onclick="renderTab(\'rewards\')">'
-      + '<div style="font-size:2rem;margin-bottom:.3rem">🎁</div>'
-      + '<div style="font-weight:900;font-size:1rem">You have ' + unredeemed + ' reward' + (unredeemed>1?'s':'') + ' waiting!</div>'
-      + '<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-top:.2rem">' + (isFather()?'Tap to redeem':'Ask Dad to redeem for you!') + '</div>'
-      + '</div>';
-  }
-
-  html += '<div class="section-title">SKILL LEVELS</div>'
-    + '<div class="skills-grid">'
-    + buildSkillCard(p,'speed','⚡','Speed','linear-gradient(90deg,var(--or),var(--ye))')
-    + buildSkillCard(p,'jump','🦘','Jump','linear-gradient(90deg,var(--bl),#7B2FFF)')
-    + buildSkillCard(p,'stamina','🔁','Stamina','linear-gradient(90deg,var(--gr),#00BFA5)')
-    + '</div>'
-    + '<div class="section-title">STATS</div>'
-    + '<div class="card">'
-    + '<div class="stats-trio">'
-    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--or)">' + done + '</div><div class="stat-big-lbl">Days Done</div></div>'
-    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--ye)">' + p.coins + '</div><div class="stat-big-lbl">Coins</div></div>'
-    + '<div class="stat-big"><div class="stat-big-num" style="color:var(--pu)">' + p.exp + '</div><div class="stat-big-lbl">Total EXP</div></div>'
-    + '</div>'
-    + '<div class="progress-bar-wrap"><div style="display:flex;justify-content:space-between;font-size:.72rem;font-weight:800;color:var(--mu);margin-bottom:.35rem"><span>Challenge Progress</span><span>' + done + '/10</span></div>'
-    + '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + (done*10) + '%"></div></div></div>'
-    + '</div>'
-    + '<div class="section-title">TODAY\'S MISSION</div>'
-    + '<div class="card card-glow" style="cursor:pointer;text-align:center" onclick="renderTab(\'day' + nextDay + '\')">'
-    + '<div style="font-size:2.8rem;margin-bottom:.5rem">🏀</div>'
-    + '<div class="ff" style="font-size:1.3rem;margin-bottom:.25rem">GO TO DAY ' + nextDay + '</div>'
-    + '<div style="font-size:.82rem;color:var(--mu);font-weight:700">' + DAY_THEMES[nextDay-1].title + ' - ' + DAY_THEMES[nextDay-1].sub + '</div>'
-    + '<div style="margin-top:.9rem;display:inline-block;background:var(--or);border-radius:20px;padding:.38rem 1.1rem;font-weight:900;font-size:.88rem">TAP TO PLAY →</div>'
-    + '</div>';
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════ */
+function buildDash(p) {
+  var done=p.days.filter(function(d){return d.completed;}).length;
+  var unr=(p.rewards||[]).filter(function(r){return !r.redeemed&&r.type!=='none';}).length;
+  var nd=Math.min(done+1,10);
+  var html='<div class="hero">'
+    +'<div class="hero-badge">LEVEL '+lv(p)+' - '+lvT(p)+'</div>'
+    +'<div class="hero-name ff">🏀 '+h(p.name)+'</div>'
+    +'<div class="hero-sub">🔥 Basketball Warrior</div>'
+    +'<div class="exp-lbl"><span>EXP '+expIn(p)+' / '+EXP_PER_LV+'</span><span>LVL '+(lv(p)+1)+' next</span></div>'
+    +'<div class="exp-bar"><div class="exp-fill" style="width:'+expPct(p)+'%"></div></div>'
+    +'</div>';
+  if (unr>0) html+='<div class="card" style="background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.25);margin-bottom:.9rem;cursor:pointer;text-align:center" onclick="renderTab(\'rewards\')">'
+    +'<div style="font-size:2rem;margin-bottom:.3rem">🎁</div>'
+    +'<div style="font-weight:900;font-size:1rem">'+unr+' reward'+(unr>1?'s':'')+' waiting!</div>'
+    +'<div style="font-size:.75rem;color:var(--mu);font-weight:700;margin-top:.2rem">'+(isDAD()?'Tap to redeem':'Ask Dad to redeem!')+' </div>'
+    +'</div>';
+  html+='<div class="sec">SKILL LEVELS</div><div class="skills-grid">'
+    +skillCard(p,'speed','⚡','Speed','linear-gradient(90deg,var(--or),var(--ye))')
+    +skillCard(p,'jump','🦘','Jump','linear-gradient(90deg,var(--bl),#7B2FFF)')
+    +skillCard(p,'stamina','🔁','Stamina','linear-gradient(90deg,var(--gr),#00BFA5)')
+    +'</div>'
+    +'<div class="sec">STATS</div><div class="card">'
+    +'<div class="stats3">'
+    +'<div class="stat-big"><div class="stat-big-num" style="color:var(--or)">'+done+'</div><div class="stat-big-lbl">Days Done</div></div>'
+    +'<div class="stat-big"><div class="stat-big-num" style="color:var(--ye)">'+p.coins+'</div><div class="stat-big-lbl">Coins</div></div>'
+    +'<div class="stat-big"><div class="stat-big-num" style="color:var(--pu)">'+p.exp+'</div><div class="stat-big-lbl">Total EXP</div></div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:.7rem;font-weight:800;color:var(--mu);margin-bottom:.32rem"><span>Progress</span><span>'+done+'/10</span></div>'
+    +'<div class="prog-bar"><div class="prog-fill" style="width:'+(done*10)+'%"></div></div>'
+    +'</div>'
+    +'<div class="sec">TODAY\'S MISSION</div>'
+    +'<div class="card card-glow" style="cursor:pointer;text-align:center" onclick="renderTab(\'day'+nd+'\')">'
+    +'<div style="font-size:2.6rem;margin-bottom:.4rem">🏀</div>'
+    +'<div class="ff" style="font-size:1.25rem;margin-bottom:.22rem">GO TO DAY '+nd+'</div>'
+    +'<div style="font-size:.8rem;color:var(--mu);font-weight:700">'+DAY_THEMES[nd-1].title+' - '+DAY_THEMES[nd-1].sub+'</div>'
+    +'<div style="margin-top:.85rem;display:inline-block;background:var(--or);border-radius:20px;padding:.35rem 1rem;font-weight:900;font-size:.85rem">TAP TO PLAY →</div>'
+    +'</div>';
   return html;
 }
-
-function buildSkillCard(p, skill, icon, name, bar) {
-  const lvl = getSkillLv(p, skill);
-  const color = skill==='speed' ? 'var(--or)' : skill==='jump' ? 'var(--bl)' : 'var(--gr)';
-  return '<div class="skill-card">'
-    + '<div class="skill-icon">' + icon + '</div>'
-    + '<div class="skill-nm">' + name + '</div>'
-    + '<div class="skill-num" style="color:' + color + '">' + lvl + '</div>'
-    + '<div class="skill-bar-wrap"><div class="skill-bar" style="width:' + (lvl*10) + '%;background:' + bar + '"></div></div>'
-    + '</div>';
+function skillCard(p, sk, icon, name, bar) {
+  var n=skillLv(p,sk), col=sk==='speed'?'var(--or)':sk==='jump'?'var(--bl)':'var(--gr)';
+  return '<div class="skill-c"><div class="skill-icon">'+icon+'</div><div class="skill-nm">'+name+'</div>'
+    +'<div class="skill-num" style="color:'+col+'">'+n+'</div>'
+    +'<div class="skill-bar"><div class="skill-fill" style="width:'+(n*10)+'%;background:'+bar+'"></div></div>'
+    +'</div>';
 }
 
-/* =============================================================
-   PART 10 - DAY VIEW
-============================================================= */
-function buildDayView(p, dayNum) {
-  const dayIdx = dayNum - 1;
-  const day = p.days[dayIdx];
-  const theme = DAY_THEMES[dayIdx];
-  const missions = DAY_MISSIONS[dayIdx];
-  const done = p.days.filter(d=>d.completed).length;
-  const isLocked = dayNum > done + 1;
-
-  if (isLocked) {
-    return '<div class="day-header" data-day="' + dayNum + '" style="background:linear-gradient(135deg,#1e1e30,#2a2a3a)">'
-      + '<div class="day-label">DAY ' + dayNum + '</div>'
-      + '<div class="day-title ff">🔒 LOCKED</div>'
-      + '<div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:.2rem">Complete Day ' + (dayNum-1) + ' to unlock!</div>'
-      + '</div>'
-      + '<div style="text-align:center;padding:3rem 1rem;color:var(--mu)">'
-      + '<div style="font-size:4rem;margin-bottom:1rem">🔐</div>'
-      + '<div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">Keep grinding!</div>'
-      + '<div style="font-size:.88rem">Finish the previous day to unlock this challenge.</div>'
-      + '</div>';
-  }
-
-  if (dayNum === 10 && day.completed && !SESSION.editMode) return buildFinalBoss(p);
-
-  const phys = missions.filter(m=>m.id!=='pvp');
-  const physDone = phys.filter(m=>day.missions[m.id]).length;
-  const pvp = missions.find(m=>m.id==='pvp');
-  const canComplete = physDone === phys.length;
-  const childLock = !isFather();
-  const isDisabled = childLock || (day.completed && !SESSION.editMode);
-
-  let html = '<div class="day-header" data-day="' + dayNum + '" style="background:' + theme.color + '">'
-    + '<div class="day-label">' + (dayNum===10?'👑 FINAL BOSS - ':'') + 'DAY ' + dayNum + ' / 10</div>'
-    + '<div class="day-title ff">' + theme.title + '</div>'
-    + '<div class="day-sub">' + theme.sub + '</div>'
-    + '</div>';
-
-  if (day.completed && isFather() && !SESSION.editMode) {
-    html += '<div class="edit-bar">'
-      + '<span class="edit-bar-lbl">✅ Day completed - ' + new Date(day.completedAt||Date.now()).toLocaleDateString() + '</span>'
-      + '<button class="btn btn-sm btn-ghost" onclick="requestEditMode(' + dayNum + ')">✏️ Edit</button>'
-      + '</div>';
+/* ══════════════════════════════════════════════════════════
+   DAY VIEW
+══════════════════════════════════════════════════════════ */
+function buildDay(p, dn) {
+  var di=dn-1, day=p.days[di], theme=DAY_THEMES[di], ms=DAY_MISSIONS[di];
+  var done=p.days.filter(function(d){return d.completed;}).length;
+  if (dn>done+1) return '<div class="day-hd" data-day="'+dn+'" style="background:linear-gradient(135deg,#1e1e30,#2a2a3a)"><div class="day-label">DAY '+dn+'</div><div class="day-title ff">🔒 LOCKED</div><div style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.18rem">Complete Day '+(dn-1)+' to unlock!</div></div><div style="text-align:center;padding:3rem 1rem;color:var(--mu)"><div style="font-size:4rem;margin-bottom:1rem">🔐</div><div style="font-weight:900;font-size:1.05rem;margin-bottom:.38rem">Keep grinding!</div><div style="font-size:.86rem">Finish the previous day to unlock.</div></div>';
+  if (dn===10 && day.completed && !SESSION.editMode) return buildBoss(p);
+  var phys=ms.filter(function(m){return m.id!=='pvp';});
+  var pdone=phys.filter(function(m){return day.missions[m.id];}).length;
+  var pvp=ms.find(function(m){return m.id==='pvp';});
+  var canC=pdone===phys.length, cl=!isDAD();
+  var html='<div class="day-hd" data-day="'+dn+'" style="background:'+theme.color+'">'
+    +'<div class="day-label">'+(dn===10?'👑 FINAL BOSS - ':'')+'DAY '+dn+' / 10</div>'
+    +'<div class="day-title ff">'+theme.title+'</div>'
+    +'<div class="day-sub">'+theme.sub+'</div>'
+    +'</div>';
+  if (day.completed && isDAD() && !SESSION.editMode) {
+    html+='<div class="edit-bar"><span class="edit-lbl">✅ Day completed</span>'
+      +'<button type="button" class="btn btn-ghost btn-sm" onclick="reqEdit('+dn+')">✏️ Edit</button></div>';
   }
   if (SESSION.editMode) {
-    html += '<div class="edit-bar" style="border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.07)">'
-      + '<span class="edit-bar-lbl" style="color:var(--rd)">✏️ EDIT MODE - Changes save automatically</span>'
-      + '<button class="btn btn-sm btn-ghost" onclick="exitEditMode(' + dayNum + ')">Done</button>'
-      + '</div>';
+    html+='<div class="edit-bar" style="border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.07)">'
+      +'<span class="edit-lbl" style="color:var(--rd)">✏️ EDIT MODE</span>'
+      +'<button type="button" class="btn btn-ghost btn-sm" onclick="exitEdit('+dn+')">Done</button></div>';
   }
-
-  html += '<div class="section-title">MISSIONS</div>';
-  phys.forEach(m => { html += buildMissionCard(m, day, dayNum, childLock); });
-
-  const statDisabled = isDisabled && !(isFather() && SESSION.editMode);
-  html += '<div class="section-title" style="margin-top:.9rem">TODAY\'S STATS</div>'
-    + '<div class="card">'
-    + '<div class="stats-input-grid">'
-    + buildStatInput(p, dayNum, 'speed', '⚡', 'sec', statDisabled)
-    + buildStatInput(p, dayNum, 'jump', '🦘', 'cm', statDisabled)
-    + buildStatInput(p, dayNum, 'stamina', '🔁', 'min', statDisabled)
-    + '</div>'
-    + (!isFather() ? '<div class="locked-tip">🔒 Stats entered by Dad</div>' : '')
-    + '</div>';
-
-  html += '<div class="section-title">1V1 BATTLE</div>'
-    + buildPvpCard(pvp, day, dayNum, childLock);
-
+  html+='<div class="sec">MISSIONS</div>';
+  phys.forEach(function(m){ html+=mCard(m,day,dn,cl); });
+  var sd=cl||(day.completed&&!SESSION.editMode&&!isDAD());
+  html+='<div class="sec" style="margin-top:.88rem">TODAY\'S STATS</div><div class="card"><div class="stats-grid">'
+    +statInput(p,dn,'speed','⚡','sec',sd&&!(isDAD()&&SESSION.editMode))
+    +statInput(p,dn,'jump','🦘','cm',sd&&!(isDAD()&&SESSION.editMode))
+    +statInput(p,dn,'stamina','🔁','min',sd&&!(isDAD()&&SESSION.editMode))
+    +'</div>'+(!isDAD()?'<div class="locked-tip">🔒 Stats entered by Dad</div>':'')+'</div>';
+  html+='<div class="sec">1V1 BATTLE</div>'+pvpCard(pvp,day,dn,cl);
   if (!day.completed) {
-    if (childLock) {
-      html += '<button class="btn-complete" onclick="childAction()">🔒 Ask Dad to complete</button>';
-    } else if (!canComplete) {
-      html += '<button class="btn-complete" onclick="showToast(\'Complete all missions first!\')">⚡ FINISH MISSIONS FIRST</button>';
-    } else {
-      html += '<button class="btn-complete" onclick="confirmCompleteDay(' + dayNum + ')">🔥 COMPLETE DAY ' + dayNum + '</button>';
-    }
+    if (cl) html+='<button type="button" class="btn-complete" onclick="childAction()">🔒 Ask Dad to complete</button>';
+    else if (!canC) html+='<button type="button" class="btn-complete" onclick="toast(\'Complete all missions first!\')">⚡ FINISH MISSIONS FIRST</button>';
+    else html+='<button type="button" class="btn-complete" onclick="confirmComplete('+dn+')">🔥 COMPLETE DAY '+dn+'</button>';
   } else {
-    html += '<button class="btn-complete completed" disabled>✅ DAY ' + dayNum + ' COMPLETE!</button>';
+    html+='<button type="button" class="btn-complete done" disabled>✅ DAY '+dn+' COMPLETE!</button>';
   }
-
   return html;
 }
-
-function buildMissionCard(m, day, dayNum, childLock) {
-  const isDone = !!day.missions[m.id];
-  const clickFn = childLock ? 'childAction()' : 'toggleMission(' + dayNum + ',\'' + m.id + '\')';
-  return '<div class="mission-card ' + (isDone?'done':'') + '" onclick="' + clickFn + '">'
-    + '<div class="mission-check">' + (isDone?'✓':'') + '</div>'
-    + '<div class="mission-icon">' + m.icon + '</div>'
-    + '<div class="mission-info">'
-    + '<div class="mission-name">' + m.name + '</div>'
-    + '<div class="mission-desc">' + m.desc + '</div>'
-    + '</div>'
-    + '<div class="mission-reward">+' + m.exp + ' EXP</div>'
-    + '</div>';
+function mCard(m, day, dn, cl) {
+  var done=!!day.missions[m.id];
+  var fn=cl?'childAction()':'toggleM('+dn+',\''+m.id+'\')';
+  return '<div class="mission'+(done?' done':'')+'" onclick="'+fn+'">'
+    +'<div class="m-check">'+(done?'✓':'')+'</div>'
+    +'<div class="m-icon">'+m.icon+'</div>'
+    +'<div class="m-info"><div class="m-name">'+m.name+'</div><div class="m-desc">'+m.desc+'</div></div>'
+    +'<div class="m-reward">+'+m.exp+' EXP</div>'
+    +'</div>';
+}
+function statInput(p, dn, sk, icon, unit, dis) {
+  var day=p.days[dn-1], val=day.stats[sk]||'', prev=prevStat(p,dn,sk);
+  var lbs={speed:'⚡ Speed',jump:'🦘 Jump',stamina:'🔁 Stamina'};
+  return '<div class="stat-g"><label>'+lbs[sk]+'</label>'
+    +'<input type="number" class="stat-inp" data-day="'+dn+'" data-skill="'+sk+'" placeholder="0.0" value="'+h(val)+'" step="0.1" min="0"'+(dis?' disabled':'')+'>'
+    +'<div class="stat-unit">'+unit+'</div>'
+    +'<div class="stat-delta" id="dt-'+dn+'-'+sk+'">'+deltaHtml(sk,val,prev)+'</div>'
+    +'</div>';
+}
+function pvpCard(pvp, day, dn, cl) {
+  var res=day.pvpResult, dis=cl?'disabled':'';
+  var wc=cl?'childAction()':'setPvp('+dn+',\'win\')';
+  var lc=cl?'childAction()':'setPvp('+dn+',\'lose\')';
+  return '<div class="pvp-c">'
+    +'<div class="pvp-t ff">'+pvp.icon+' '+pvp.name+'</div>'
+    +'<div class="pvp-d">'+pvp.desc+'</div>'
+    +'<div class="pvp-grid">'
+    +'<button type="button" class="pvp-btn pvp-win'+(res==='win'?' sel':'')+'" '+dis+' onclick="'+wc+'">🏆 I WON! +'+pvp.coins+'🪙</button>'
+    +'<button type="button" class="pvp-btn pvp-lose'+(res==='lose'?' sel':'')+'" '+dis+' onclick="'+lc+'">💪 Dad Won (+5🪙)</button>'
+    +'</div></div>';
 }
 
-function buildStatInput(p, dayNum, skill, icon, unit, isDisabled) {
-  const day = p.days[dayNum-1];
-  const val = day.stats[skill] || '';
-  const prev = getPrevStat(p, dayNum, skill);
-  const delta = getDeltaHtml(skill, val, prev);
-  const labels = {speed:'⚡ Speed', jump:'🦘 Jump', stamina:'🔁 Stamina'};
-  return '<div class="stat-group">'
-    + '<label>' + labels[skill] + '</label>'
-    + '<input type="number" class="stat-inp" data-day="' + dayNum + '" data-skill="' + skill + '"'
-    + ' placeholder="0.0" value="' + escHtml(val) + '" step="0.1" min="0"' + (isDisabled?' disabled':'') + '>'
-    + '<div class="stat-unit">' + unit + '</div>'
-    + '<div class="stat-delta" id="delta-' + dayNum + '-' + skill + '">' + delta + '</div>'
-    + '</div>';
-}
-
-function buildPvpCard(pvp, day, dayNum, childLock) {
-  const res = day.pvpResult;
-  const dis = childLock ? 'disabled' : '';
-  const winClick = childLock ? 'childAction()' : 'setPvpResult(' + dayNum + ',\'win\')';
-  const loseClick = childLock ? 'childAction()' : 'setPvpResult(' + dayNum + ',\'lose\')';
-  return '<div class="pvp-card">'
-    + '<div class="pvp-title ff">' + pvp.icon + ' ' + pvp.name + '</div>'
-    + '<div class="pvp-desc">' + pvp.desc + '</div>'
-    + '<div class="pvp-grid">'
-    + '<button class="pvp-btn pvp-win ' + (res==='win'?'sel':'') + '" ' + dis + ' onclick="' + winClick + '">🏆 I WON! +' + pvp.coins + '🪙</button>'
-    + '<button class="pvp-btn pvp-lose ' + (res==='lose'?'sel':'') + '" ' + dis + ' onclick="' + loseClick + '">💪 Dad Won (+5🪙)</button>'
-    + '</div></div>';
-}
-
-/* =============================================================
-   PART 11 - PROGRESS
-============================================================= */
-function buildProgress(p) {
-  const sv = p.days.map(d => { const v=parseFloat(d.stats.speed); return isNaN(v)||v<=0?null:v; });
-  const jv = p.days.map(d => { const v=parseFloat(d.stats.jump); return isNaN(v)||v<=0?null:v; });
-  const tv = p.days.map(d => { const v=parseFloat(d.stats.stamina); return isNaN(v)||v<=0?null:v; });
-  let html = '<div class="section-title">PERFORMANCE CHARTS</div>'
-    + buildChart('⚡ Sprint Speed (sec)', sv, 'var(--or)', true)
-    + buildChart('🦘 Vertical Jump (cm)', jv, 'var(--bl)', false)
-    + buildChart('🔁 Stamina (min)', tv, 'var(--gr)', true)
-    + '<div class="section-title" style="margin-top:.5rem">DAY LOG</div>';
-  p.days.forEach((d,i) => {
-    html += '<div class="day-log-row">'
-      + '<div class="day-log-num ' + (d.completed?'done':'') + '">' + (d.completed?'✓':(i+1)) + '</div>'
-      + '<div style="flex:1"><div class="day-log-title">' + DAY_THEMES[i].title + '</div>'
-      + '<div class="day-log-stats">'
-      + (d.stats.speed ? '⚡' + d.stats.speed + 's' : '⚡-')
-      + (d.stats.jump ? ' - 🦘' + d.stats.jump + 'cm' : ' - 🦘-')
-      + (d.stats.stamina ? ' - 🔁' + d.stats.stamina + 'min' : ' - 🔁-')
-      + '</div></div>'
-      + '<div style="font-size:.78rem;font-weight:800;color:' + (d.completed?'var(--gr)':'var(--mu)') + '">' + (d.completed?'✅':'-') + '</div>'
-      + '</div>';
+/* ══════════════════════════════════════════════════════════
+   PROGRESS
+══════════════════════════════════════════════════════════ */
+function buildProg(p) {
+  var sv=p.days.map(function(d){var v=parseFloat(d.stats.speed);return isNaN(v)||v<=0?null:v;});
+  var jv=p.days.map(function(d){var v=parseFloat(d.stats.jump);return isNaN(v)||v<=0?null:v;});
+  var tv=p.days.map(function(d){var v=parseFloat(d.stats.stamina);return isNaN(v)||v<=0?null:v;});
+  var html='<div class="sec">PERFORMANCE CHARTS</div>'
+    +chart('⚡ Sprint Speed (sec)',sv,'var(--or)',true)
+    +chart('🦘 Vertical Jump (cm)',jv,'var(--bl)',false)
+    +chart('🔁 Stamina (min)',tv,'var(--gr)',true)
+    +'<div class="sec" style="margin-top:.5rem">DAY LOG</div>';
+  p.days.forEach(function(d,i){
+    html+='<div class="log-row">'
+      +'<div class="log-num'+(d.completed?' done':'')+'">'+( d.completed?'✓':(i+1))+'</div>'
+      +'<div style="flex:1"><div class="log-title">'+DAY_THEMES[i].title+'</div>'
+      +'<div class="log-stats">'+(d.stats.speed?'⚡'+d.stats.speed+'s':'⚡-')+(d.stats.jump?' - 🦘'+d.stats.jump+'cm':' - 🦘-')+(d.stats.stamina?' - 🔁'+d.stats.stamina+'min':' - 🔁-')+'</div></div>'
+      +'<div style="font-size:.76rem;font-weight:800;color:'+(d.completed?'var(--gr)':'var(--mu)')+'">'+( d.completed?'✅':'-')+'</div>'
+      +'</div>';
   });
   return html;
 }
-
-function buildChart(title, vals, color, lowerBetter) {
-  const filt = vals.filter(v=>v!==null);
-  if (!filt.length) {
-    return '<div class="chart-card"><div class="chart-title">' + title + '</div>'
-      + '<div style="text-align:center;color:var(--mu);font-size:.8rem;padding:.75rem">No data yet - complete some days!</div></div>';
-  }
-  const maxV = Math.max(...filt), minV = Math.min(...filt), range = maxV-minV || 1;
-  let bars = '';
-  vals.forEach((v,i) => {
-    if (v===null) {
-      bars += '<div class="bar-wrap"><div style="flex:1"></div><div class="bar-lbl">D' + (i+1) + '</div></div>';
-      return;
-    }
-    // Find previous non-null
-    const prevVals = filt.slice(0, filt.indexOf(v));
-    const prevV = prevVals.length ? prevVals[prevVals.length-1] : undefined;
-    const good = prevV !== undefined && (lowerBetter ? v < prevV : v > prevV);
-    const pct = lowerBetter ? 1-(v-minV)/range : (v-minV)/range;
-    const h = Math.max(8, Math.min(88, pct*100));
-    bars += '<div class="bar-wrap">'
-      + '<div class="bar-val">' + v + '</div>'
-      + '<div class="bar-body" style="height:' + h + '%;background:' + (good?'var(--gr)':color) + '"></div>'
-      + '<div class="bar-lbl">D' + (i+1) + '</div>'
-      + '</div>';
+function chart(title, vals, color, lb) {
+  var filt=vals.filter(function(v){return v!==null;});
+  if (!filt.length) return '<div class="chart-c"><div class="chart-t">'+title+'</div><div style="text-align:center;color:var(--mu);font-size:.78rem;padding:.7rem">No data yet!</div></div>';
+  var mx=Math.max.apply(null,filt), mn=Math.min.apply(null,filt), rng=mx-mn||1;
+  var bars='';
+  vals.forEach(function(v,i){
+    if (v===null){bars+='<div class="bw"><div style="flex:1"></div><div class="bl">D'+(i+1)+'</div></div>';return;}
+    var pidx=filt.indexOf(v), pvArr=filt.slice(0,pidx), pv=pvArr.length?pvArr[pvArr.length-1]:undefined;
+    var good=pv!==undefined&&(lb?v<pv:v>pv);
+    var pct=lb?1-(v-mn)/rng:(v-mn)/rng, ht=Math.max(8,Math.min(88,pct*100));
+    bars+='<div class="bw"><div class="bv">'+v+'</div><div class="bb" style="height:'+ht+'%;background:'+(good?'var(--gr)':color)+'"></div><div class="bl">D'+(i+1)+'</div></div>';
   });
-  return '<div class="chart-card"><div class="chart-title">' + title + '</div>'
-    + '<div class="mini-chart">' + bars + '</div></div>';
+  return '<div class="chart-c"><div class="chart-t">'+title+'</div><div class="mini-chart">'+bars+'</div></div>';
 }
 
-/* =============================================================
-   PART 12 - BADGES
-============================================================= */
+/* ══════════════════════════════════════════════════════════
+   BADGES
+══════════════════════════════════════════════════════════ */
 function buildBadges(p) {
-  let html = '<div class="section-title">ACHIEVEMENTS</div><div class="badges-grid">';
-  ACHIEVEMENTS.forEach(a => {
-    const unlocked = !!p.achievements[a.id];
-    html += '<div class="badge-card ' + (unlocked?'unlocked':'') + '">'
-      + '<div class="badge-ico">' + a.icon + '</div>'
-      + '<div class="badge-nm">' + a.name + '</div>'
-      + '<div class="badge-ds">' + a.desc + '</div>'
-      + '</div>';
+  var html='<div class="sec">ACHIEVEMENTS</div><div class="badges-g">';
+  ACHIEVEMENTS.forEach(function(a){
+    var u=!!p.achievements[a.id];
+    html+='<div class="badge-c'+(u?' unlocked':'')+'">'
+      +'<div class="badge-ico">'+a.icon+'</div>'
+      +'<div class="badge-nm">'+a.name+'</div>'
+      +'<div class="badge-ds">'+a.desc+'</div>'
+      +'</div>';
   });
-  html += '</div><div style="margin-top:1rem;text-align:center;font-size:.75rem;color:var(--mu);font-weight:700">'
-    + Object.keys(p.achievements).length + ' / ' + ACHIEVEMENTS.length + ' unlocked</div>';
+  html+='</div><div style="margin-top:1rem;text-align:center;font-size:.73rem;color:var(--mu);font-weight:700">'
+    +Object.keys(p.achievements).length+' / '+ACHIEVEMENTS.length+' unlocked</div>';
   return html;
 }
 
-/* =============================================================
-   PART 13 - REWARDS
-============================================================= */
+/* ══════════════════════════════════════════════════════════
+   REWARDS
+══════════════════════════════════════════════════════════ */
 function buildRewards(p) {
-  const rewards = p.rewards || [];
-  if (!rewards.length) {
-    return '<div style="text-align:center;padding:3rem 1rem;color:var(--mu)">'
-      + '<div style="font-size:4rem;margin-bottom:1rem">🎁</div>'
-      + '<div style="font-weight:900;font-size:1.1rem;margin-bottom:.4rem">No rewards yet!</div>'
-      + '<div style="font-size:.88rem">Complete daily missions to earn rewards.</div>'
-      + '<div style="margin-top:.5rem;font-size:.82rem">70%+ completion = reward day!</div>'
-      + '</div>';
-  }
-  const pending = rewards.filter(r=>!r.redeemed && r.type!=='none');
-  const past = rewards.filter(r=>r.redeemed || r.type==='none');
-  let html = '';
-  if (pending.length) {
-    html += '<div class="section-title">PENDING REWARDS (' + pending.length + ')</div>';
-    pending.forEach(r => { html += buildRewardCard(r); });
-  }
-  if (past.length) {
-    html += '<div class="section-title" style="margin-top:.5rem">HISTORY</div>';
-    past.forEach(r => { html += buildRewardCard(r); });
-  }
-  html += '<div class="card" style="margin-top:.5rem;font-size:.8rem;color:var(--mu);font-weight:700;line-height:1.6">'
-    + '<div style="font-weight:900;color:var(--tx);margin-bottom:.4rem">📊 Reward Tiers</div>'
-    + '70-89% missions done → 🎮 30 min gaming + 💰 20.000d<br>'
-    + '90-100% missions done → 🎮 1 hour gaming + 💰 50.000d'
-    + '</div>';
+  var rws=p.rewards||[];
+  if (!rws.length) return '<div style="text-align:center;padding:3rem 1rem;color:var(--mu)"><div style="font-size:4rem;margin-bottom:1rem">🎁</div><div style="font-weight:900;font-size:1.08rem;margin-bottom:.38rem">No rewards yet!</div><div style="font-size:.86rem">Complete daily missions to earn rewards.</div><div style="margin-top:.45rem;font-size:.8rem">70%+ completion = reward day!</div></div>';
+  var pend=rws.filter(function(r){return !r.redeemed&&r.type!=='none';}), past=rws.filter(function(r){return r.redeemed||r.type==='none';});
+  var html='';
+  if (pend.length) { html+='<div class="sec">PENDING ('+pend.length+')</div>'; pend.forEach(function(r){html+=rwCard(r);}); }
+  if (past.length) { html+='<div class="sec" style="margin-top:.5rem">HISTORY</div>'; past.forEach(function(r){html+=rwCard(r);}); }
+  html+='<div class="card" style="margin-top:.5rem;font-size:.78rem;color:var(--mu);font-weight:700;line-height:1.6"><div style="font-weight:900;color:var(--tx);margin-bottom:.38rem">📊 Reward Tiers</div>70-89% → 🎮 30 min gaming + 💰 20.000d<br>90-100% → 🎮 1 hour gaming + 💰 50.000d</div>';
   return html;
 }
-
-function buildRewardCard(r) {
-  const isPast = r.redeemed || r.type === 'none';
-  const label = r.type==='big' ? 'BIG REWARD' : r.type==='small' ? 'REWARD' : 'NO REWARD';
-  let html = '<div class="reward-card ' + r.type + ' ' + (isPast?'redeemed':'') + '">'
-    + '<div class="reward-header">'
-    + '<div class="reward-day">DAY ' + r.dayNum + ' - ' + r.pct + '% completion</div>'
-    + (r.type!=='none' ? '<div class="reward-type-badge ' + r.type + '">' + label + '</div>' : '')
-    + '</div>';
-  if (r.type !== 'none') {
-    html += '<div class="reward-items">'
-      + (r.gameTime ? '<div class="reward-item">🎮 ' + r.gameTime + ' gaming</div>' : '')
-      + (r.money ? '<div class="reward-item">💰 ' + r.money + '</div>' : '')
-      + '</div>';
-    if (r.redeemed) {
-      html += '<div class="reward-status">✅ Redeemed' + (r.redeemedAt ? ' - ' + new Date(r.redeemedAt).toLocaleDateString() : '') + '</div>';
-    } else if (isFather()) {
-      html += '<button class="btn btn-success btn-sm" onclick="redeemReward(' + r.dayNum + ')">🎁 Redeem Now</button>';
-    } else {
-      html += '<div style="font-size:.78rem;color:var(--mu);font-weight:700">🔒 Ask Dad to redeem!</div>';
-    }
+function rwCard(r) {
+  var lbl=r.type==='big'?'BIG REWARD':r.type==='small'?'REWARD':'NO REWARD';
+  var html='<div class="rw-c '+r.type+(r.redeemed?' redeemed':'')+'">'
+    +'<div class="rw-hdr"><div class="rw-day">DAY '+r.dayNum+' - '+r.pct+'%</div>'+(r.type!=='none'?'<div class="rw-badge '+r.type+'">'+lbl+'</div>':'')+' </div>';
+  if (r.type!=='none') {
+    html+='<div class="rw-items">'+(r.gameTime?'<div class="rw-item">🎮 '+r.gameTime+' gaming</div>':'')+(r.money?'<div class="rw-item">💰 '+r.money+'</div>':'')+' </div>';
+    if (r.redeemed) html+='<div class="rw-status">✅ Redeemed'+(r.redeemedAt?' - '+new Date(r.redeemedAt).toLocaleDateString():'')+' </div>';
+    else if (isDAD()) html+='<button type="button" class="btn btn-ok btn-sm" onclick="redeemRw('+r.dayNum+')">🎁 Redeem Now</button>';
+    else html+='<div style="font-size:.75rem;color:var(--mu);font-weight:700">🔒 Ask Dad to redeem!</div>';
   } else {
-    html += '<div style="font-size:.82rem;color:var(--mu);font-weight:700">Complete more missions next time!</div>';
+    html+='<div style="font-size:.8rem;color:var(--mu);font-weight:700">Complete more missions next time!</div>';
   }
-  html += '</div>';
-  return html;
+  html+='</div>'; return html;
+}
+function redeemRw(dn) {
+  var p=P(), r=(p.rewards||[]).find(function(rw){return rw.dayNum===dn;});
+  if (!r||r.redeemed) return;
+  r.redeemed=true; r.redeemedAt=Date.now(); saveAll();
+  snd('ach'); showLU('🎁','REWARD REDEEMED!','Day '+dn+': '+(r.gameTime||'')+(r.money?' + '+r.money:'')); renderTab('rewards');
 }
 
-function redeemReward(dayNum) {
-  const p = getPlayer();
-  const r = (p.rewards||[]).find(rw => rw.dayNum === dayNum);
-  if (!r || r.redeemed) return;
-  r.redeemed = true; r.redeemedAt = Date.now();
-  savePlayers();
-  playSound('achievement');
-  showLevelUp('🎁', 'REWARD REDEEMED!', 'Day ' + dayNum + ': ' + (r.gameTime||'') + (r.money ? ' + ' + r.money : ''));
-  renderTab('rewards');
-}
-
-/* =============================================================
-   PART 14 - ADMIN PANEL
-============================================================= */
+/* ══════════════════════════════════════════════════════════
+   ADMIN
+══════════════════════════════════════════════════════════ */
 function buildAdmin() {
-  const names = Object.keys(ALL_PLAYERS);
-  let rows = '';
-  names.forEach(name => {
-    const p2 = ALL_PLAYERS[name];
-    const done = (p2.days||[]).filter(d=>d.completed).length;
-    const isCur = name === SESSION.currentPlayer;
-    const safeName = name.replace(/'/g,"\\'");
-    rows += '<div class="player-manage-row">'
-      + '<div>'
-      + '<div class="player-manage-name">' + escHtml(name) + (isCur ? ' <span style="font-size:.65rem;color:var(--gr);font-weight:700">CURRENT</span>' : '') + '</div>'
-      + '<div class="player-manage-stats">LVL ' + getLevel(p2) + ' - ' + done + '/10 days - ' + p2.coins + '🪙</div>'
-      + '</div>'
-      + '<div style="display:flex;gap:.4rem">'
-      + (!isCur ? '<button class="btn btn-sm btn-secondary" onclick="switchPlayer(\'' + safeName + '\')">Switch</button>' : '')
-      + '<button class="btn btn-sm btn-danger" onclick="confirmDelete(\'' + safeName + '\')">🗑</button>'
-      + '</div>'
-      + '</div>';
+  var rows='';
+  Object.keys(PLAYERS).forEach(function(name){
+    var p2=PLAYERS[name], done=(p2.days||[]).filter(function(d){return d.completed;}).length, cur=name===SESSION.player;
+    rows+='<div class="pm-row"><div><div class="pm-name">'+h(name)+(cur?' <span style="font-size:.62rem;color:var(--gr);font-weight:700">CURRENT</span>':'')+' </div><div class="pm-stats">LVL '+lv(p2)+' - '+done+'/10 - '+p2.coins+'🪙</div></div>'
+      +'<div style="display:flex;gap:.38rem">'
+      +(cur?'':'<button type="button" class="btn btn-sc btn-sm" onclick="switchP(\''+h(name)+'\')">Switch</button>')
+      +'</div></div>';
   });
-
-  const fbConfigured = !!FB_URL;
-  return '<div class="section-title">PLAYER MANAGEMENT</div>'
-    + '<div class="admin-section">' + rows
-    + '<button class="btn btn-secondary" style="margin-top:.5rem" onclick="showAddPlayerModal()">➕ Add Player</button>'
-    + '</div>'
-    + '<div class="section-title">CLOUD SYNC</div>'
-    + '<div class="admin-section">'
-    + '<div style="background:' + (fbConfigured?'rgba(0,230,118,.07)':'rgba(255,255,255,.04)') + ';border:1px solid ' + (fbConfigured?'rgba(0,230,118,.2)':'rgba(255,255,255,.08)') + ';border-radius:12px;padding:.75rem;margin-bottom:.75rem;font-size:.78rem;font-weight:700">'
-    + (fbConfigured ? '🟢 Firebase connected: ' + FB_URL : '⚪ Firebase not configured. Edit FB_URL in the HTML to enable cloud sync.')
-    + '</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem">'
-    + '<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="showExportModal()">📤 Export JSON</button>'
-    + '<button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="showImportModal()">📥 Import JSON</button>'
-    + '</div>'
-    + (fbConfigured ? '<button class="btn btn-secondary" onclick="forceSyncNow()">☁️ Force Sync Now</button>' : '')
-    + '</div>'
-    + '<div class="section-title">DANGER ZONE</div>'
-    + '<div class="admin-section">'
-    + '<button class="btn btn-danger" onclick="confirmResetPlayer()">🔄 Reset Current Player Data</button>'
-    + '</div>';
+  return '<div class="sec">PLAYERS</div><div class="admin-sec">'+rows+'</div>'
+    +'<div class="sec">DATA SYNC</div><div class="admin-sec">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.55rem">'
+    +'<button type="button" class="btn btn-pr btn-sm" style="width:100%;justify-content:center" onclick="showExport()">📤 Export</button>'
+    +'<button type="button" class="btn btn-sc btn-sm" style="width:100%;justify-content:center" onclick="showImport()">📥 Import</button>'
+    +'</div></div>'
+    +'<div class="sec">DANGER ZONE</div><div class="admin-sec">'
+    +'<button type="button" class="btn btn-danger" onclick="confirmReset()">🔄 Reset Current Player</button>'
+    +'</div>';
 }
 
-function forceSyncNow() {
-  syncToFirebase().then(() => showToast('☁️ Sync complete!'));
-}
-
-/* =============================================================
-   PART 15 - FINAL BOSS
-============================================================= */
-function buildFinalBoss(p) {
-  const d1 = p.days[0], d10 = p.days[9];
-  let compares = '';
-  const skills = [{skill:'speed',label:'⚡ SPRINT SPEED',unit:'s',lb:true},{skill:'jump',label:'🦘 VERTICAL JUMP',unit:'cm',lb:false},{skill:'stamina',label:'🔁 STAMINA TIME',unit:'min',lb:true}];
-  skills.forEach(({skill,label,unit,lb}) => {
-    const v1 = parseFloat(d1.stats[skill]), v10 = parseFloat(d10.stats[skill]);
+/* ══════════════════════════════════════════════════════════
+   BOSS
+══════════════════════════════════════════════════════════ */
+function buildBoss(p) {
+  var d1=p.days[0], d10=p.days[9], cmps='';
+  [{sk:'speed',lbl:'⚡ SPRINT SPEED',unit:'s',lb:true},{sk:'jump',lbl:'🦘 VERTICAL JUMP',unit:'cm',lb:false},{sk:'stamina',lbl:'🔁 STAMINA',unit:'min',lb:true}].forEach(function(x){
+    var v1=parseFloat(d1.stats[x.sk]), v10=parseFloat(d10.stats[x.sk]);
     if (isNaN(v1)||isNaN(v10)||v1<=0||v10<=0) return;
-    const good = lb ? v10<v1 : v10>v1;
-    const diff = v10-v1;
-    const sign = diff>0?'+':'';
-    compares += '<div style="margin-bottom:.65rem">'
-      + '<div style="font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:.35rem">' + label + '</div>'
-      + '<div class="compare-row">'
-      + '<div class="compare-cell"><div class="compare-lbl">DAY 1</div><div class="compare-val ff">' + v1 + unit + '</div></div>'
-      + '<div class="compare-vs">VS</div>'
-      + '<div class="compare-cell ' + (good?'win':'lose') + '"><div class="compare-lbl">DAY 10</div><div class="compare-val ff" style="color:' + (good?'var(--gr)':'var(--rd)') + '">' + v10 + unit + '</div></div>'
-      + '</div>'
-      + '<div style="text-align:center;font-size:.75rem;font-weight:900;color:' + (good?'var(--gr)':'var(--mu)') + '">'
-      + (good ? '▲ ' + sign + diff.toFixed(1) + unit + ' IMPROVED! 🔥' : sign + diff.toFixed(1) + unit)
-      + '</div></div>';
+    var good=x.lb?v10<v1:v10>v1, diff=v10-v1, sign=diff>0?'+':'';
+    cmps+='<div style="margin-bottom:.6rem"><div style="font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:.32rem">'+x.lbl+'</div>'
+      +'<div class="cmp-row">'
+      +'<div class="cmp-cell"><div class="cmp-lbl">DAY 1</div><div class="cmp-val ff">'+v1+x.unit+'</div></div>'
+      +'<div class="cmp-vs">VS</div>'
+      +'<div class="cmp-cell '+(good?'win':'lose')+'"><div class="cmp-lbl">DAY 10</div><div class="cmp-val ff" style="color:'+(good?'var(--gr)':'var(--rd)')+'">'+v10+x.unit+'</div></div>'
+      +'</div>'
+      +'<div style="text-align:center;font-size:.73rem;font-weight:900;color:'+(good?'var(--gr)':'var(--mu)')+'">'+( good?'▲ '+sign+diff.toFixed(1)+x.unit+' IMPROVED! 🔥':sign+diff.toFixed(1)+x.unit)+'</div>'
+      +'</div>';
   });
-  return '<div class="boss-wrap">'
-    + '<div class="boss-trophy">🏆</div>'
-    + '<div class="boss-title">YOU DEFEATED YOUR OLD SELF!</div>'
-    + '<div class="boss-sub">10 days. No excuses. Pure grind.</div>'
-    + compares
-    + '<div class="card" style="margin-top:1rem;text-align:left">'
-    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🎮 Total EXP</span><span style="font-weight:900;color:var(--or)">' + p.exp + ' XP</span></div>'
-    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🪙 Coins</span><span style="font-weight:900;color:var(--ye)">' + p.coins + '</span></div>'
-    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">⚡ Final Level</span><span style="font-weight:900;color:var(--pu)">LVL ' + getLevel(p) + ' ' + getLvTitle(p) + '</span></div>'
-    + '<div class="final-stat-row"><span style="color:var(--mu);font-weight:700">🏅 Badges</span><span style="font-weight:900;color:var(--gr)">' + Object.keys(p.achievements).length + ' / ' + ACHIEVEMENTS.length + '</span></div>'
-    + '</div>'
-    + '<div class="boss-quote">"A champion is not born.<br>A champion is built - one day at a time."</div>'
-    + (isFather() ? '<button class="btn btn-ghost" onclick="SESSION.editMode=true;renderTab(\'day10\')">✏️ Edit Day 10 Stats</button>' : '')
-    + '</div>';
+  return '<div class="boss-wrap"><div class="boss-trophy">🏆</div>'
+    +'<div class="boss-title">YOU DEFEATED YOUR OLD SELF!</div>'
+    +'<div class="boss-sub">10 days. No excuses. Pure grind.</div>'
+    +cmps
+    +'<div class="card" style="margin-top:1rem;text-align:left">'
+    +'<div class="fsr"><span style="color:var(--mu);font-weight:700">🎮 Total EXP</span><span style="font-weight:900;color:var(--or)">'+p.exp+' XP</span></div>'
+    +'<div class="fsr"><span style="color:var(--mu);font-weight:700">🪙 Coins</span><span style="font-weight:900;color:var(--ye)">'+p.coins+'</span></div>'
+    +'<div class="fsr"><span style="color:var(--mu);font-weight:700">⚡ Final Level</span><span style="font-weight:900;color:var(--pu)">LVL '+lv(p)+' '+lvT(p)+'</span></div>'
+    +'<div class="fsr"><span style="color:var(--mu);font-weight:700">🏅 Badges</span><span style="font-weight:900;color:var(--gr)">'+Object.keys(p.achievements).length+' / '+ACHIEVEMENTS.length+'</span></div>'
+    +'</div>'
+    +'<div class="boss-quote">"A champion is not born.<br>A champion is built - one day at a time."</div>'
+    +(isDAD()?'<button type="button" class="btn btn-ghost" onclick="SESSION.editMode=true;renderTab(\'day10\')">✏️ Edit Day 10 Stats</button>':'')
+    +'</div>';
 }
 
-/* =============================================================
-   PART 16 - INTERACTIONS
-============================================================= */
-function childAction() { showToast('🔒 Only Dad can do this!'); playSound('error'); }
+/* ══════════════════════════════════════════════════════════
+   INTERACTIONS
+══════════════════════════════════════════════════════════ */
+function childAction() { toast('🔒 Only Dad can do this!'); snd('err'); }
 
-function toggleMission(dayNum, skill) {
-  if (!isFather()) { childAction(); return; }
-  const p = getPlayer(); if (!p) return;
-  const day = p.days[dayNum-1];
-  if (day.completed && !SESSION.editMode) return;
-  const m = DAY_MISSIONS[dayNum-1].find(m=>m.id===skill);
-  if (!m) return;
-
-  if (day.missions[skill]) {
-    day.missions[skill] = false;
-    p.exp = Math.max(0, p.exp - m.exp);
-    p.coins = Math.max(0, p.coins - m.coins);
+function toggleM(dn, sk) {
+  if (!isDAD()) { childAction(); return; }
+  var p=P(), day=p.days[dn-1]; if (day.completed && !SESSION.editMode) return;
+  var m=DAY_MISSIONS[dn-1].find(function(m){return m.id===sk;}); if (!m) return;
+  if (day.missions[sk]) {
+    day.missions[sk]=false; p.exp=Math.max(0,p.exp-m.exp); p.coins=Math.max(0,p.coins-m.coins);
   } else {
-    day.missions[skill] = true;
-    addExp(p, m.exp);
-    addCoins(p, m.coins);
-    playSound('complete');
-    spawnConfetti(3);
+    day.missions[sk]=true; addExp(p,m.exp); addCoins(p,m.coins); snd('done'); confetti(3);
   }
-  checkAchievements(p);
-  savePlayers();
-  updateTopBar();
-  renderTab('day' + dayNum);
+  checkAch(p); saveAll(); updateTopBar(); renderTab('day'+dn);
 }
 
-function setPvpResult(dayNum, result) {
-  if (!isFather()) { childAction(); return; }
-  const p = getPlayer(); if (!p) return;
-  const day = p.days[dayNum-1];
-  if (day.completed && !SESSION.editMode) return;
-  const pvp = DAY_MISSIONS[dayNum-1].find(m=>m.id==='pvp');
-  const prev = day.pvpResult;
-
-  if (prev === 'win') { p.exp = Math.max(0,p.exp-pvp.exp); p.coins = Math.max(0,p.coins-pvp.coins); }
-  if (prev === 'lose') { p.exp = Math.max(0,p.exp-5); p.coins = Math.max(0,p.coins-5); }
-
-  day.pvpResult = result;
-  if (result === 'win') {
-    addExp(p, pvp.exp); addCoins(p, pvp.coins);
-    showToast('🏆 WIN! +' + pvp.exp + ' EXP +' + pvp.coins + '🪙');
-    unlockAchievement(p, 'clutch_player');
-    playSound('achievement');
-  } else {
-    addExp(p, 5); addCoins(p, 5);
-    showToast('💪 Good fight! +5 EXP');
-    playSound('coin');
-  }
-  savePlayers();
-  renderTab('day' + dayNum);
+function setPvp(dn, res) {
+  if (!isDAD()) { childAction(); return; }
+  var p=P(), day=p.days[dn-1]; if (day.completed && !SESSION.editMode) return;
+  var pvp=DAY_MISSIONS[dn-1].find(function(m){return m.id==='pvp';}), prev=day.pvpResult;
+  if (prev==='win') { p.exp=Math.max(0,p.exp-pvp.exp); p.coins=Math.max(0,p.coins-pvp.coins); }
+  if (prev==='lose') { p.exp=Math.max(0,p.exp-5); p.coins=Math.max(0,p.coins-5); }
+  day.pvpResult=res;
+  if (res==='win') { addExp(p,pvp.exp); addCoins(p,pvp.coins); toast('🏆 WIN! +'+pvp.exp+' EXP +'+pvp.coins+'🪙'); unlock(p,'clutch_player'); snd('ach'); }
+  else { addExp(p,5); addCoins(p,5); toast('💪 Good fight! +5 EXP'); snd('coin'); }
+  saveAll(); renderTab('day'+dn);
 }
 
 function onStatChange(e) {
-  const p = getPlayer(); if (!p) return;
-  if (!isFather()) return;
-  const dayNum = parseInt(e.target.dataset.day, 10);
-  const skill = e.target.dataset.skill;
-  const rawVal = (e.target.value || '').trim();
-  const val = parseFloat(rawVal);
-
-  if (rawVal !== '' && (isNaN(val) || val < 0)) {
-    showToast('❌ Invalid value!'); playSound('error');
-    e.target.value = '';
-    return;
-  }
-
-  const day = p.days[dayNum-1];
-  day.stats[skill] = rawVal;
-
-  const prev = getPrevStat(p, dayNum, skill);
-  if (rawVal && prev !== null) {
-    const lowerBetter = skill==='speed'||skill==='stamina';
-    const improved = lowerBetter ? val<prev : val>prev;
-    if (improved && !day.recordsAwarded[skill]) {
-      day.recordsAwarded[skill] = true;
-      addCoins(p, 15);
-      playSound('record');
-      showToast('🔥 NEW RECORD! +15🪙');
-      if (skill==='speed') unlockAchievement(p,'speed_hunter');
-      if (skill==='jump') unlockAchievement(p,'jump_booster');
-      if (skill==='stamina') unlockAchievement(p,'iron_energy');
-      unlockAchievement(p,'record_breaker');
+  if (!isDAD()) return;
+  var dn=parseInt(e.target.dataset.day,10), sk=e.target.dataset.skill, raw=(e.target.value||'').trim(), val=parseFloat(raw);
+  if (raw!=='' && (isNaN(val)||val<0)) { toast('❌ Invalid value!'); snd('err'); e.target.value=''; return; }
+  var p=P(), day=p.days[dn-1]; day.stats[sk]=raw;
+  var prev=prevStat(p,dn,sk);
+  if (raw && prev!==null) {
+    var lb=sk==='speed'||sk==='stamina', imp=lb?val<prev:val>prev;
+    if (imp && !day.recordsAwarded[sk]) {
+      day.recordsAwarded[sk]=true; addCoins(p,15); snd('rec'); toast('🔥 NEW RECORD! +15🪙');
+      if (sk==='speed') unlock(p,'speed_hunter');
+      if (sk==='jump')  unlock(p,'jump_booster');
+      if (sk==='stamina') unlock(p,'iron_energy');
+      unlock(p,'record_breaker');
     }
   }
-
-  const deltaEl = document.getElementById('delta-' + dayNum + '-' + skill);
-  if (deltaEl) deltaEl.innerHTML = getDeltaHtml(skill, rawVal, prev);
-  savePlayers();
+  var de=g('dt-'+dn+'-'+sk); if (de) de.innerHTML=deltaHtml(sk,raw,prev);
+  saveAll();
 }
 
-function requestEditMode(dayNum) {
-  showPasswordModal('Enter admin password to edit:', function() {
-    SESSION.editMode = true;
-    renderTab('day' + dayNum);
+function reqEdit(dn) {
+  showPwdModal('Enter admin password to edit:', function(){
+    SESSION.editMode=true; renderTab('day'+dn);
   });
 }
+function exitEdit(dn) { SESSION.editMode=false; renderTab('day'+dn); }
 
-function exitEditMode(dayNum) {
-  SESSION.editMode = false;
-  renderTab('day' + dayNum);
+function confirmComplete(dn) {
+  if (!isDAD()) { childAction(); return; }
+  var p=P(), day=p.days[dn-1];
+  var phys=DAY_MISSIONS[dn-1].filter(function(m){return m.id!=='pvp';});
+  if (!phys.every(function(m){return day.missions[m.id];})) { toast('❌ Complete all missions first!'); return; }
+  var rw=calcRw(day);
+  var rmsg=rw.type==='none'?'No reward this time.':rw.type==='small'?'🎮 '+rw.gameTime+' + 💰 '+rw.money+' earned!':'🏆 '+rw.gameTime+' + 💰 '+rw.money+' - AMAZING!';
+  openModal('<div class="m-title ff">✅ COMPLETE DAY '+dn+'?</div>'
+    +'<div style="text-align:center;margin-bottom:1.1rem">'
+    +'<div style="font-size:2.8rem;margin-bottom:.45rem">'+(rw.type==='big'?'🏆':rw.type==='small'?'⭐':'💪')+'</div>'
+    +'<div style="font-weight:900;font-size:.97rem;margin-bottom:.38rem">'+rw.pct+'% completion</div>'
+    +'<div style="font-size:.85rem;color:var(--mu);font-weight:700">'+rmsg+'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">'
+    +'<button type="button" class="btn btn-sc" onclick="closeModal()">← Back</button>'
+    +'<button type="button" class="btn btn-pr" onclick="closeModal();completeDay('+dn+')">Confirm ✓</button>'
+    +'</div>');
+}
+function completeDay(dn) {
+  if (!isDAD()) return;
+  var p=P(), day=p.days[dn-1];
+  addExp(p,20); addCoins(p,10);
+  day.completed=true; day.completedAt=Date.now(); SESSION.editMode=false;
+  var rw=calcRw(day); rw.dayNum=dn; rw.redeemed=false; rw.redeemedAt=null;
+  if (!p.rewards) p.rewards=[]; p.rewards.push(rw);
+  checkAch(p); saveAll(); confetti(40); snd('done');
+  if (dn===10) { unlock(p,'champion'); setTimeout(function(){ showLU('👑','CHAMPION!','You completed the 10 Day Challenge! GOAT!'); },800); }
+  else { setTimeout(function(){ showLU('🏀','DAY '+dn+' DONE!',(rw.type!=='none'?'Reward earned! ':'')+'Day '+(dn+1)+' is now unlocked!'); },600); }
+  renderTab('day'+dn);
 }
 
-function confirmCompleteDay(dayNum) {
-  if (!isFather()) { childAction(); return; }
-  const p = getPlayer(); if (!p) return;
-  const day = p.days[dayNum-1];
-  const phys = DAY_MISSIONS[dayNum-1].filter(m=>m.id!=='pvp');
-  if (!phys.every(m=>day.missions[m.id])) { showToast('❌ Complete all missions first!'); return; }
-
-  const reward = calcReward(day);
-  const rewardMsg = reward.type==='none' ? 'No reward this time - try harder tomorrow!'
-    : reward.type==='small' ? '🎮 ' + reward.gameTime + ' gaming + 💰 ' + reward.money + ' earned!'
-    : '🏆 ' + reward.gameTime + ' gaming + 💰 ' + reward.money + ' - AMAZING!';
-  const rewardIcon = reward.type==='big' ? '🏆' : reward.type==='small' ? '⭐' : '💪';
-
-  openModal('<div class="modal-title ff">✅ COMPLETE DAY ' + dayNum + '?</div>'
-    + '<div style="text-align:center;margin-bottom:1.2rem">'
-    + '<div style="font-size:3rem;margin-bottom:.5rem">' + rewardIcon + '</div>'
-    + '<div style="font-weight:900;font-size:1rem;margin-bottom:.4rem">' + reward.pct + '% completion</div>'
-    + '<div style="font-size:.88rem;color:var(--mu);font-weight:700">' + rewardMsg + '</div>'
-    + '</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
-    + '<button class="btn btn-secondary" onclick="closeModal()">← Back</button>'
-    + '<button class="btn btn-primary" onclick="closeModal();completeDay(' + dayNum + ')">Confirm ✓</button>'
-    + '</div>');
-}
-
-function completeDay(dayNum) {
-  if (!isFather()) return;
-  const p = getPlayer(); if (!p) return;
-  const day = p.days[dayNum-1];
-
-  addExp(p, 20); addCoins(p, 10);
-  day.completed = true;
-  day.completedAt = Date.now();
-  SESSION.editMode = false;
-
-  const reward = calcReward(day);
-  reward.dayNum = dayNum;
-  reward.redeemed = false;
-  reward.redeemedAt = null;
-  if (!p.rewards) p.rewards = [];
-  p.rewards.push(reward);
-
-  checkAchievements(p);
-  savePlayers();
-  spawnConfetti(40);
-  playSound('complete');
-
-  if (dayNum === 10) {
-    unlockAchievement(p, 'champion');
-    setTimeout(function() { showLevelUp('👑','CHAMPION!','You completed the 10 Day Challenge! GOAT status achieved!'); }, 800);
-  } else {
-    setTimeout(function() { showLevelUp('🏀','DAY ' + dayNum + ' DONE!', (reward.type!=='none'?'Reward earned! ':'') + 'Day ' + (dayNum+1) + ' is now unlocked!'); }, 600);
-  }
-  renderTab('day' + dayNum);
-}
-
-/* =============================================================
-   PART 17 - ACHIEVEMENTS
-============================================================= */
-function unlockAchievement(p, id) {
+/* ══════════════════════════════════════════════════════════
+   ACHIEVEMENTS
+══════════════════════════════════════════════════════════ */
+function unlock(p, id) {
   if (p.achievements[id]) return;
-  p.achievements[id] = Date.now();
-  const a = ACHIEVEMENTS.find(a=>a.id===id);
-  if (a) { savePlayers(); showAchievementToast(a); playSound('achievement'); }
+  p.achievements[id]=Date.now();
+  var a=ACHIEVEMENTS.find(function(a){return a.id===id;});
+  if (a) { saveAll(); achToast(a); snd('ach'); }
+}
+function checkAch(p) {
+  var done=p.days.filter(function(d){return d.completed;}).length;
+  if (done>=1) unlock(p,'first_day'); if (done>=5) unlock(p,'halfway'); if (done>=10) unlock(p,'champion');
+  var str=0, mx=0;
+  p.days.forEach(function(d){ if(d.completed){str++;mx=Math.max(mx,str);}else{str=0;} });
+  if (mx>=3) unlock(p,'streak_3'); if (mx>=5) unlock(p,'streak_5');
 }
 
-function checkAchievements(p) {
-  const done = p.days.filter(d=>d.completed).length;
-  if (done >= 1) unlockAchievement(p,'first_day');
-  if (done >= 5) unlockAchievement(p,'halfway');
-  if (done >= 10) unlockAchievement(p,'champion');
-  let streak=0, max=0;
-  p.days.forEach(d => { if(d.completed){streak++;max=Math.max(max,streak);}else{streak=0;} });
-  if (max>=3) unlockAchievement(p,'streak_3');
-  if (max>=5) unlockAchievement(p,'streak_5');
-}
+/* ══════════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════════ */
+function openModal(html) { g('modal-body').innerHTML=html; g('modal-bg').classList.add('open'); }
+function closeModal()    { g('modal-bg').classList.remove('open'); _pwdCb=null; }
 
-/* =============================================================
-   PART 18 - MODAL SYSTEM
-   FIX: no more setTimeout patching. Use _pwdCb closure directly.
-============================================================= */
-function openModal(html) {
-  document.getElementById('modal-body').innerHTML = html;
-  document.getElementById('modal-bg').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modal-bg').classList.remove('open');
-  _pwdCb = null;
-}
-function modalBgClick(e) { if (e.target===document.getElementById('modal-bg')) closeModal(); }
-
-// Called from modal button (must be on window)
-window._submitPwd = function() {
-  const inp = document.getElementById('modal-pwd');
-  const err = document.getElementById('modal-pwd-err');
-  const v = inp ? inp.value : '';
-  if (v === ADMIN_PWD) {
-    closeModal();
-    if (typeof _pwdCb === 'function') { const cb = _pwdCb; _pwdCb = null; cb(); }
-  } else {
-    if (err) err.textContent = '❌ Wrong password!';
-    if (inp) inp.value = '';
-    playSound('error');
-  }
+window._pwdSubmit = function() {
+  var v=(g('mpwd').value||''), err=g('mpwd-err');
+  if (v===ADMIN_PWD) { closeModal(); if (typeof _pwdCb==='function'){var cb=_pwdCb;_pwdCb=null;cb();} }
+  else { if(err) err.textContent='❌ Wrong password!'; g('mpwd').value=''; snd('err'); }
 };
-
-function showPasswordModal(title, onSuccess) {
-  _pwdCb = onSuccess;
-  openModal('<div class="modal-title">🔐 ' + title + '</div>'
-    + '<input type="password" inputmode="numeric" class="pwd-input" id="modal-pwd" placeholder="......" maxlength="6" oninput="if(this.value.length===6)_submitPwd()">'
-    + '<div class="pwd-error" id="modal-pwd-err"></div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
-    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
-    + '<button class="btn btn-primary" onclick="_submitPwd()">Unlock</button>'
-    + '</div>');
+function showPwdModal(title, cb) {
+  _pwdCb=cb;
+  openModal('<div class="m-title">🔐 '+title+'</div>'
+    +'<input type="password" inputmode="numeric" class="pwd-input" id="mpwd" placeholder="......" maxlength="6" oninput="if(this.value.length===6)_pwdSubmit()">'
+    +'<div class="pwd-err" id="mpwd-err"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">'
+    +'<button type="button" class="btn btn-sc" onclick="closeModal()">Cancel</button>'
+    +'<button type="button" class="btn btn-pr" onclick="_pwdSubmit()">Unlock</button>'
+    +'</div>');
 }
 
-// Called from modal button for adding player
-window._addPlayerFromModal = function() {
-  const inp = document.getElementById('modal-new-name');
-  const err = document.getElementById('modal-add-err');
-  const n = inp ? inp.value.trim() : '';
-  if (!n) { if(err) err.textContent = '❌ Enter a name!'; return; }
-  if (ALL_PLAYERS[n]) { if(err) err.textContent = '❌ Already exists!'; return; }
-  ALL_PLAYERS[n] = createDefaultPlayer(n);
-  savePlayers();
-  closeModal();
-  renderTab('admin');
-  showToast('✅ Player added!');
-};
-
-function showAddPlayerModal() {
-  openModal('<div class="modal-title ff">➕ ADD PLAYER</div>'
-    + '<input type="text" class="new-player-input" id="modal-new-name" placeholder="Enter player name..." maxlength="20">'
-    + '<div class="pwd-error" id="modal-add-err"></div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
-    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
-    + '<button class="btn btn-primary" onclick="_addPlayerFromModal()">Create</button>'
-    + '</div>');
+function switchP(name) {
+  if (!PLAYERS[name]) return;
+  SESSION.player=name; SESSION.editMode=false; SESSION.tab='dashboard';
+  buildNav(); renderTab('dashboard'); updateTopBar(); closeModal(); toast('✅ Switched to '+name);
 }
-
-function confirmDelete(name) {
-  if (name === SESSION.currentPlayer) { showToast('❌ Cannot delete current player!'); return; }
-  openModal('<div class="modal-title ff">🗑 Delete player?</div>'
-    + '<div style="text-align:center;margin-bottom:1rem;font-size:1.1rem;font-weight:900">' + escHtml(name) + '</div>'
-    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">This cannot be undone!</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
-    + '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>'
-    + '<button class="btn btn-danger" id="del-confirm-btn">Delete</button>'
-    + '</div>');
-  // Attach handler after render
-  setTimeout(function() {
-    const btn = document.getElementById('del-confirm-btn');
-    if (btn) btn.onclick = function() {
-      delete ALL_PLAYERS[name];
-      savePlayers();
-      closeModal();
-      renderTab('admin');
-      showToast('✅ Deleted!');
-    };
-  }, 20);
-}
-
-function confirmResetPlayer() {
-  showPasswordModal('Confirm reset with password:', function() {
-    const name = SESSION.currentPlayer;
-    if (!name) return;
-    ALL_PLAYERS[name] = createDefaultPlayer(name);
-    savePlayers();
-    renderTab('dashboard');
-    updateTopBar();
-    showToast('🔄 Player data reset!');
+function confirmReset() {
+  showPwdModal('Confirm reset:', function(){
+    var n=SESSION.player; if(!n) return;
+    PLAYERS[n]=newPlayer(n, n==='Bo'?6:0); saveAll(); renderTab('dashboard'); updateTopBar(); toast('🔄 Reset!');
   });
 }
-
-function switchPlayer(name) {
-  if (!ALL_PLAYERS[name]) { showToast('❌ Player not found!'); return; }
-  SESSION.currentPlayer = name;
-  SESSION.editMode = false;
-  SESSION.currentTab = 'dashboard';
-  buildNav();
-  renderTab('dashboard');
-  updateTopBar();
-  closeModal();
-  showToast('✅ Switched to ' + name);
-}
-
 function confirmLogout() {
-  openModal('<div class="modal-title ff">⇄ DOI NGUOI DUNG?</div>'
-    + '<div style="text-align:center;color:var(--mu);font-size:.9rem;font-weight:700;margin-bottom:1.2rem">Quay ve man hinh chon nguoi dung.</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">'
-    + '<button class="btn btn-secondary" onclick="closeModal()">Stay</button>'
-    + '<button class="btn btn-primary" onclick="closeModal();goToSplash()">Switch →</button>'
-    + '</div>');
+  openModal('<div class="m-title ff">⇄ DOI NGUOI DUNG?</div>'
+    +'<div style="text-align:center;color:var(--mu);font-size:.88rem;font-weight:700;margin-bottom:1.1rem">Quay ve man hinh chon nguoi dung.</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">'
+    +'<button type="button" class="btn btn-sc" onclick="closeModal()">Stay</button>'
+    +'<button type="button" class="btn btn-pr" onclick="closeModal();goSplash()">Switch →</button>'
+    +'</div>');
 }
 
-function goToSplash() {
-  SESSION.currentPlayer = null; SESSION.role = null; SESSION.editMode = false;
-  document.getElementById('game-screen').style.display = 'none';
-  document.getElementById('splash').style.display = '';
-  var pwdInp = document.getElementById('login-pwd');
-  var pwdErr = document.getElementById('pwd-error');
-  if (pwdInp) pwdInp.value = '';
-  if (pwdErr) pwdErr.textContent = '';
-  showStep('welcome');
-}
-
-/* =============================================================
-   PART 19 - EXPORT / IMPORT
-============================================================= */
-function showExportModal() {
-  const json = JSON.stringify(ALL_PLAYERS, null, 2);
-  openModal('<div class="modal-title ff">📤 EXPORT DATA</div>'
-    + '<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Copy this JSON and paste it on your other device to sync.</div>'
-    + '<textarea class="sync-textarea" id="export-ta" readonly></textarea>'
+/* ══════════════════════════════════════════════════════════
+   EXPORT / IMPORT
+══════════════════════════════════════════════════════════ */
+function showExport() {
+  var json=JSON.stringify(PLAYERS,null,2);
+  openModal('<div class="m-title ff">📤 EXPORT</div>'
+    +'<textarea class="sync-ta" id="exp-ta" readonly></textarea>'
 
 ```
-+ '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem">'
-+ '<button class="btn btn-secondary" onclick="closeModal()">Close</button>'
-+ '<button class="btn btn-primary" id="copy-btn">📋 Copy</button>'
-+ '</div>');
++'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.65rem">'
++'<button type="button" class="btn btn-sc" onclick="closeModal()">Close</button>'
++'<button type="button" class="btn btn-pr" id="copybtn">📋 Copy</button>'
++'</div>');
 ```
 
-setTimeout(function() {
-const ta = document.getElementById(‘export-ta’);
-if (ta) ta.value = json;
-const btn = document.getElementById(‘copy-btn’);
-if (btn) btn.onclick = function() {
-if (ta) {
-ta.select(); ta.setSelectionRange(0,99999);
-navigator.clipboard.writeText(ta.value)
-.then(function() { showToast(‘✅ Copied to clipboard!’); })
-.catch(function() { try { document.execCommand(‘copy’); showToast(‘✅ Copied!’); } catch(e) {} });
+setTimeout(function(){
+var ta=g(‘exp-ta’); if(ta) ta.value=json;
+var btn=g(‘copybtn’); if(btn) btn.onclick=function(){ if(ta){ta.select();ta.setSelectionRange(0,99999); navigator.clipboard.writeText(ta.value).then(function(){toast(‘✅ Copied!’);}).catch(function(){try{document.execCommand(‘copy’);toast(‘✅ Copied!’);}catch(e){}});} };
+},30);
 }
-};
-}, 30);
+function showImport() {
+openModal(’<div class="m-title ff">📥 IMPORT</div>’
++’<textarea class="sync-ta" id="imp-ta" placeholder="Paste JSON here..."></textarea>’
++’<div id="imp-err" style="color:var(--rd);font-size:.75rem;font-weight:800;margin:.38rem 0;min-height:1em"></div>’
++’<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">’
++’<button type="button" class="btn btn-sc" onclick="doImport(\'merge\')">🔀 Merge</button>’
++’<button type="button" class="btn btn-danger" onclick="doImport(\'replace\')">♻️ Replace</button>’
++’</div>’);
+}
+function doImport(mode) {
+var ta=g(‘imp-ta’), err=g(‘imp-err’), raw=ta?ta.value.trim():’’;
+if (!raw) { if(err) err.textContent=‘❌ Paste data first!’; return; }
+var parsed; try { parsed=JSON.parse(raw); } catch(e) { if(err) err.textContent=‘❌ Invalid JSON!’; snd(‘err’); return; }
+if (!parsed||typeof parsed!==‘object’||Array.isArray(parsed)) { if(err) err.textContent=‘❌ Invalid format.’; return; }
+for (var k in parsed) { if (!parsed[k]||typeof parsed[k].exp!==‘number’||!Array.isArray(parsed[k].days)) { if(err) err.textContent=‘❌ Bad data for “’+h(k)+’”’; return; } }
+if (mode===‘replace’) { PLAYERS=parsed; }
+else { for (var k2 in parsed) { if (!PLAYERS[k2]) PLAYERS[k2]=parsed[k2]; } }
+seedPlayers(); saveAll(); closeModal();
+toast(‘✅ Import OK! (’+Object.keys(parsed).length+’ players)’); snd(‘ach’);
+if (SESSION.player && PLAYERS[SESSION.player]) { renderTab(‘dashboard’); updateTopBar(); } else { goSplash(); }
 }
 
-function showImportModal() {
-openModal(’<div class="modal-title ff">📥 IMPORT DATA</div>’
-+ ‘<div style="font-size:.78rem;color:var(--mu);font-weight:700;margin-bottom:.6rem">Paste exported JSON here. Choose merge or replace.</div>’
-+ ‘<textarea class="sync-textarea" id="import-ta" placeholder="Paste JSON here..."></textarea>’
-+ ‘<div id="import-err" style="color:var(--rd);font-size:.78rem;font-weight:700;margin:.4rem 0;min-height:1em"></div>’
-+ ‘<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.3rem">’
-+ ‘<button class="btn btn-secondary" onclick="importData(\'merge\')">🔀 Merge</button>’
-+ ‘<button class="btn btn-danger" onclick="importData(\'replace\')">♻️ Replace All</button>’
-+ ‘</div>’
-+ ‘<div style="font-size:.7rem;color:var(--mu);margin-top:.5rem;font-weight:700">Merge: add new players. Replace: overwrite ALL data.</div>’);
+/* ══════════════════════════════════════════════════════════
+FX
+══════════════════════════════════════════════════════════ */
+var _tt, _at;
+function toast(msg) {
+var t=g(‘toast’); if(!t) return;
+t.textContent=msg; t.classList.add(‘show’); clearTimeout(_tt);
+_tt=setTimeout(function(){ t.classList.remove(‘show’); },2300);
 }
-
-function importData(mode) {
-const ta = document.getElementById(‘import-ta’);
-const err = document.getElementById(‘import-err’);
-const raw = ta ? ta.value.trim() : ‘’;
-if (!raw) { if(err) err.textContent = ‘❌ Paste data first!’; return; }
-let parsed;
-try { parsed = JSON.parse(raw); } catch(e) {
-if(err) err.textContent = ‘❌ Invalid JSON! Check the data.’;
-playSound(‘error’); return;
+function achToast(a) {
+var t=g(‘ach-toast’); if(!t) return;
+t.innerHTML=a.icon+’ Achievement: <strong>’+a.name+’</strong>’;
+t.classList.add(‘show’); clearTimeout(_at);
+_at=setTimeout(function(){ t.classList.remove(‘show’); },3000);
 }
-if (!parsed || typeof parsed !== ‘object’ || Array.isArray(parsed)) {
-if(err) err.textContent = ‘❌ Invalid format.’; return;
+function showLU(e, t, m) {
+g(‘lu-e’).textContent=e; g(‘lu-t’).textContent=t; g(‘lu-m’).textContent=m;
+g(‘lu-ov’).classList.add(‘show’);
 }
-// Validate
-for (const [k,v] of Object.entries(parsed)) {
-if (!v || typeof v.exp !== ‘number’ || !Array.isArray(v.days)) {
-if(err) err.textContent = ‘❌ Invalid player data for “’ + escHtml(k) + ‘”’; return;
-}
-}
-if (mode === ‘replace’) { ALL_PLAYERS = parsed; }
-else { for (const [k,v] of Object.entries(parsed)) { if (!ALL_PLAYERS[k]) ALL_PLAYERS[k] = v; } }
-savePlayers();
-closeModal();
-renderPlayerList();
-showToast(‘✅ Import OK! (’ + Object.keys(parsed).length + ’ players)’);
-playSound(‘achievement’);
-if (SESSION.currentPlayer && ALL_PLAYERS[SESSION.currentPlayer]) {
-renderTab(‘dashboard’); updateTopBar();
-} else {
-goToSplash();
+function closeLU() { g(‘lu-ov’).classList.remove(‘show’); }
+function confetti(n) {
+n=n||40;
+var cols=[’#FF6B00’,’#FFD600’,’#00E676’,’#00C2FF’,’#B44FFF’,’#FF3D5A’];
+for (var i=0;i<n;i++) {
+var el=document.createElement(‘div’); el.className=‘confetti’;
+el.style.cssText=‘left:’+(Math.random()*100)+‘vw;top:-10px;background:’+cols[Math.floor(Math.random()*cols.length)]+’;width:’+(4+Math.random()*8)+‘px;height:’+(4+Math.random()*8)+‘px;animation-duration:’+(1.2+Math.random()*2)+‘s;animation-delay:’+(Math.random()*.6)+‘s;’;
+document.body.appendChild(el); setTimeout(function(){ el.remove(); },3500);
 }
 }
 
-/* =============================================================
-PART 20 - VISUAL FX
-============================================================= */
-let _toastTmr;
-function showToast(msg) {
-const t = document.getElementById(‘toast’);
-if (!t) return;
-t.textContent = msg; t.classList.add(‘show’);
-clearTimeout(_toastTmr);
-_toastTmr = setTimeout(function() { t.classList.remove(‘show’); }, 2300);
-}
+/* ══════════════════════════════════════════════════════════
+INIT - runs after DOM is ready (script at end of body)
+══════════════════════════════════════════════════════════ */
+(function() {
+// 1. Load saved data
+loadSett(); loadAll(); seedPlayers(); saveAll();
 
-let _achTmr;
-function showAchievementToast(a) {
-const t = document.getElementById(‘achievement-toast’);
-if (!t) return;
-t.innerHTML = a.icon + ’ Achievement: <strong>’ + a.name + ‘</strong>’;
-t.classList.add(‘show’);
-clearTimeout(_achTmr);
-_achTmr = setTimeout(function() { t.classList.remove(‘show’); }, 3000);
-}
+// 2. Optional Firebase pull
+fbPull();
 
-function showLevelUp(emoji, title, msg) {
-const el = (id) => document.getElementById(id);
-if (el(‘lu-emoji’)) el(‘lu-emoji’).textContent = emoji;
-if (el(‘lu-title’)) el(‘lu-title’).textContent = title;
-if (el(‘lu-msg’)) el(‘lu-msg’).textContent = msg;
-const ov = el(‘levelup-overlay’);
-if (ov) ov.classList.add(‘show’);
-}
-function closeLevelUp() {
-const ov = document.getElementById(‘levelup-overlay’);
-if (ov) ov.classList.remove(‘show’);
-}
+// 3. Wire splash buttons with addEventListener
+g(‘btn-baolam’).addEventListener(‘click’, function() { loginBaoLam(); });
+g(‘btn-bo’).addEventListener(‘click’,     function() { showPwd(); });
+g(‘btn-pwd-back’).addEventListener(‘click’, function() { showHome(); });
+g(‘btn-do-login’).addEventListener(‘click’, function() { loginBo(); });
+g(‘login-pwd’).addEventListener(‘input’, function() { if (this.value.length===6) loginBo(); });
+g(‘login-pwd’).addEventListener(‘keydown’, function(e) { if (e.key===‘Enter’) loginBo(); });
 
-function spawnConfetti(count) {
-count = count || 40;
-const colors = [’#FF6B00’,’#FFD600’,’#00E676’,’#00C2FF’,’#B44FFF’,’#FF3D5A’];
-for (let i=0; i<count; i++) {
-const el = document.createElement(‘div’);
-el.className = ‘confetti’;
-el.style.cssText = ‘left:’ + (Math.random()*100) + ‘vw;top:-10px;background:’ + colors[Math.floor(Math.random()*colors.length)] + ‘;width:’ + (4+Math.random()*8) + ‘px;height:’ + (4+Math.random()*8) + ‘px;animation-duration:’ + (1.2+Math.random()*2) + ‘s;animation-delay:’ + (Math.random()*0.6) + ‘s;’;
-document.body.appendChild(el);
-setTimeout(function() { el.remove(); }, 3500);
-}
-}
+// 4. Wire game screen buttons
+g(‘sound-btn’).addEventListener(‘click’, function() { toggleSound(); });
+g(‘btn-logout’).addEventListener(‘click’, function() { confirmLogout(); });
+g(‘modal-bg’).addEventListener(‘click’, function(e) { if (e.target===g(‘modal-bg’)) closeModal(); });
+g(‘btn-lu-ok’).addEventListener(‘click’, function() { closeLU(); });
 
-/* =============================================================
-PART 21 - INIT
-============================================================= */
-(function init() {
-loadSettings();
-loadPlayers();
+// 5. Global keyboard shortcuts
+document.addEventListener(‘keydown’, function(e) { if (e.key===‘Escape’) { closeModal(); closeLU(); } });
 
-// ── Ensure the 2 fixed players always exist ──────────────
-if (!ALL_PLAYERS[‘Bo’]) {
-ALL_PLAYERS[‘Bo’] = createDefaultPlayer(‘Bo’);
-ALL_PLAYERS[‘Bo’].avatarIdx = 6; // lion
-}
-if (!ALL_PLAYERS[‘Bao Lam’]) {
-ALL_PLAYERS[‘Bao Lam’] = createDefaultPlayer(‘Bao Lam’);
-ALL_PLAYERS[‘Bao Lam’].avatarIdx = 0; // basketball
-}
-savePlayers();
-// ─────────────────────────────────────────────────────────
-
-// Load from Firebase then do nothing extra (players already seeded)
-loadFromFirebase();
-
-showStep(‘welcome’);
-
-// ── Button wiring ─────────────────────────────────────────
-var ge = function(id) { return document.getElementById(id); };
-
-// Bao Lam: login directly as child, no password
-ge(‘btn-login-baolam’).addEventListener(‘click’, function() {
-SESSION.currentPlayer = ‘Bao Lam’;
-SESSION.role = ‘child’;
-startGame();
-playSound(‘click’);
-});
-
-// Bo: show password screen
-ge(‘btn-goto-password’).addEventListener(‘click’, function() {
-showStep(‘password’);
-});
-
-ge(‘btn-password-back’).addEventListener(‘click’, function() {
-showStep(‘welcome’);
-ge(‘login-pwd’).value = ‘’;
-ge(‘pwd-error’).textContent = ‘’;
-});
-
-ge(‘btn-do-login’).addEventListener(‘click’, function() { loginAsFather(); });
-
-ge(‘login-pwd’).addEventListener(‘input’, function() {
-if (this.value.length === 6) loginAsFather();
-});
-ge(‘login-pwd’).addEventListener(‘keydown’, function(e) {
-if (e.key === ‘Enter’) loginAsFather();
-});
-// ─────────────────────────────────────────────────────────
-
-document.addEventListener(‘keydown’, function(e) {
-if (e.key === ‘Escape’) { closeModal(); closeLevelUp(); }
-});
+// 6. Show home splash
+showHome();
 })();
 </script>
 
