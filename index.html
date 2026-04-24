@@ -1176,6 +1176,26 @@ document.addEventListener(‘keydown’, function(e) { if (e.key===‘Escape’)
 // 6. Show home splash
 showHome();
 })();
+
+/* === EXPOSE TO WINDOW (required for inline onclick in dynamic HTML) === */
+window._pwdSubmit = _pwdSubmit;
+window.childAction = childAction;
+window.closeModal = closeModal;
+window.confirmComplete = confirmComplete;
+window.confirmReset = confirmReset;
+window.doImport = doImport;
+window.exitEdit = exitEdit;
+window.redeemRw = redeemRw;
+window.renderTab = renderTab;
+window.reqEdit = reqEdit;
+window.showExport = showExport;
+window.showImport = showImport;
+window.switchP = switchP;
+window.toast = toast;
+window.toggleM = toggleM;
+window.setPvp = setPvp;
+window.confirmLogout = confirmLogout;
+window.closeLU = closeLU;
 </script>
 
 </body>
