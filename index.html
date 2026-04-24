@@ -55,7 +55,7 @@ color:var(–tx);font-family:inherit;
 .user-btn-desc{font-size:.7rem;color:var(–mu);font-weight:700;line-height:1.4;}
 
 /* password screen */
-#screen-pwd{display:none;width:100%;max-width:380px;}
+#screen-pwd{width:100%;max-width:380px;}
 .pwd-input{
 width:100%;padding:1rem;background:var(–cd);border:2px solid rgba(255,255,255,.1);
 border-radius:var(–r);color:var(–tx);font-size:1.5rem;font-weight:900;
@@ -572,14 +572,14 @@ function toggleSound() {
    SPLASH FLOW  (simple show/hide 2 screens)
 ══════════════════════════════════════════════════════════ */
 function showHome() {
-  g('screen-home').style.display = '';
+  g('screen-home').style.display = 'block';
   g('screen-pwd').style.display  = 'none';
   g('login-pwd').value = '';
   g('pwd-err').textContent = '';
 }
 function showPwd() {
   g('screen-home').style.display = 'none';
-  g('screen-pwd').style.display  = '';
+  g('screen-pwd').style.display  = 'block';
 }
 function loginBaoLam() {
   SESSION.player = 'Bao Lam';
@@ -606,7 +606,7 @@ function startGame() {
 function goSplash() {
   SESSION.player = null; SESSION.role = null; SESSION.editMode = false;
   g('game').style.display   = 'none';
-  g('splash').style.display = '';
+  g('splash').style.display = 'flex';
   showHome();
 }
 
