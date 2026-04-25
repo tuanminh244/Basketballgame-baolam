@@ -2,783 +2,351 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basketball Power Up - 10 Day Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bảo Lâm Basketball - Pro Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root {
-            --primary: #FF8C00; /* Dark Orange */
-            --secondary: #FFD700; /* Gold */
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #ffffff;
-            --success: #4CAF50;
-            --danger: #F44336;
-            --accent: #ff4500;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
-
-        /* Login Screen */
-        #login-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #2c2c2c 0%, #000000 100%);
-        }
-
-        .game-title {
-            font-size: 3rem;
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--accent);
-            margin-bottom: 2rem;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: 900;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
-            border: 2px solid var(--primary);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-player { background: var(--primary); color: white; }
-        .btn-admin { background: #444; color: white; }
-        .btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--primary); }
-
-        /* Main Game Layout */
-        #main-game { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
-
-        /* Header / Stats */
-        .player-stats {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--secondary);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .level-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--secondary);
-            color: black;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 900;
-        }
-
-        .exp-bar-container {
-            width: 100%;
-            height: 12px;
-            background: #333;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .exp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
-            border-radius: 6px;
-            transition: width 0.5s ease-out;
-        }
-
-        /* Skill Grid */
-        .skill-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .skill-card {
-            background: #252525;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border-bottom: 3px solid var(--primary);
-        }
-
-        .skill-value { font-size: 1.5rem; font-weight: bold; display: block; }
-        .skill-diff { font-size: 0.8rem; }
-        .diff-plus { color: var(--success); }
-        .diff-minus { color: var(--danger); }
-
-        /* Tabs */
-        .tabs { display: flex; margin-bottom: 20px; }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            cursor: pointer;
-            border-bottom: 2px solid #333;
-            transition: 0.3s;
-        }
-        .tab.active { border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: bold; }
-
-        /* Mission List */
-        .day-selector {
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .day-btn {
-            min-width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        .day-btn.completed { background: var(--success); }
-        .day-btn.active { border-color: var(--primary); transform: scale(1.1); }
-
-        .mission-item {
-            background: #252525;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mission-info h4 { margin: 0; color: var(--secondary); }
-        .mission-info p { margin: 5px 0 0; font-size: 0.9rem; color: #aaa; }
-
-        input[type="checkbox"] {
-            width: 25px;
-            height: 25px;
-            accent-color: var(--primary);
-        }
-
-        /* Admin Controls */
-        .admin-section {
-            background: #2c2c2c;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            border: 1px dashed var(--secondary);
-        }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 8px;
-        }
-
-        /* Achievement Toast */
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            display: none;
-            z-index: 1000;
-        }
-
-        /* Rewards Box */
-        .reward-display {
-            background: linear-gradient(135deg, #2c3e50, #000);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 20px;
-            border: 2px solid var(--secondary);
-        }
-
-        /* Final Boss */
-        #final-boss {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .boss-title { font-size: 2.5rem; color: var(--danger); font-weight: 900; margin-bottom: 20px; }
-
-        .hidden { display: none; }
-        .btn-complete-day { background: var(--success); color: white; margin-top: 20px; }
+        :root { --p: #f97316; --s: #fbbf24; --bg: #0b0f1a; --card: #161e2d; --t: #f8fafc; --success: #10b981; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background: var(--bg); color: var(--t); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; }
+        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 15px; border: 1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .hidden { display: none !important; }
         
-        /* Modal */
-        #modal-overlay {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        .modal {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
+        /* Typography */
+        h1, h2, h3 { margin: 0 0 10px; text-align: center; font-weight: 800; }
+        .orange { color: var(--p); }
+        .gold { color: var(--s); }
+        .dim { opacity: 0.6; font-size: 0.85rem; }
+
+        /* Buttons */
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.97); }
+        .btn-p { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+        .btn-s { background: #2d3748; color: white; }
+        .btn-save { background: var(--success); color: white; margin-top: 15px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-outline { background: transparent; border: 1px solid #475569; color: #94a3b8; }
+
+        /* Inputs */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; color: #94a3b8; }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #2d3748; background: #0b0f1a; color: white; font-size: 1.1rem; transition: border-color 0.3s; }
+        input:focus { border-color: var(--p); }
+        
+        /* Stats & Level */
+        .lvl-badge { background: linear-gradient(to right, #4f46e5, #8b5cf6); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; display: inline-block; margin-bottom: 5px; }
+        .bar { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; margin: 12px 0; overflow: hidden; }
+        .fill { height: 100%; background: linear-gradient(to right, #fbbf24, #f59e0b); width: 0%; transition: 1s ease-in-out; }
+        
+        /* Tasks */
+        .task { display: flex; align-items: center; background: #1e293b; padding: 14px; border-radius: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; }
+        .task.done { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+        .task input { width: 22px; height: 22px; margin-right: 15px; pointer-events: none; }
+        
+        /* Calendar Grid */
+        .day-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+        .day-box { background: #1e293b; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; position: relative; border: 1px solid #2d3748; }
+        .day-box.active { border-color: var(--p); box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
+        .day-box.locked { opacity: 0.3; cursor: not-allowed; }
+        .day-box.done { background: var(--success); border-color: var(--success); color: white; }
+        .day-box .dot { position: absolute; bottom: 4px; width: 4px; height: 4px; background: white; border-radius: 50%; }
+
+        /* Achievement Section */
+        .achievement-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+        .ach-card { min-width: 100px; background: #0b0f1a; padding: 12px; border-radius: 16px; text-align: center; border: 1px solid #2d3748; }
+        .ach-card i { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+        .ach-card.locked { filter: grayscale(1); opacity: 0.5; }
+
+        /* Sync Status */
+        .sync { font-size: 0.7rem; text-align: center; padding-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        #status-dot { width: 6px; height: 6px; border-radius: 50%; background: gray; }
+
+        /* Reward Modal */
+        .reward-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        .reward-table td { padding: 8px; border-bottom: 1px solid #2d3748; }
+        .reward-table tr:last-child td { border: none; }
     </style>
 </head>
 <body>
 
-    <!-- Màn hình Đăng nhập -->
-    <div id="login-screen">
-        <div class="game-title">BASKETBALL<br>POWER UP</div>
-        <div class="login-card">
-            <h3 style="text-align:center; margin-top:0;">CHỌN NGƯỜI CHƠI</h3>
-            <button class="btn btn-player" onclick="login('player')">BẢO LÂM (Player)</button>
-            <button class="btn btn-admin" onclick="showAdminAuth()">BỐ (Admin)</button>
-        </div>
-    </div>
-
-    <!-- Game Chính -->
-    <div id="main-game">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="view-title">Dashboard</h2>
-            <button onclick="logout()" style="background:none; border:none; color: #888; cursor:pointer;">Đăng xuất</button>
-        </div>
-
-        <!-- Thống kê Cầu thủ -->
-        <div class="player-stats">
-            <div class="level-badge" id="player-rank">ROOKIE</div>
-            <div style="font-size: 0.9rem; color: #aaa;">Cấp độ</div>
-            <div style="font-size: 1.8rem; font-weight: 900;" id="player-level">LV. 1</div>
-            <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.8rem;">
-                <span>EXP: <span id="current-exp">0</span> / <span id="next-level-exp">100</span></span>
-                <span>COIN: <span id="player-coins" style="color: var(--secondary); font-weight: bold;">0</span> 🪙</span>
-            </div>
-            <div class="exp-bar-container">
-                <div class="exp-bar-fill" id="exp-bar"></div>
-            </div>
-        </div>
-
-        <!-- Chỉ số Skill -->
-        <div class="skill-grid">
-            <div class="skill-card">
-                <small>SPEED (20m)</small>
-                <span class="skill-value" id="val-speed">0.0s</span>
-                <span class="skill-diff" id="diff-speed"></span>
-            </div>
-            <div class="skill-card">
-                <small>JUMP</small>
-                <span class="skill-value" id="val-jump">0cm</span>
-                <span class="skill-diff" id="diff-jump"></span>
-            </div>
-            <div class="skill-card">
-                <small>STAMINA</small>
-                <span class="skill-value" id="val-stamina">0m</span>
-                <span class="skill-diff" id="diff-stamina"></span>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('missions')">Nhiệm vụ</div>
-            <div class="tab" onclick="switchTab('rewards')">Phần thưởng</div>
-            <div class="tab" onclick="switchTab('achievements')">Thành tựu</div>
-        </div>
-
-        <!-- Nội dung Tab Nhiệm vụ -->
-        <div id="tab-missions">
-            <div class="day-selector" id="day-buttons">
-                <!-- JS render buttons -->
-            </div>
-            
-            <div id="mission-container">
-                <h3 id="current-day-label">Ngày 1</h3>
-                <div id="mission-list">
-                    <!-- JS render missions -->
-                </div>
-                
-                <!-- Admin Only Section -->
-                <div id="admin-controls" class="admin-section hidden">
-                    <h4>BẢNG ĐIỀU KHIỂN CỦA BỐ</h4>
-                    <div class="skill-grid" style="margin-bottom: 10px;">
-                        <div class="input-group">
-                            <label>Speed (s)</label>
-                            <input type="number" step="0.1" id="input-speed" placeholder="0.0">
-                        </div>
-                        <div class="input-group">
-                            <label>Jump (cm)</label>
-                            <input type="number" id="input-jump" placeholder="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Stamina (m)</label>
-                            <input type="number" id="input-stamina" placeholder="0">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Điểm Kỷ luật (0-10)</label>
-                        <input type="number" id="input-discipline" max="10" min="0" value="10">
-                    </div>
-                    <button class="btn btn-complete-day" onclick="completeDay()">XÁC NHẬN HOÀN THÀNH NGÀY</button>
-                    <button class="btn" style="background:#444; font-size: 0.8rem; padding: 5px;" onclick="resetGame()">RESET TẤT CẢ DỮ LIỆU</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nội dung Tab Phần thưởng -->
-        <div id="tab-rewards" class="hidden">
-            <div class="reward-display" id="reward-box">
-                <p>Hoàn thành ngày để xem phần thưởng của con!</p>
-            </div>
-            <div style="margin-top:20px;">
-                <h4>BẢNG GIÁ THƯỞNG</h4>
-                <ul style="color: #aaa; font-size: 0.9rem;">
-                    <li>Mốc < 70%: Không có thưởng.</li>
-                    <li>Mốc 70-89%: 20k + 30p game.</li>
-                    <li>Mốc ≥ 90%: 50k + 1h game.</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Nội dung Tab Thành tựu -->
-        <div id="tab-achievements" class="hidden">
-            <div id="achievement-list">
-                <!-- JS render -->
-            </div>
-        </div>
-
-        <!-- Final Boss Day 10 -->
-        <div id="final-boss-view" class="hidden">
-            <div class="boss-title">DEFEATED YOUR OLD SELF!</div>
-            <div class="reward-display">
-                <h3>TỔNG KẾT 10 NGÀY RÈN LUYỆN</h3>
-                <div id="boss-stats-compare"></div>
-                <h1 id="final-rank" style="color: var(--secondary); margin-top:20px;">LEGEND</h1>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast">LEVEL UP!</div>
-
-    <!-- Admin Password Modal -->
-    <div id="modal-overlay">
-        <div class="modal">
-            <h3>XÁC MINH QUYỀN HẠN</h3>
-            <p>Vui lòng nhập mật khẩu của Bố</p>
-            <input type="password" id="admin-pass" style="width:100%; padding:10px; text-align:center; font-size: 1.5rem; letter-spacing: 5px;" maxlength="6">
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn" style="background:#444;" onclick="closeModal()">Hủy</button>
-                <button class="btn btn-player" onclick="verifyAdmin()">Đăng nhập</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // CONFIG & STATE
-        const ADMIN_PASS = "123456"; // Mật khẩu của Bố
-        const MAX_DAYS = 10;
-        const LVL_STEP = 100;
+<div class="container">
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="view-start" class="card">
+        <div style="font-size: 3rem; text-align: center;">🏀</div>
+        <h1>BẢO LÂM<br><span class="orange">POWER UP</span></h1>
+        <p class="dim text-center" style="text-align: center;">Dự án rèn luyện thể chất & kỷ luật</p>
         
-        let state = {
-            user: null,
-            level: 1,
-            exp: 0,
-            coins: 0,
-            currentDay: 1,
-            daysData: {}, // { dayNum: { completed: bool, score: 0, metrics: {speed, jump, stamina}, tasks: [] } }
-            historyMetrics: { speed: [], jump: [], stamina: [] },
-            achievements: []
-        };
+        <button class="btn btn-p" onclick="goView('player')">📱 XEM TIẾN TRÌNH</button>
+        
+        <div style="margin-top: 25px; border-top: 1px solid #2d3748; padding-top: 20px;">
+            <label style="text-align:center">Dành cho HLV trưởng (Bố):</label>
+            <input type="password" id="admin-code" pattern="\d*" inputmode="numeric" placeholder="Nhập mã bí mật..." style="text-align:center; letter-spacing: 5px;">
+            <button class="btn btn-s" onclick="checkAdmin()">🔑 VÀO QUẢN TRỊ</button>
+        </div>
+    </div>
 
-        // AUDIO EMULATION (Using Web Audio API or simple sounds)
-        const playSound = (freq, type, duration) => {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, ctx.currentTime);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-            osc.stop(ctx.currentTime + duration);
-        };
+    <!-- MÀN HÌNH CHÍNH -->
+    <div id="view-main" class="hidden">
+        <!-- Header Info -->
+        <div class="card" style="text-align: center;">
+            <div class="lvl-badge" id="ui-lvl">LV. 1</div>
+            <h2 id="ui-rank" class="gold">TÂN BINH</h2>
+            <div class="bar"><div id="ui-exp" class="fill"></div></div>
+            <div style="display: flex; justify-content: space-between; padding: 0 5px;">
+                <span title="Tiền tích lũy">🪙 <b id="ui-coins">0</b></span>
+                <span title="Chuỗi ngày">🔥 <b>Ngày <span id="ui-day-current">1</span>/10</b></span>
+            </div>
+        </div>
 
-        const soundEffect = (name) => {
-            if (name === 'click') playSound(400, 'sine', 0.1);
-            if (name === 'success') playSound(600, 'triangle', 0.3);
-            if (name === 'level') {
-                playSound(400, 'square', 0.2);
-                setTimeout(() => playSound(600, 'square', 0.4), 150);
-            }
-        };
+        <!-- Achievement Ribbon -->
+        <div class="card" style="padding: 15px;">
+            <h3 style="text-align:left; font-size: 0.9rem; margin-bottom: 10px;">🏆 THÀNH TỰU</h3>
+            <div class="achievement-list" id="ui-achievements">
+                <div class="ach-card locked" id="ach-1"><i>👟</i><small>Người sắt</small></div>
+                <div class="ach-card locked" id="ach-2"><i>🦘</i><small>Siêu bật</small></div>
+                <div class="ach-card locked" id="ach-3"><i>🎹</i><small>Nghệ sĩ</small></div>
+                <div class="ach-card locked" id="ach-4"><i>🏀</i><small>Sát thủ</small></div>
+            </div>
+        </div>
 
-        // LOCAL STORAGE
-        function saveData() {
-            localStorage.setItem('bl_game_state', JSON.stringify(state));
+        <!-- Nhật ký 10 ngày -->
+        <div class="card">
+            <h3 style="text-align:left; font-size: 0.9rem;">📅 NHẬT KÝ 10 NGÀY</h3>
+            <p class="dim" style="margin-bottom: 10px;">Bấm vào từng ngày để xem/sửa dữ liệu</p>
+            <div class="day-grid" id="ui-day-grid"></div>
+        </div>
+
+        <!-- Danh sách nhiệm vụ -->
+        <div class="card" id="task-section">
+            <h3 id="task-title" class="orange" style="text-align:left">🎯 Nhiệm vụ Ngày 1</h3>
+            <div id="ui-tasks"></div>
+        </div>
+
+        <!-- BẢNG ĐIỀU KHIỂN CỦA BỐ -->
+        <div id="ui-admin" class="card hidden" style="background: #1e1b4b; border: 2px solid var(--p);">
+            <h3 class="orange">⚡ GHI CHỈ SỐ: NGÀY <span id="admin-day-label">1</span></h3>
+            <div class="input-group">
+                <label>Tốc độ chạy 20m (giây):</label>
+                <input type="number" id="f-s" step="0.1" inputmode="decimal" placeholder="VD: 4.5">
+            </div>
+            <div class="input-group">
+                <label>Bật nhảy tại chỗ (cm):</label>
+                <input type="number" id="f-j" inputmode="numeric" placeholder="VD: 35">
+            </div>
+            <div class="input-group">
+                <label>Chạy bền tự do (mét):</label>
+                <input type="number" id="f-m" inputmode="numeric" placeholder="VD: 1000">
+            </div>
+            <button class="btn btn-save" id="btn-save" onclick="doSubmit()">LƯU DỮ LIỆU NGÀY NÀY</button>
+            <button class="btn btn-outline" style="margin-top:10px; border-color: #ef4444; color: #ef4444;" onclick="resetDay()">Reset dữ liệu ngày này</button>
+        </div>
+
+        <!-- Rewards View -->
+        <div class="card">
+            <h3 style="text-align:left; font-size: 0.9rem;">🎁 BẢNG PHẦN THƯỞNG</h3>
+            <table class="reward-table">
+                <tr><td>Hoàn thành < 70%</td><td class="dim">Chưa có thưởng</td></tr>
+                <tr><td>Hoàn thành 70-89%</td><td>🎮 30p Game + 20k</td></tr>
+                <tr><td>Hoàn thành ≥ 90%</td><td class="gold">🎮 1h Game + 50k</td></tr>
+            </table>
+        </div>
+
+        <div class="sync">
+            <span id="status-dot"></span>
+            <span id="status-text">Đang kết nối Cloud...</span>
+        </div>
+        
+        <button class="btn btn-outline" style="margin-top: 20px;" onclick="logout()">🔒 THOÁT HỆ THỐNG</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const cfg = { databaseURL: "https://baolam-basketball-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    const app = initializeApp(cfg);
+    const db = getDatabase(app);
+    const dataRef = ref(db, 'user_data_baolam_v5');
+
+    // Mặc định dữ liệu
+    window.g = { 
+        lvl: 1, exp: 0, coins: 0, day: 1, 
+        selectedDay: 1,
+        role: 'player', 
+        history: {} 
+    };
+
+    // Khởi tạo 10 ngày nếu trống
+    const initHistory = () => {
+        let h = {};
+        for(let i=1; i<=10; i++) {
+            h[i] = { tasks: [false, false, false], s:0, j:0, m:0, done: false };
         }
+        return h;
+    };
 
-        function loadData() {
-            const saved = localStorage.getItem('bl_game_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                updateUI();
-            } else {
-                initNewGame();
-            }
-        }
+    window.cloudSave = async () => {
+        try {
+            await set(dataRef, window.g);
+            return true;
+        } catch (e) { return false; }
+    };
 
-        function initNewGame() {
-            for(let i=1; i<=MAX_DAYS; i++) {
-                state.daysData[i] = {
-                    completed: false,
-                    score: 0,
-                    metrics: { speed: 0, jump: 0, stamina: 0 },
-                    discipline: 10,
-                    tasks: [
-                        { id: 't1', label: 'Bóng rổ & Thể lực (45-60p)', done: false },
-                        { id: 't2', label: 'Luyện Piano (20-25p)', done: false },
-                        { id: 't3', label: 'Học Toán & Tiếng Anh (30-45p)', done: false },
-                        { id: 't4', label: 'Thắng 1v1 với Bố (Bonus)', done: false }
-                    ]
-                };
-            }
-            saveData();
+    onValue(dataRef, (snap) => {
+        const d = snap.val();
+        if (d) {
+            const oldLvl = window.g.lvl;
+            const currentRole = window.g.role;
+            const currentSelected = window.g.selectedDay;
+            window.g = { ...d, role: currentRole, selectedDay: currentSelected || d.day };
+            
+            if (window.g.lvl > oldLvl) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            
             updateUI();
+            document.getElementById('status-dot').style.background = "#10b981";
+            document.getElementById('status-text').innerText = "Đã đồng bộ mây";
+        } else {
+            window.g.history = initHistory();
+            window.cloudSave();
         }
+    });
+</script>
 
-        // AUTH LOGIC
-        function login(role) {
-            state.user = role;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-game').style.display = 'block';
-            soundEffect('click');
-            updateUI();
+<script>
+    function checkAdmin() {
+        if (document.getElementById('admin-code').value === "1234") {
+            goView('admin');
+        } else {
+            alert("Sai mã rồi Bố ơi!");
         }
+    }
 
-        function showAdminAuth() {
-            document.getElementById('modal-overlay').style.display = 'flex';
-            document.getElementById('admin-pass').focus();
-        }
+    function goView(role) {
+        window.g.role = role;
+        document.getElementById('view-start').classList.add('hidden');
+        document.getElementById('view-main').classList.remove('hidden');
+        updateUI();
+    }
 
-        function closeModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
-        }
+    function logout() {
+        window.g.role = 'player';
+        document.getElementById('admin-code').value = "";
+        document.getElementById('view-main').classList.add('hidden');
+        document.getElementById('view-start').classList.remove('hidden');
+    }
 
-        function verifyAdmin() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === ADMIN_PASS) {
-                closeModal();
-                login('admin');
-            } else {
-                alert("Sai mật khẩu rồi Bố ơi!");
-            }
-        }
+    function selectDay(d) {
+        if (d > window.g.day && window.g.role !== 'admin') return; // Player ko xem đc ngày tương lai
+        window.g.selectedDay = d;
+        updateUI();
+    }
 
-        function logout() {
-            state.user = null;
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('main-game').style.display = 'none';
-        }
+    function updateUI() {
+        const s = window.g;
+        const selDay = s.selectedDay || s.day;
 
-        // TAB LOGIC
-        function switchTab(tabId) {
-            const tabs = ['missions', 'rewards', 'achievements'];
-            tabs.forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            event.target.classList.add('active');
-            soundEffect('click');
-        }
+        // Cập nhật Header
+        document.getElementById('ui-lvl').innerText = "LV. " + s.lvl;
+        document.getElementById('ui-coins').innerText = s.coins.toLocaleString();
+        document.getElementById('ui-day-current').innerText = s.day;
+        document.getElementById('ui-exp').style.width = (s.exp % 100) + "%";
+        
+        const ranks = ["TÂN BINH", "TIỀM NĂNG", "NGÔI SAO", "SIÊU SAO", "MVP", "HUYỀN THOẠI"];
+        document.getElementById('ui-rank').innerText = ranks[Math.min(Math.floor(s.lvl/2), 5)];
 
-        // CORE GAME LOGIC
-        function selectDay(day) {
-            state.currentDay = day;
-            updateUI();
-            soundEffect('click');
-        }
-
-        function toggleTask(index) {
-            if (state.user !== 'admin') return; // Chỉ bố được check
-            state.daysData[state.currentDay].tasks[index].done = !state.daysData[state.currentDay].tasks[index].done;
-            saveData();
-            updateUI();
-        }
-
-        function completeDay() {
-            const day = state.daysData[state.currentDay];
-            const spd = parseFloat(document.getElementById('input-speed').value) || 0;
-            const jmp = parseInt(document.getElementById('input-jump').value) || 0;
-            const sta = parseInt(document.getElementById('input-stamina').value) || 0;
-            const disc = parseInt(document.getElementById('input-discipline').value) || 10;
-
-            if (spd === 0 || jmp === 0) {
-                alert("Bố nhập chỉ số cho Bảo Lâm đã nhé!");
-                return;
-            }
-
-            // Tính điểm (40-20-30-10)
-            // Đơn giản hóa: Task 1 (BR) = 40đ, Task 2 (Piano) = 20đ, Task 3 (Học) = 30đ, Disc = 10đ
-            let totalScore = 0;
-            if (day.tasks[0].done) totalScore += 40;
-            if (day.tasks[1].done) totalScore += 20;
-            if (day.tasks[2].done) totalScore += 30;
-            totalScore += (disc); // Kỷ luật tối đa 10
-
-            // Update State
-            day.completed = true;
-            day.score = totalScore;
-            day.metrics = { speed: spd, jump: jmp, stamina: sta };
-            day.discipline = disc;
-
-            // Thưởng EXP & Coins
-            const earnedExp = totalScore;
-            const earnedCoins = totalScore >= 90 ? 50 : (totalScore >= 70 ? 20 : 0);
+        // Cập nhật Grid Ngày
+        const grid = document.getElementById('ui-day-grid');
+        grid.innerHTML = "";
+        for(let i=1; i<=10; i++) {
+            const isDone = s.history[i]?.done;
+            const isSelected = i === selDay;
+            const isLocked = i > s.day;
             
-            addExp(earnedExp);
-            state.coins += earnedCoins;
-
-            // Check Achievement
-            if (totalScore >= 95) checkAchievement("Perfect Day", "Hoàn thành ngày xuất sắc 95%+");
-            
-            saveData();
-            soundEffect('success');
-            updateUI();
-            
-            // Show result
-            alert(`XÁC NHẬN: Hoàn thành Ngày ${state.currentDay}\nĐiểm: ${totalScore}%\nThưởng: ${earnedCoins} Coins`);
+            grid.innerHTML += `
+                <div class="day-box ${isDone ? 'done' : ''} ${isSelected ? 'active' : ''} ${isLocked ? 'locked' : ''}" 
+                     onclick="selectDay(${i})">
+                    ${i}
+                    ${isSelected ? '<div class="dot"></div>' : ''}
+                </div>`;
         }
 
-        function addExp(amount) {
-            state.exp += amount;
-            while (state.exp >= state.level * LVL_STEP) {
-                state.exp -= (state.level * LVL_STEP);
-                state.level++;
-                soundEffect('level');
-                showToast(`LEVEL UP: CẤP ${state.level}!`);
-            }
+        // Cập nhật Nhiệm vụ ngày đang chọn
+        document.getElementById('task-title').innerText = "🎯 Nhiệm vụ Ngày " + selDay;
+        const list = document.getElementById('ui-tasks');
+        list.innerHTML = "";
+        const taskNames = ["🏀 Tập Bóng rổ & Thể lực", "🎹 Piano (Bài 3 trang)", "📚 Hoàn thành BTVN"];
+        
+        taskNames.forEach((name, i) => {
+            const isTaskDone = s.history[selDay].tasks[i];
+            list.innerHTML += `
+                <div class="task ${isTaskDone ? 'done' : ''}" onclick="${s.role === 'admin' ? `toggleTask(${selDay}, ${i})` : ''}">
+                    <input type="checkbox" ${isTaskDone ? 'checked' : ''}>
+                    <span style="${isTaskDone ? 'text-decoration:line-through;opacity:0.5' : ''}">${name}</span>
+                </div>`;
+        });
+
+        // Panel dành cho Bố
+        const adminPanel = document.getElementById('ui-admin');
+        if (s.role === 'admin') {
+            adminPanel.classList.remove('hidden');
+            document.getElementById('admin-day-label').innerText = selDay;
+            document.getElementById('f-s').value = s.history[selDay].s || "";
+            document.getElementById('f-j').value = s.history[selDay].j || "";
+            document.getElementById('f-m').value = s.history[selDay].m || "";
+        } else {
+            adminPanel.classList.add('hidden');
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
+        // Cập nhật Thành tựu (Logic giả định)
+        if (s.lvl >= 3) document.getElementById('ach-1').classList.remove('locked');
+        if (s.history[selDay].j >= 40) document.getElementById('ach-2').classList.remove('locked');
+        if (s.history[selDay].tasks[1]) document.getElementById('ach-3').classList.remove('locked');
+    }
 
-        function checkAchievement(title, desc) {
-            if (!state.achievements.find(a => a.title === title)) {
-                state.achievements.push({ title, desc, date: new Date().toLocaleDateString() });
-                showToast(`MỚI: ${title}`);
-            }
-        }
+    window.toggleTask = (day, idx) => {
+        window.g.history[day].tasks[idx] = !window.g.history[day].tasks[idx];
+        updateUI();
+        window.cloudSave();
+    };
 
-        // UI RENDERING
-        function updateUI() {
-            // Stats
-            document.getElementById('player-level').innerText = `LV. ${state.level}`;
-            document.getElementById('player-rank').innerText = getRankName(state.level);
-            document.getElementById('current-exp').innerText = state.exp;
-            document.getElementById('next-level-exp').innerText = state.level * LVL_STEP;
-            document.getElementById('player-coins').innerText = state.coins;
-            document.getElementById('exp-bar').style.width = `${(state.exp / (state.level * LVL_STEP)) * 100}%`;
+    window.resetDay = () => {
+        if(!confirm("Bố chắc chắn muốn xóa hết dữ liệu ngày này chứ?")) return;
+        const d = window.g.selectedDay;
+        window.g.history[d] = { tasks: [false, false, false], s:0, j:0, m:0, done: false };
+        updateUI();
+        window.cloudSave();
+    };
 
-            // Skills (Lấy ngày gần nhất có dữ liệu)
-            let lastMetrics = { speed: 0, jump: 0, stamina: 0 };
-            let prevMetrics = { speed: 0, jump: 0, stamina: 0 };
-            
-            for(let i = state.currentDay; i >= 1; i--) {
-                if(state.daysData[i].completed) {
-                    lastMetrics = state.daysData[i].metrics;
-                    // Tìm ngày trước đó nữa để so sánh
-                    for(let j = i-1; j >= 1; j--) {
-                        if(state.daysData[j].completed) {
-                            prevMetrics = state.daysData[j].metrics;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
+    window.doSubmit = async () => {
+        const selDay = window.g.selectedDay;
+        const h = window.g.history[selDay];
+        
+        h.s = document.getElementById('f-s').value;
+        h.j = document.getElementById('f-j').value;
+        h.m = document.getElementById('f-m').value;
+        h.done = true;
 
-            renderSkill('speed', lastMetrics.speed, prevMetrics.speed, 's');
-            renderSkill('jump', lastMetrics.jump, prevMetrics.jump, 'cm');
-            renderSkill('stamina', lastMetrics.stamina, prevMetrics.stamina, 'm');
-
-            // Day Buttons
-            const dayContainer = document.getElementById('day-buttons');
-            dayContainer.innerHTML = '';
-            for(let i=1; i<=MAX_DAYS; i++) {
-                const btn = document.createElement('div');
-                btn.className = `day-btn ${state.currentDay === i ? 'active' : ''} ${state.daysData[i].completed ? 'completed' : ''}`;
-                btn.innerText = i;
-                btn.onclick = () => selectDay(i);
-                dayContainer.appendChild(btn);
-            }
-
-            // Missions
-            document.getElementById('current-day-label').innerText = `Ngày ${state.currentDay}`;
-            const mList = document.getElementById('mission-list');
-            mList.innerHTML = '';
-            const dayObj = state.daysData[state.currentDay];
-            
-            dayObj.tasks.forEach((t, idx) => {
-                const item = document.createElement('div');
-                item.className = 'mission-item';
-                item.innerHTML = `
-                    <div class="mission-info">
-                        <h4>${t.label}</h4>
-                    </div>
-                    <input type="checkbox" ${t.done ? 'checked' : ''} ${state.user !== 'admin' ? 'disabled' : ''} onchange="toggleTask(${idx})">
-                `;
-                mList.appendChild(item);
-            });
-
-            // Admin controls visibility
-            if (state.user === 'admin') {
-                document.getElementById('admin-controls').classList.remove('hidden');
-                // Set default inputs if already completed
-                if (dayObj.completed) {
-                    document.getElementById('input-speed').value = dayObj.metrics.speed;
-                    document.getElementById('input-jump').value = dayObj.metrics.jump;
-                    document.getElementById('input-stamina').value = dayObj.metrics.stamina;
-                    document.getElementById('input-discipline').value = dayObj.discipline;
-                } else {
-                    document.getElementById('input-speed').value = '';
-                    document.getElementById('input-jump').value = '';
-                    document.getElementById('input-stamina').value = '';
-                    document.getElementById('input-discipline').value = 10;
-                }
-            } else {
-                document.getElementById('admin-controls').classList.add('hidden');
-            }
-
-            // Reward tab logic
-            const rBox = document.getElementById('reward-box');
-            if (dayObj.completed) {
-                const time = dayObj.score >= 90 ? "1 Giờ" : (dayObj.score >= 70 ? "30 Phút" : "0 Phút");
-                const cash = dayObj.score >= 90 ? "50.000đ" : (dayObj.score >= 70 ? "20.000đ" : "0đ");
-                rBox.innerHTML = `
-                    <h2 style="color: var(--secondary)">KẾT QUẢ NGÀY ${state.currentDay}</h2>
-                    <div style="font-size: 2.5rem; font-weight: 900;">${dayObj.score}%</div>
-                    <hr style="border: 0.5px solid #444; margin: 15px 0;">
-                    <p>Giờ chơi game: <strong>${time}</strong></p>
-                    <p>Tiền thưởng: <strong>${cash}</strong></p>
-                `;
-            } else {
-                rBox.innerHTML = `<p>Chưa hoàn thành Ngày ${state.currentDay}</p>`;
-            }
-
-            // Achievements
-            const aList = document.getElementById('achievement-list');
-            aList.innerHTML = '';
-            if (state.achievements.length === 0) {
-                aList.innerHTML = '<p style="text-align:center; color:#555;">Chưa có thành tựu nào. Cố lên Bảo Lâm!</p>';
-            }
-            state.achievements.forEach(a => {
-                const item = document.createElement('div');
-                item.className = 'mission-item';
-                item.innerHTML = `<div><strong>${a.title}</strong><br><small>${a.desc}</small></div><div style="font-size:0.7rem">${a.date}</div>`;
-                aList.appendChild(item);
-            });
-
-            // Final Boss Check
-            if (state.currentDay === 10 && state.daysData[10].completed) {
-                showFinalBoss();
-            } else {
-                document.getElementById('final-boss-view').classList.add('hidden');
+        // Nếu đây là ngày hiện tại đang làm, mới cộng điểm và nhảy ngày
+        if (selDay === window.g.day) {
+            window.g.exp += 50;
+            window.g.coins += 20000;
+            if (window.g.exp >= window.g.lvl * 100) window.g.lvl++;
+            if (window.g.day < 10) {
+                window.g.day++;
+                window.g.selectedDay = window.g.day;
             }
         }
 
-        function renderSkill(id, val, prev, unit) {
-            const el = document.getElementById(`val-${id}`);
-            const diffEl = document.getElementById(`diff-${id}`);
-            el.innerText = val + unit;
-            
-            if (prev > 0) {
-                const diff = (val - prev).toFixed(1);
-                // Speed nhỏ hơn là tốt, Jump/Stamina lớn hơn là tốt
-                let isBetter = id === 'speed' ? diff < 0 : diff > 0;
-                if (diff == 0) {
-                    diffEl.innerText = "";
-                } else {
-                    diffEl.className = `skill-diff ${isBetter ? 'diff-plus' : 'diff-minus'}`;
-                    diffEl.innerText = (diff > 0 ? "+" : "") + diff + unit;
-                }
-            } else {
-                diffEl.innerText = "";
-            }
+        const ok = await window.cloudSave();
+        if (ok) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            alert("Đã lưu dữ liệu Ngày " + selDay);
         }
+        updateUI();
+    };
+</script>
 
-        function getRankName(lvl) {
-            if (lvl >= 15) return "G.O.A.T";
-            if (lvl >= 10) return "LEGEND";
-            if (lvl >= 7) return "ALL-STAR";
-            if (lvl >= 4) return "PRO";
-            return "ROOKIE";
-        }
-
-        function showFinalBoss() {
-            document.getElementById('final-boss-view').classList.remove('hidden');
-            const d1 = state.daysData[1].metrics;
-            const d10 = state.daysData[10].metrics;
-            
-            const compareHtml = `
-                <div style="display:flex; justify-content:space-around; margin-top:20px;">
-                    <div><small>SPEED</small><br><strong>${d1.speed}s ➔ ${d10.speed}s</strong></div>
-                    <div><small>JUMP</small><br><strong>${d1.jump}cm ➔ ${d10.jump}cm</strong></div>
-                    <div><small>STAMINA</small><br><strong>${d1.stamina}m ➔ ${d10.stamina}m</strong></div>
-                </div>
-            `;
-            document.getElementById('boss-stats-compare').innerHTML = compareHtml;
-            document.getElementById('final-rank').innerText = getRankName(state.level);
-            // Cuộn xuống
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        function resetGame() {
-            if(confirm("Bố có chắc muốn xóa hết dữ liệu để Bảo Lâm tập lại từ đầu không?")) {
-                localStorage.removeItem('bl_game_state');
-                location.reload();
-            }
-        }
-
-        // Init
-        window.onload = loadData;
-
-    </script>
 </body>
 </html>
+
