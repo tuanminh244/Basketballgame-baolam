@@ -3,160 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bảo Lâm Basketball - Pro Edition</title>
+    <title>Bảo Lâm Basketball - Senior Refactored</title>
+    <!-- Thư viện hiệu ứng ăn mừng -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --p: #f97316; --s: #fbbf24; --bg: #0b0f1a; --card: #161e2d; --t: #f8fafc; --success: #10b981; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: var(--t); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        /* 1. ĐỊNH NGHĨA BIẾN MÀU SẮC */
+        :root { 
+            --primary: #f97316; 
+            --accent: #fbbf24; 
+            --bg-dark: #0b0f1a; 
+            --bg-card: #161e2d; 
+            --text-light: #f8fafc; 
+            --text-muted: #94a3b8;
+            --success: #10b981; 
+            --border: #2d3748;
+            --bg-item: #1e293b;
+        }
+
+        /* 2. STYLE CƠ BẢN */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: var(--bg-dark); color: var(--text-light); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; padding: 10px; display: flex; justify-content: center; 
+        }
         .container { width: 100%; max-width: 450px; }
-        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 15px; border: 1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display: none !important; }
         
-        /* Typography */
-        h1, h2, h3 { margin: 0 0 10px; text-align: center; font-weight: 800; }
-        .orange { color: var(--p); }
-        .gold { color: var(--s); }
-        .dim { opacity: 0.6; font-size: 0.85rem; }
-
-        /* Buttons */
-        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:active { transform: scale(0.97); }
-        .btn-p { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
-        .btn-s { background: #2d3748; color: white; }
-        .btn-save { background: var(--success); color: white; margin-top: 15px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-outline { background: transparent; border: 1px solid #475569; color: #94a3b8; }
-
-        /* Inputs */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; color: #94a3b8; }
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #2d3748; background: #0b0f1a; color: white; font-size: 1.1rem; transition: border-color 0.3s; }
-        input:focus { border-color: var(--p); }
+        /* 3. COMPONENT CARD */
+        .card { 
+            background: var(--bg-card); border-radius: 24px; padding: 20px; 
+            margin-bottom: 15px; border: 1px solid var(--border); 
+            position: relative; overflow: hidden; 
+        }
         
-        /* Stats & Level */
-        .lvl-badge { background: linear-gradient(to right, #4f46e5, #8b5cf6); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; display: inline-block; margin-bottom: 5px; }
-        .bar { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; margin: 12px 0; overflow: hidden; }
-        .fill { height: 100%; background: linear-gradient(to right, #fbbf24, #f59e0b); width: 0%; transition: 1s ease-in-out; }
+        /* Chỉ số Level & EXP */
+        .lvl-badge { 
+            background: linear-gradient(135deg, #6366f1, #a855f7); 
+            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; 
+        }
+        .bar { width: 100%; height: 10px; background: var(--bg-item); border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f59e0b); width: 0%; transition: width 0.5s ease; }
         
-        /* Tasks */
-        .task { display: flex; align-items: center; background: #1e293b; padding: 14px; border-radius: 16px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; }
-        .task.done { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
-        .task input { width: 22px; height: 22px; margin-right: 15px; pointer-events: none; }
-        
-        /* Calendar Grid */
-        .day-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
-        .day-box { background: #1e293b; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; position: relative; border: 1px solid #2d3748; }
-        .day-box.active { border-color: var(--p); box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
+        /* Lưới chọn ngày */
+        .day-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 15px 0; }
+        .day-box { 
+            background: var(--bg-item); aspect-ratio: 1; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; cursor: pointer; border: 1px solid transparent; transition: 0.2s; 
+        }
+        .day-box.active { border-color: var(--primary); background: #2d3748; transform: scale(1.05); }
+        .day-box.done { background: var(--success); color: white; }
         .day-box.locked { opacity: 0.3; cursor: not-allowed; }
-        .day-box.done { background: var(--success); border-color: var(--success); color: white; }
-        .day-box .dot { position: absolute; bottom: 4px; width: 4px; height: 4px; background: white; border-radius: 50%; }
 
-        /* Achievement Section */
-        .achievement-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-        .ach-card { min-width: 100px; background: #0b0f1a; padding: 12px; border-radius: 16px; text-align: center; border: 1px solid #2d3748; }
-        .ach-card i { font-size: 1.5rem; display: block; margin-bottom: 5px; }
-        .ach-card.locked { filter: grayscale(1); opacity: 0.5; }
+        /* Danh sách nhiệm vụ */
+        .task { 
+            display: flex; align-items: center; background: var(--bg-item); 
+            padding: 12px; border-radius: 14px; margin-bottom: 8px; border: 1px solid transparent; 
+        }
+        .task.done { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
+        .task input { width: 20px; height: 20px; margin-right: 12px; }
 
-        /* Sync Status */
-        .sync { font-size: 0.7rem; text-align: center; padding-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        #status-dot { width: 6px; height: 6px; border-radius: 50%; background: gray; }
-
-        /* Reward Modal */
-        .reward-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        .reward-table td { padding: 8px; border-bottom: 1px solid #2d3748; }
-        .reward-table tr:last-child td { border: none; }
+        /* Nút bấm & Input */
+        .btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 5px 0; }
+        .btn-p { background: var(--primary); color: white; }
+        .btn-s { background: var(--border); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #475569; color: var(--text-muted); }
+        
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+        input[type="number"], input[type="password"] { 
+            width: 100%; padding: 12px; border-radius: 10px; 
+            border: 1px solid var(--border); background: var(--bg-dark); color: white; 
+        }
+        
+        .rank-text { color: var(--accent); font-weight: bold; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
-    <div id="view-start" class="card">
-        <div style="font-size: 3rem; text-align: center;">🏀</div>
-        <h1>BẢO LÂM<br><span class="orange">POWER UP</span></h1>
-        <p class="dim text-center" style="text-align: center;">Dự án rèn luyện thể chất & kỷ luật</p>
-        
-        <button class="btn btn-p" onclick="goView('player')">📱 XEM TIẾN TRÌNH</button>
-        
-        <div style="margin-top: 25px; border-top: 1px solid #2d3748; padding-top: 20px;">
-            <label style="text-align:center">Dành cho HLV trưởng (Bố):</label>
-            <input type="password" id="admin-code" pattern="\d*" inputmode="numeric" placeholder="Nhập mã bí mật..." style="text-align:center; letter-spacing: 5px;">
-            <button class="btn btn-s" onclick="checkAdmin()">🔑 VÀO QUẢN TRỊ</button>
+    <!-- MÀN HÌNH 1: ĐĂNG NHẬP -->
+    <div id="view-start" class="card" style="text-align: center; padding: 40px 20px;">
+        <div style="font-size: 4rem;">🏀</div>
+        <h1 style="margin: 10px 0;">BẢO LÂM <span style="color:var(--primary)">V6 FRESH</span></h1>
+        <p style="color:var(--text-muted); margin-bottom: 25px;">Kỷ luật tạo nên sức mạnh</p>
+        <button class="btn btn-p" onclick="goView('player')">VÀO XEM TIẾN TRÌNH</button>
+        <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 25px;">
+            <input type="password" id="admin-code" placeholder="Mã PIN..." style="text-align: center; margin-bottom: 10px;">
+            <button class="btn btn-s" onclick="checkAdmin()">QUẢN TRỊ VIÊN</button>
         </div>
     </div>
 
-    <!-- MÀN HÌNH CHÍNH -->
+    <!-- MÀN HÌNH 2: ỨNG DỤNG CHÍNH -->
     <div id="view-main" class="hidden">
-        <!-- Header Info -->
+        <!-- Dashboard Chỉ số -->
         <div class="card" style="text-align: center;">
-            <div class="lvl-badge" id="ui-lvl">LV. 1</div>
-            <h2 id="ui-rank" class="gold">TÂN BINH</h2>
+            <div style="display:flex; justify-content: space-between; align-items:center;">
+                <div class="lvl-badge" id="ui-lvl">LV. 1</div>
+                <div class="rank-text">HUYỀN THOẠI</div>
+            </div>
             <div class="bar"><div id="ui-exp" class="fill"></div></div>
-            <div style="display: flex; justify-content: space-between; padding: 0 5px;">
-                <span title="Tiền tích lũy">🪙 <b id="ui-coins">0</b></span>
-                <span title="Chuỗi ngày">🔥 <b>Ngày <span id="ui-day-current">1</span>/10</b></span>
+            <div style="display: flex; justify-content: space-around; margin-top: 10px; background: var(--bg-item); padding: 10px; border-radius: 12px;">
+                <span>🪙 <b id="ui-coins">0</b></span>
+                <span>🔥 Day <b id="ui-day">1</b>/10</span>
             </div>
         </div>
 
-        <!-- Achievement Ribbon -->
-        <div class="card" style="padding: 15px;">
-            <h3 style="text-align:left; font-size: 0.9rem; margin-bottom: 10px;">🏆 THÀNH TỰU</h3>
-            <div class="achievement-list" id="ui-achievements">
-                <div class="ach-card locked" id="ach-1"><i>👟</i><small>Người sắt</small></div>
-                <div class="ach-card locked" id="ach-2"><i>🦘</i><small>Siêu bật</small></div>
-                <div class="ach-card locked" id="ach-3"><i>🎹</i><small>Nghệ sĩ</small></div>
-                <div class="ach-card locked" id="ach-4"><i>🏀</i><small>Sát thủ</small></div>
-            </div>
-        </div>
-
-        <!-- Nhật ký 10 ngày -->
+        <!-- Lưới Ngày tập -->
         <div class="card">
-            <h3 style="text-align:left; font-size: 0.9rem;">📅 NHẬT KÝ 10 NGÀY</h3>
-            <p class="dim" style="margin-bottom: 10px;">Bấm vào từng ngày để xem/sửa dữ liệu</p>
-            <div class="day-grid" id="ui-day-grid"></div>
+            <div class="day-grid" id="ui-grid"></div>
         </div>
 
-        <!-- Danh sách nhiệm vụ -->
-        <div class="card" id="task-section">
-            <h3 id="task-title" class="orange" style="text-align:left">🎯 Nhiệm vụ Ngày 1</h3>
+        <!-- Danh sách Nhiệm vụ -->
+        <div class="card">
+            <h3 id="ui-task-title" style="color:var(--primary); font-size: 1rem; margin-bottom: 15px;">🎯 NHIỆM VỤ</h3>
             <div id="ui-tasks"></div>
         </div>
 
-        <!-- BẢNG ĐIỀU KHIỂN CỦA BỐ -->
-        <div id="ui-admin" class="card hidden" style="background: #1e1b4b; border: 2px solid var(--p);">
-            <h3 class="orange">⚡ GHI CHỈ SỐ: NGÀY <span id="admin-day-label">1</span></h3>
+        <!-- BẢNG ĐIỀU KHIỂN DÀNH CHO BỐ (ADMIN) -->
+        <div id="admin-panel" class="card hidden" style="border: 1px solid var(--primary);">
+            <h3 style="color:var(--primary); margin-bottom: 15px;">⚡ CẬP NHẬT: NGÀY <span id="ui-sel-day">1</span></h3>
+            <div class="input-group"><label>Tốc độ 20m (s):</label><input type="number" id="in-s" step="0.1"></div>
+            <div class="input-group"><label>Bật nhảy (cm):</label><input type="number" id="in-j"></div>
             <div class="input-group">
-                <label>Tốc độ chạy 20m (giây):</label>
-                <input type="number" id="f-s" step="0.1" inputmode="decimal" placeholder="VD: 4.5">
+                <label>Tỷ số 1v1 (Con : Bố):</label>
+                <div style="display: flex; gap: 10px;"><input type="number" id="in-1v1-c"> : <input type="number" id="in-1v1-b"></div>
             </div>
-            <div class="input-group">
-                <label>Bật nhảy tại chỗ (cm):</label>
-                <input type="number" id="f-j" inputmode="numeric" placeholder="VD: 35">
-            </div>
-            <div class="input-group">
-                <label>Chạy bền tự do (mét):</label>
-                <input type="number" id="f-m" inputmode="numeric" placeholder="VD: 1000">
-            </div>
-            <button class="btn btn-save" id="btn-save" onclick="doSubmit()">LƯU DỮ LIỆU NGÀY NÀY</button>
-            <button class="btn btn-outline" style="margin-top:10px; border-color: #ef4444; color: #ef4444;" onclick="resetDay()">Reset dữ liệu ngày này</button>
+            <div class="input-group"><label>Chạy bền (m):</label><input type="number" id="in-m"></div>
+            <button class="btn btn-p" onclick="saveDay()">XÁC NHẬN HOÀN THÀNH</button>
         </div>
 
-        <!-- Rewards View -->
-        <div class="card">
-            <h3 style="text-align:left; font-size: 0.9rem;">🎁 BẢNG PHẦN THƯỞNG</h3>
-            <table class="reward-table">
-                <tr><td>Hoàn thành < 70%</td><td class="dim">Chưa có thưởng</td></tr>
-                <tr><td>Hoàn thành 70-89%</td><td>🎮 30p Game + 20k</td></tr>
-                <tr><td>Hoàn thành ≥ 90%</td><td class="gold">🎮 1h Game + 50k</td></tr>
-            </table>
-        </div>
-
-        <div class="sync">
-            <span id="status-dot"></span>
-            <span id="status-text">Đang kết nối Cloud...</span>
-        </div>
-        
-        <button class="btn btn-outline" style="margin-top: 20px;" onclick="logout()">🔒 THOÁT HỆ THỐNG</button>
+        <button class="btn btn-outline" onclick="logout()">🔒 THOÁT RA MÀN HÌNH CHÍNH</button>
     </div>
 </div>
 
@@ -164,189 +142,151 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const cfg = { databaseURL: "https://baolam-basketball-default-rtdb.asia-southeast1.firebasedatabase.app" };
-    const app = initializeApp(cfg);
-    const db = getDatabase(app);
-    const dataRef = ref(db, 'user_data_baolam_v5');
-
-    // Mặc định dữ liệu
-    window.g = { 
-        lvl: 1, exp: 0, coins: 0, day: 1, 
-        selectedDay: 1,
-        role: 'player', 
-        history: {} 
+    /* --- 1. CẤU HÌNH & KHỞI TẠO --- */
+    const CONFIG = {
+        databaseURL: "https://baolam-basketball-default-rtdb.asia-southeast1.firebasedatabase.app",
+        pianoPlan: ["Piano: Trang 1 đầu", "Piano: Xong trang 1", "Piano: Đầu trang 2", "Piano: Xong trang 2", "Piano: Ôn trang 1-2", "Piano: Đầu trang 3", "Piano: Xong trang 3", "Piano: Ghép toàn bài", "Piano: Tăng tốc", "Piano: BIỂU DIỄN"]
     };
 
-    // Khởi tạo 10 ngày nếu trống
-    const initHistory = () => {
+    const app = initializeApp(CONFIG);
+    const db = getDatabase(app);
+    const dRef = ref(db, 'user_v6_pro');
+
+    /* --- 2. QUẢN LÝ TRẠNG THÁI (STATE) --- */
+    window.state = { lvl: 1, exp: 0, coins: 0, currentDay: 1, selectedDay: 1, role: 'player', history: {} };
+
+    const initH = () => {
         let h = {};
-        for(let i=1; i<=10; i++) {
-            h[i] = { tasks: [false, false, false], s:0, j:0, m:0, done: false };
-        }
+        for(let i=1; i<=10; i++) h[i] = { tasks: [false, false, false, false], s:"", j:"", v1: ["",""], m:"", done: false };
         return h;
     };
 
-    window.cloudSave = async () => {
-        try {
-            await set(dataRef, window.g);
-            return true;
-        } catch (e) { return false; }
-    };
+    window.sync = () => set(dRef, { ...window.state, role: 'player' });
 
-    onValue(dataRef, (snap) => {
+    /* --- 3. LOGIC XỬ LÝ (GAME LOGIC) --- */
+    onValue(dRef, (snap) => {
         const d = snap.val();
         if (d) {
-            const oldLvl = window.g.lvl;
-            const currentRole = window.g.role;
-            const currentSelected = window.g.selectedDay;
-            window.g = { ...d, role: currentRole, selectedDay: currentSelected || d.day };
-            
-            if (window.g.lvl > oldLvl) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            
-            updateUI();
-            document.getElementById('status-dot').style.background = "#10b981";
-            document.getElementById('status-text').innerText = "Đã đồng bộ mây";
+            const oldRole = window.state.role;
+            const oldSel = window.state.selectedDay;
+            window.state = d;
+            window.state.role = oldRole;
+            window.state.selectedDay = oldSel || d.currentDay;
+            render();
         } else {
-            window.g.history = initHistory();
-            window.cloudSave();
+            window.state.history = initH();
+            window.sync();
         }
     });
-</script>
 
-<script>
-    function checkAdmin() {
-        if (document.getElementById('admin-code').value === "1234") {
-            goView('admin');
-        } else {
-            alert("Sai mã rồi Bố ơi!");
-        }
-    }
+    window.checkAdmin = () => { 
+        if(document.getElementById('admin-code').value === "1234") { 
+            window.state.role = 'admin'; 
+            goView('admin'); 
+        } else alert("Sai mã PIN!"); 
+    };
 
-    function goView(role) {
-        window.g.role = role;
-        document.getElementById('view-start').classList.add('hidden');
-        document.getElementById('view-main').classList.remove('hidden');
-        updateUI();
-    }
+    window.goView = (r) => { 
+        if(r !== 'admin') window.state.role = 'player';
+        document.getElementById('view-start').classList.add('hidden'); 
+        document.getElementById('view-main').classList.remove('hidden'); 
+        render(); 
+    };
 
-    function logout() {
-        window.g.role = 'player';
+    window.logout = () => { 
+        window.state.role = 'player'; 
         document.getElementById('admin-code').value = "";
-        document.getElementById('view-main').classList.add('hidden');
-        document.getElementById('view-start').classList.remove('hidden');
-    }
+        document.getElementById('view-main').classList.add('hidden'); 
+        document.getElementById('view-start').classList.remove('hidden'); 
+    };
 
-    function selectDay(d) {
-        if (d > window.g.day && window.g.role !== 'admin') return; // Player ko xem đc ngày tương lai
-        window.g.selectedDay = d;
-        updateUI();
-    }
+    window.setDay = (d) => { 
+        if(d <= window.state.currentDay || window.state.role == 'admin') { 
+            window.state.selectedDay = d; 
+            render(); 
+        } 
+    };
 
-    function updateUI() {
-        const s = window.g;
-        const selDay = s.selectedDay || s.day;
+    window.toggleT = (d, i) => { 
+        if(window.state.role !== 'admin') return;
+        window.state.history[d].tasks[i] = !window.state.history[d].tasks[i]; 
+        render(); 
+        window.sync(); 
+    };
 
-        // Cập nhật Header
-        document.getElementById('ui-lvl').innerText = "LV. " + s.lvl;
+    window.saveDay = () => {
+        const d = window.state.selectedDay; 
+        const h = window.state.history[d];
+        h.s = document.getElementById('in-s').value; 
+        h.j = document.getElementById('in-j').value;
+        h.v1 = [document.getElementById('in-1v1-c').value, document.getElementById('in-1v1-b').value];
+        h.m = document.getElementById('in-m').value;
+
+        if(!h.done) {
+            h.done = true; 
+            window.state.exp += 50; 
+            window.state.coins += 20000;
+            // Xử lý lên cấp
+            if(window.state.exp >= window.state.lvl * 100) window.state.lvl++;
+            // Mở ngày tiếp theo
+            if(d == window.state.currentDay && window.state.currentDay < 10) window.state.currentDay++;
+            // Hiệu ứng pháo giấy
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        }
+        window.sync(); 
+        alert("Đã lưu dữ liệu Ngày " + d + "!");
+    };
+
+    /* --- 4. HIỂN THỊ GIAO DIỆN (UI RENDER) --- */
+    window.render = () => {
+        const s = window.state; 
+        const sel = s.selectedDay;
+        const dayData = s.history[sel];
+
+        // Cập nhật thông số chính
+        document.getElementById('ui-lvl').innerText = `LV. ${s.lvl}`;
         document.getElementById('ui-coins').innerText = s.coins.toLocaleString();
-        document.getElementById('ui-day-current').innerText = s.day;
+        document.getElementById('ui-day').innerText = s.currentDay;
         document.getElementById('ui-exp').style.width = (s.exp % 100) + "%";
         
-        const ranks = ["TÂN BINH", "TIỀM NĂNG", "NGÔI SAO", "SIÊU SAO", "MVP", "HUYỀN THOẠI"];
-        document.getElementById('ui-rank').innerText = ranks[Math.min(Math.floor(s.lvl/2), 5)];
-
-        // Cập nhật Grid Ngày
-        const grid = document.getElementById('ui-day-grid');
+        // Vẽ lưới ngày (Grid)
+        const grid = document.getElementById('ui-grid'); 
         grid.innerHTML = "";
-        for(let i=1; i<=10; i++) {
-            const isDone = s.history[i]?.done;
-            const isSelected = i === selDay;
-            const isLocked = i > s.day;
-            
-            grid.innerHTML += `
-                <div class="day-box ${isDone ? 'done' : ''} ${isSelected ? 'active' : ''} ${isLocked ? 'locked' : ''}" 
-                     onclick="selectDay(${i})">
-                    ${i}
-                    ${isSelected ? '<div class="dot"></div>' : ''}
-                </div>`;
+        for(let i=1; i<=10; i++){
+            const h = s.history[i];
+            const isActive = sel == i ? 'active' : '';
+            const isDone = h.done ? 'done' : '';
+            const isLocked = (i > s.currentDay && s.role !== 'admin') ? 'locked' : '';
+            grid.innerHTML += `<div class="day-box ${isDone} ${isActive} ${isLocked}" onclick="setDay(${i})">${i}</div>`;
         }
 
-        // Cập nhật Nhiệm vụ ngày đang chọn
-        document.getElementById('task-title').innerText = "🎯 Nhiệm vụ Ngày " + selDay;
-        const list = document.getElementById('ui-tasks');
-        list.innerHTML = "";
-        const taskNames = ["🏀 Tập Bóng rổ & Thể lực", "🎹 Piano (Bài 3 trang)", "📚 Hoàn thành BTVN"];
+        // Vẽ danh sách nhiệm vụ
+        if(!dayData.v1) dayData.v1 = ["",""];
+        document.getElementById('ui-task-title').innerText = `🎯 NHIỆM VỤ NGÀY ${sel}`;
+        const names = ["🏀 Thể lực", `🎹 ${CONFIG.pianoPlan[sel-1]}`, "📚 BTVN", `⚔️ 1v1 (Tỉ số: ${dayData.v1[0]||0}-${dayData.v1[1]||0})` ];
         
-        taskNames.forEach((name, i) => {
-            const isTaskDone = s.history[selDay].tasks[i];
-            list.innerHTML += `
-                <div class="task ${isTaskDone ? 'done' : ''}" onclick="${s.role === 'admin' ? `toggleTask(${selDay}, ${i})` : ''}">
-                    <input type="checkbox" ${isTaskDone ? 'checked' : ''}>
-                    <span style="${isTaskDone ? 'text-decoration:line-through;opacity:0.5' : ''}">${name}</span>
-                </div>`;
-        });
+        document.getElementById('ui-tasks').innerHTML = names.map((name, i) => `
+            <div class="task ${dayData.tasks[i] ? 'done' : ''}" onclick="toggleT(${sel}, ${i})">
+                <input type="checkbox" ${dayData.tasks[i] ? 'checked' : ''} readonly> 
+                <span>${name}</span>
+            </div>
+        `).join('');
 
-        // Panel dành cho Bố
-        const adminPanel = document.getElementById('ui-admin');
-        if (s.role === 'admin') {
-            adminPanel.classList.remove('hidden');
-            document.getElementById('admin-day-label').innerText = selDay;
-            document.getElementById('f-s').value = s.history[selDay].s || "";
-            document.getElementById('f-j').value = s.history[selDay].j || "";
-            document.getElementById('f-m').value = s.history[selDay].m || "";
+        // Hiển thị/Ẩn bảng điều khiển Admin
+        const panel = document.getElementById('admin-panel');
+        if(s.role == 'admin') {
+            panel.classList.remove('hidden');
+            document.getElementById('ui-sel-day').innerText = sel;
+            document.getElementById('in-s').value = dayData.s; 
+            document.getElementById('in-j').value = dayData.j;
+            document.getElementById('in-1v1-c').value = dayData.v1[0]; 
+            document.getElementById('in-1v1-b').value = dayData.v1[1];
+            document.getElementById('in-m').value = dayData.m;
         } else {
-            adminPanel.classList.add('hidden');
+            panel.classList.add('hidden');
         }
-
-        // Cập nhật Thành tựu (Logic giả định)
-        if (s.lvl >= 3) document.getElementById('ach-1').classList.remove('locked');
-        if (s.history[selDay].j >= 40) document.getElementById('ach-2').classList.remove('locked');
-        if (s.history[selDay].tasks[1]) document.getElementById('ach-3').classList.remove('locked');
-    }
-
-    window.toggleTask = (day, idx) => {
-        window.g.history[day].tasks[idx] = !window.g.history[day].tasks[idx];
-        updateUI();
-        window.cloudSave();
-    };
-
-    window.resetDay = () => {
-        if(!confirm("Bố chắc chắn muốn xóa hết dữ liệu ngày này chứ?")) return;
-        const d = window.g.selectedDay;
-        window.g.history[d] = { tasks: [false, false, false], s:0, j:0, m:0, done: false };
-        updateUI();
-        window.cloudSave();
-    };
-
-    window.doSubmit = async () => {
-        const selDay = window.g.selectedDay;
-        const h = window.g.history[selDay];
-        
-        h.s = document.getElementById('f-s').value;
-        h.j = document.getElementById('f-j').value;
-        h.m = document.getElementById('f-m').value;
-        h.done = true;
-
-        // Nếu đây là ngày hiện tại đang làm, mới cộng điểm và nhảy ngày
-        if (selDay === window.g.day) {
-            window.g.exp += 50;
-            window.g.coins += 20000;
-            if (window.g.exp >= window.g.lvl * 100) window.g.lvl++;
-            if (window.g.day < 10) {
-                window.g.day++;
-                window.g.selectedDay = window.g.day;
-            }
-        }
-
-        const ok = await window.cloudSave();
-        if (ok) {
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            alert("Đã lưu dữ liệu Ngày " + selDay);
-        }
-        updateUI();
     };
 </script>
-
 </body>
 </html>
 
