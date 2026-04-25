@@ -1,784 +1,284 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basketball Power Up - 10 Day Challenge</title>
+    <title>Basketball Power Up - Bảo Lâm Realtime</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --primary: #FF8C00; /* Dark Orange */
-            --secondary: #FFD700; /* Gold */
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #ffffff;
-            --success: #4CAF50;
-            --danger: #F44336;
-            --accent: #ff4500;
+            --primary: #FF8C00;
+            --secondary: #FFD700;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --accent: #38bdf8;
         }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
-
-        /* Login Screen */
-        #login-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #2c2c2c 0%, #000000 100%);
-        }
-
-        .game-title {
-            font-size: 3rem;
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--accent);
-            margin-bottom: 2rem;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: 900;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
-            border: 2px solid var(--primary);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-player { background: var(--primary); color: white; }
-        .btn-admin { background: #444; color: white; }
-        .btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--primary); }
-
-        /* Main Game Layout */
-        #main-game { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
-
-        /* Header / Stats */
-        .player-stats {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--secondary);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .level-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--secondary);
-            color: black;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 900;
-        }
-
-        .exp-bar-container {
-            width: 100%;
-            height: 12px;
-            background: #333;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .exp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
-            border-radius: 6px;
-            transition: width 0.5s ease-out;
-        }
-
-        /* Skill Grid */
-        .skill-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .skill-card {
-            background: #252525;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border-bottom: 3px solid var(--primary);
-        }
-
-        .skill-value { font-size: 1.5rem; font-weight: bold; display: block; }
-        .skill-diff { font-size: 0.8rem; }
-        .diff-plus { color: var(--success); }
-        .diff-minus { color: var(--danger); }
-
-        /* Tabs */
-        .tabs { display: flex; margin-bottom: 20px; }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            cursor: pointer;
-            border-bottom: 2px solid #333;
-            transition: 0.3s;
-        }
-        .tab.active { border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: bold; }
-
-        /* Mission List */
-        .day-selector {
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .day-btn {
-            min-width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        .day-btn.completed { background: var(--success); }
-        .day-btn.active { border-color: var(--primary); transform: scale(1.1); }
-
-        .mission-item {
-            background: #252525;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mission-info h4 { margin: 0; color: var(--secondary); }
-        .mission-info p { margin: 5px 0 0; font-size: 0.9rem; color: #aaa; }
-
-        input[type="checkbox"] {
-            width: 25px;
-            height: 25px;
-            accent-color: var(--primary);
-        }
-
-        /* Admin Controls */
-        .admin-section {
-            background: #2c2c2c;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            border: 1px dashed var(--secondary);
-        }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
-        .input-group input {
-            width: 100%;
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
             padding: 10px;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 8px;
+            display: flex;
+            justify-content: center;
         }
-
-        /* Achievement Toast */
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        .container { max-width: 500px; width: 100%; }
+        .hidden { display: none !important; }
+        .card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+        }
+        .btn { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: bold; 
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-player { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+        .btn-admin { background: #475569; color: white; }
+        .btn-confirm { background: #10b981; color: white; margin-top: 15px; }
+        
+        .stats-header { text-align: center; margin-bottom: 10px; }
+        .level-badge {
             background: var(--primary);
             color: white;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            display: none;
-            z-index: 1000;
-        }
-
-        /* Rewards Box */
-        .reward-display {
-            background: linear-gradient(135deg, #2c3e50, #000);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 20px;
-            border: 2px solid var(--secondary);
-        }
-
-        /* Final Boss */
-        #final-boss {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .boss-title { font-size: 2.5rem; color: var(--danger); font-weight: 900; margin-bottom: 20px; }
-
-        .hidden { display: none; }
-        .btn-complete-day { background: var(--success); color: white; margin-top: 20px; }
-        
-        /* Modal */
-        #modal-overlay {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        .modal {
-            background: var(--card-bg);
-            padding: 30px;
+            padding: 5px 15px;
             border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
+            font-weight: bold;
+            display: inline-block;
         }
+        .exp-bar { width: 100%; height: 12px; background: #334155; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .exp-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); width: 0%; }
+        
+        .skill-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .skill-card { background: #0f172a; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #1e293b; }
+        .skill-val { display: block; font-size: 1.2rem; font-weight: bold; color: var(--accent); }
+        
+        .mission-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #0f172a;
+            margin: 8px 0;
+            border-radius: 10px;
+        }
+        .mission-item input[type="checkbox"] { width: 20px; height: 20px; margin-right: 15px; accent-color: var(--primary); }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .sync-status { font-size: 0.7rem; color: #94a3b8; text-align: center; margin-top: 10px; }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <!-- Màn hình Đăng nhập -->
-    <div id="login-screen">
-        <div class="game-title">BASKETBALL<br>POWER UP</div>
-        <div class="login-card">
-            <h3 style="text-align:center; margin-top:0;">CHỌN NGƯỜI CHƠI</h3>
-            <button class="btn btn-player" onclick="login('player')">BẢO LÂM (Player)</button>
-            <button class="btn btn-admin" onclick="showAdminAuth()">BỐ (Admin)</button>
-        </div>
-    </div>
-
-    <!-- Game Chính -->
-    <div id="main-game">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="view-title">Dashboard</h2>
-            <button onclick="logout()" style="background:none; border:none; color: #888; cursor:pointer;">Đăng xuất</button>
+    <div class="container">
+        <!-- Màn hình đăng nhập -->
+        <div id="login-screen" class="card">
+            <h1 style="text-align: center; color: var(--primary);">🏀 POWER UP</h1>
+            <p style="text-align: center; color: #94a3b8;">Hệ thống rèn luyện Bảo Lâm</p>
+            <button class="btn btn-player" onclick="login('player')">BẢO LÂM (XEM ĐIỂM)</button>
+            <button class="btn btn-admin" onclick="promptAdmin()">BỐ (CẬP NHẬT)</button>
         </div>
 
-        <!-- Thống kê Cầu thủ -->
-        <div class="player-stats">
-            <div class="level-badge" id="player-rank">ROOKIE</div>
-            <div style="font-size: 0.9rem; color: #aaa;">Cấp độ</div>
-            <div style="font-size: 1.8rem; font-weight: 900;" id="player-level">LV. 1</div>
-            <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.8rem;">
-                <span>EXP: <span id="current-exp">0</span> / <span id="next-level-exp">100</span></span>
-                <span>COIN: <span id="player-coins" style="color: var(--secondary); font-weight: bold;">0</span> 🪙</span>
-            </div>
-            <div class="exp-bar-container">
-                <div class="exp-bar-fill" id="exp-bar"></div>
-            </div>
-        </div>
-
-        <!-- Chỉ số Skill -->
-        <div class="skill-grid">
-            <div class="skill-card">
-                <small>SPEED (20m)</small>
-                <span class="skill-value" id="val-speed">0.0s</span>
-                <span class="skill-diff" id="diff-speed"></span>
-            </div>
-            <div class="skill-card">
-                <small>JUMP</small>
-                <span class="skill-value" id="val-jump">0cm</span>
-                <span class="skill-diff" id="diff-jump"></span>
-            </div>
-            <div class="skill-card">
-                <small>STAMINA</small>
-                <span class="skill-value" id="val-stamina">0m</span>
-                <span class="skill-diff" id="diff-stamina"></span>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('missions')">Nhiệm vụ</div>
-            <div class="tab" onclick="switchTab('rewards')">Phần thưởng</div>
-            <div class="tab" onclick="switchTab('achievements')">Thành tựu</div>
-        </div>
-
-        <!-- Nội dung Tab Nhiệm vụ -->
-        <div id="tab-missions">
-            <div class="day-selector" id="day-buttons">
-                <!-- JS render buttons -->
-            </div>
-            
-            <div id="mission-container">
-                <h3 id="current-day-label">Ngày 1</h3>
-                <div id="mission-list">
-                    <!-- JS render missions -->
-                </div>
-                
-                <!-- Admin Only Section -->
-                <div id="admin-controls" class="admin-section hidden">
-                    <h4>BẢNG ĐIỀU KHIỂN CỦA BỐ</h4>
-                    <div class="skill-grid" style="margin-bottom: 10px;">
-                        <div class="input-group">
-                            <label>Speed (s)</label>
-                            <input type="number" step="0.1" id="input-speed" placeholder="0.0">
-                        </div>
-                        <div class="input-group">
-                            <label>Jump (cm)</label>
-                            <input type="number" id="input-jump" placeholder="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Stamina (m)</label>
-                            <input type="number" id="input-stamina" placeholder="0">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Điểm Kỷ luật (0-10)</label>
-                        <input type="number" id="input-discipline" max="10" min="0" value="10">
-                    </div>
-                    <button class="btn btn-complete-day" onclick="completeDay()">XÁC NHẬN HOÀN THÀNH NGÀY</button>
-                    <button class="btn" style="background:#444; font-size: 0.8rem; padding: 5px;" onclick="resetGame()">RESET TẤT CẢ DỮ LIỆU</button>
+        <!-- Màn hình chính -->
+        <div id="main-game" class="hidden">
+            <div class="card stats-header">
+                <div class="level-badge" id="lvl-display">LV. 1</div>
+                <h2 id="rank-name" style="margin: 10px 0; color: var(--secondary);">ROOKIE</h2>
+                <div class="exp-bar"><div id="exp-fill" class="exp-fill"></div></div>
+                <div style="display:flex; justify-content: space-around; font-weight: bold;">
+                    <span>🪙 <span id="coin-count">0</span></span>
+                    <span>🔥 Ngày <span id="day-count">1</span>/10</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Nội dung Tab Phần thưởng -->
-        <div id="tab-rewards" class="hidden">
-            <div class="reward-display" id="reward-box">
-                <p>Hoàn thành ngày để xem phần thưởng của con!</p>
+            <div class="skill-grid">
+                <div class="skill-card">🚀 Speed<br><span class="skill-val" id="val-speed">0s</span></div>
+                <div class="skill-card">⬆️ Jump<br><span class="skill-val" id="val-jump">0cm</span></div>
+                <div class="skill-card">🔋 Stamina<br><span class="skill-val" id="val-stamina">0m</span></div>
             </div>
-            <div style="margin-top:20px;">
-                <h4>BẢNG GIÁ THƯỞNG</h4>
-                <ul style="color: #aaa; font-size: 0.9rem;">
-                    <li>Mốc < 70%: Không có thưởng.</li>
-                    <li>Mốc 70-89%: 20k + 30p game.</li>
-                    <li>Mốc ≥ 90%: 50k + 1h game.</li>
-                </ul>
-            </div>
-        </div>
 
-        <!-- Nội dung Tab Thành tựu -->
-        <div id="tab-achievements" class="hidden">
-            <div id="achievement-list">
-                <!-- JS render -->
+            <div class="card">
+                <h3 style="margin-top: 0;">🎯 Nhiệm vụ hôm nay</h3>
+                <div id="mission-list"></div>
             </div>
-        </div>
 
-        <!-- Final Boss Day 10 -->
-        <div id="final-boss-view" class="hidden">
-            <div class="boss-title">DEFEATED YOUR OLD SELF!</div>
-            <div class="reward-display">
-                <h3>TỔNG KẾT 10 NGÀY RÈN LUYỆN</h3>
-                <div id="boss-stats-compare"></div>
-                <h1 id="final-rank" style="color: var(--secondary); margin-top:20px;">LEGEND</h1>
+            <!-- Panel của Bố -->
+            <div id="admin-panel" class="card hidden" style="background: #1e1b4b; border-color: var(--primary);">
+                <h3 style="color: var(--primary); margin-top: 0;">🛠 BẢNG ĐIỀU KHIỂN CỦA BỐ</h3>
+                <label>Tốc độ chạy (s):</label>
+                <input type="number" id="in-speed" step="0.1" placeholder="Ví dụ: 6.5">
+                <label>Bật nhảy (cm):</label>
+                <input type="number" id="in-jump" placeholder="Ví dụ: 35">
+                <label>Chạy bền (m):</label>
+                <input type="number" id="in-stamina" placeholder="Ví dụ: 1000">
+                <button class="btn btn-confirm" onclick="confirmDay()">XÁC NHẬN HOÀN THÀNH NGÀY</button>
             </div>
+
+            <div class="sync-status">● Đang kết nối Realtime Cloud...</div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast">LEVEL UP!</div>
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <!-- Admin Password Modal -->
-    <div id="modal-overlay">
-        <div class="modal">
-            <h3>XÁC MINH QUYỀN HẠN</h3>
-            <p>Vui lòng nhập mật khẩu của Bố</p>
-            <input type="password" id="admin-pass" style="width:100%; padding:10px; text-align:center; font-size: 1.5rem; letter-spacing: 5px;" maxlength="6">
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn" style="background:#444;" onclick="closeModal()">Hủy</button>
-                <button class="btn btn-player" onclick="verifyAdmin()">Đăng nhập</button>
-            </div>
-        </div>
-    </div>
+        // Cấu hình Firebase của Bố
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjFDmzfSSz-8yKMOs3mGHkytWF8FY343c",
+            authDomain: "baolam-basketball.firebaseapp.com",
+            projectId: "baolam-basketball",
+            storageBucket: "baolam-basketball.firebasestorage.app",
+            messagingSenderId: "604111487763",
+            appId: "1:604111487763:web:cf9adcd1d09b3d883050e6",
+            measurementId: "G-BXD76FX8EE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db, 'bao_lam_game_data');
+
+        window.state = { level: 1, exp: 0, coins: 0, currentDay: 1, days: {}, user: 'player' };
+
+        // Lưu dữ liệu lên mây
+        window.saveToCloud = (data) => {
+            set(dbRef, data);
+        };
+
+        // Lắng nghe dữ liệu thay đổi từ máy khác
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const oldLevel = window.state.level;
+                window.state = data;
+                if (window.state.level > oldLevel) {
+                    celebrate(); // Hiệu ứng pháo hoa khi lên cấp
+                }
+                updateUI();
+                document.querySelector('.sync-status').innerHTML = "● Đã đồng bộ với Cloud (" + new Date().toLocaleTimeString() + ")";
+            } else {
+                initFirstTime();
+            }
+        });
+    </script>
 
     <script>
-        // CONFIG & STATE
-        const ADMIN_PASS = "123456"; // Mật khẩu của Bố
-        const MAX_DAYS = 10;
-        const LVL_STEP = 100;
-        
-        let state = {
-            user: null,
-            level: 1,
-            exp: 0,
-            coins: 0,
-            currentDay: 1,
-            daysData: {}, // { dayNum: { completed: bool, score: 0, metrics: {speed, jump, stamina}, tasks: [] } }
-            historyMetrics: { speed: [], jump: [], stamina: [] },
-            achievements: []
-        };
+        const ADMIN_PASS = "123456";
 
-        // AUDIO EMULATION (Using Web Audio API or simple sounds)
-        const playSound = (freq, type, duration) => {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, ctx.currentTime);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-            osc.stop(ctx.currentTime + duration);
-        };
-
-        const soundEffect = (name) => {
-            if (name === 'click') playSound(400, 'sine', 0.1);
-            if (name === 'success') playSound(600, 'triangle', 0.3);
-            if (name === 'level') {
-                playSound(400, 'square', 0.2);
-                setTimeout(() => playSound(600, 'square', 0.4), 150);
-            }
-        };
-
-        // LOCAL STORAGE
-        function saveData() {
-            localStorage.setItem('bl_game_state', JSON.stringify(state));
+        function promptAdmin() {
+            if(prompt("Mật khẩu của Bố:") === ADMIN_PASS) login('admin');
+            else alert("Sai mật khẩu rồi Bố ơi!");
         }
 
-        function loadData() {
-            const saved = localStorage.getItem('bl_game_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                updateUI();
-            } else {
-                initNewGame();
-            }
-        }
-
-        function initNewGame() {
-            for(let i=1; i<=MAX_DAYS; i++) {
-                state.daysData[i] = {
-                    completed: false,
-                    score: 0,
-                    metrics: { speed: 0, jump: 0, stamina: 0 },
-                    discipline: 10,
-                    tasks: [
-                        { id: 't1', label: 'Bóng rổ & Thể lực (45-60p)', done: false },
-                        { id: 't2', label: 'Luyện Piano (20-25p)', done: false },
-                        { id: 't3', label: 'Học Toán & Tiếng Anh (30-45p)', done: false },
-                        { id: 't4', label: 'Thắng 1v1 với Bố (Bonus)', done: false }
-                    ]
-                };
-            }
-            saveData();
-            updateUI();
-        }
-
-        // AUTH LOGIC
         function login(role) {
-            state.user = role;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-game').style.display = 'block';
-            soundEffect('click');
+            window.state.user = role;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-game').classList.remove('hidden');
+            if(role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
             updateUI();
         }
 
-        function showAdminAuth() {
-            document.getElementById('modal-overlay').style.display = 'flex';
-            document.getElementById('admin-pass').focus();
-        }
-
-        function closeModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
-        }
-
-        function verifyAdmin() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === ADMIN_PASS) {
-                closeModal();
-                login('admin');
-            } else {
-                alert("Sai mật khẩu rồi Bố ơi!");
+        function initFirstTime() {
+            let daysData = {};
+            for(let i=1; i<=10; i++) {
+                daysData[i] = { completed: false, tasks: [false, false, false], metrics: {s:0, j:0, m:0} };
             }
+            window.state = { level: 1, exp: 0, coins: 0, currentDay: 1, days: daysData };
+            window.saveToCloud(window.state);
         }
 
-        function logout() {
-            state.user = null;
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('main-game').style.display = 'none';
-        }
-
-        // TAB LOGIC
-        function switchTab(tabId) {
-            const tabs = ['missions', 'rewards', 'achievements'];
-            tabs.forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            event.target.classList.add('active');
-            soundEffect('click');
-        }
-
-        // CORE GAME LOGIC
-        function selectDay(day) {
-            state.currentDay = day;
-            updateUI();
-            soundEffect('click');
-        }
-
-        function toggleTask(index) {
-            if (state.user !== 'admin') return; // Chỉ bố được check
-            state.daysData[state.currentDay].tasks[index].done = !state.daysData[state.currentDay].tasks[index].done;
-            saveData();
-            updateUI();
-        }
-
-        function completeDay() {
-            const day = state.daysData[state.currentDay];
-            const spd = parseFloat(document.getElementById('input-speed').value) || 0;
-            const jmp = parseInt(document.getElementById('input-jump').value) || 0;
-            const sta = parseInt(document.getElementById('input-stamina').value) || 0;
-            const disc = parseInt(document.getElementById('input-discipline').value) || 10;
-
-            if (spd === 0 || jmp === 0) {
-                alert("Bố nhập chỉ số cho Bảo Lâm đã nhé!");
-                return;
-            }
-
-            // Tính điểm (40-20-30-10)
-            // Đơn giản hóa: Task 1 (BR) = 40đ, Task 2 (Piano) = 20đ, Task 3 (Học) = 30đ, Disc = 10đ
-            let totalScore = 0;
-            if (day.tasks[0].done) totalScore += 40;
-            if (day.tasks[1].done) totalScore += 20;
-            if (day.tasks[2].done) totalScore += 30;
-            totalScore += (disc); // Kỷ luật tối đa 10
-
-            // Update State
-            day.completed = true;
-            day.score = totalScore;
-            day.metrics = { speed: spd, jump: jmp, stamina: sta };
-            day.discipline = disc;
-
-            // Thưởng EXP & Coins
-            const earnedExp = totalScore;
-            const earnedCoins = totalScore >= 90 ? 50 : (totalScore >= 70 ? 20 : 0);
-            
-            addExp(earnedExp);
-            state.coins += earnedCoins;
-
-            // Check Achievement
-            if (totalScore >= 95) checkAchievement("Perfect Day", "Hoàn thành ngày xuất sắc 95%+");
-            
-            saveData();
-            soundEffect('success');
-            updateUI();
-            
-            // Show result
-            alert(`XÁC NHẬN: Hoàn thành Ngày ${state.currentDay}\nĐiểm: ${totalScore}%\nThưởng: ${earnedCoins} Coins`);
-        }
-
-        function addExp(amount) {
-            state.exp += amount;
-            while (state.exp >= state.level * LVL_STEP) {
-                state.exp -= (state.level * LVL_STEP);
-                state.level++;
-                soundEffect('level');
-                showToast(`LEVEL UP: CẤP ${state.level}!`);
-            }
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        function checkAchievement(title, desc) {
-            if (!state.achievements.find(a => a.title === title)) {
-                state.achievements.push({ title, desc, date: new Date().toLocaleDateString() });
-                showToast(`MỚI: ${title}`);
-            }
-        }
-
-        // UI RENDERING
         function updateUI() {
-            // Stats
-            document.getElementById('player-level').innerText = `LV. ${state.level}`;
-            document.getElementById('player-rank').innerText = getRankName(state.level);
-            document.getElementById('current-exp').innerText = state.exp;
-            document.getElementById('next-level-exp').innerText = state.level * LVL_STEP;
-            document.getElementById('player-coins').innerText = state.coins;
-            document.getElementById('exp-bar').style.width = `${(state.exp / (state.level * LVL_STEP)) * 100}%`;
-
-            // Skills (Lấy ngày gần nhất có dữ liệu)
-            let lastMetrics = { speed: 0, jump: 0, stamina: 0 };
-            let prevMetrics = { speed: 0, jump: 0, stamina: 0 };
+            const s = window.state;
+            document.getElementById('lvl-display').innerText = "LV. " + s.level;
+            document.getElementById('coin-count').innerText = s.coins;
+            document.getElementById('day-count').innerText = s.currentDay;
+            document.getElementById('exp-fill').style.width = (s.exp % 100) + "%";
             
-            for(let i = state.currentDay; i >= 1; i--) {
-                if(state.daysData[i].completed) {
-                    lastMetrics = state.daysData[i].metrics;
-                    // Tìm ngày trước đó nữa để so sánh
-                    for(let j = i-1; j >= 1; j--) {
-                        if(state.daysData[j].completed) {
-                            prevMetrics = state.daysData[j].metrics;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
+            // Xếp hạng dựa trên Level
+            const ranks = ["ROOKIE", "STARTER", "ALL-STAR", "MVP", "HALL OF FAME"];
+            document.getElementById('rank-name').innerText = ranks[Math.min(Math.floor(s.level/2), 4)];
 
-            renderSkill('speed', lastMetrics.speed, prevMetrics.speed, 's');
-            renderSkill('jump', lastMetrics.jump, prevMetrics.jump, 'cm');
-            renderSkill('stamina', lastMetrics.stamina, prevMetrics.stamina, 'm');
+            const day = s.days[s.currentDay];
+            document.getElementById('val-speed').innerText = day.metrics.s + "s";
+            document.getElementById('val-jump').innerText = day.metrics.j + "cm";
+            document.getElementById('val-stamina').innerText = day.metrics.m + "m";
 
-            // Day Buttons
-            const dayContainer = document.getElementById('day-buttons');
-            dayContainer.innerHTML = '';
-            for(let i=1; i<=MAX_DAYS; i++) {
-                const btn = document.createElement('div');
-                btn.className = `day-btn ${state.currentDay === i ? 'active' : ''} ${state.daysData[i].completed ? 'completed' : ''}`;
-                btn.innerText = i;
-                btn.onclick = () => selectDay(i);
-                dayContainer.appendChild(btn);
-            }
-
-            // Missions
-            document.getElementById('current-day-label').innerText = `Ngày ${state.currentDay}`;
-            const mList = document.getElementById('mission-list');
-            mList.innerHTML = '';
-            const dayObj = state.daysData[state.currentDay];
-            
-            dayObj.tasks.forEach((t, idx) => {
-                const item = document.createElement('div');
-                item.className = 'mission-item';
-                item.innerHTML = `
-                    <div class="mission-info">
-                        <h4>${t.label}</h4>
-                    </div>
-                    <input type="checkbox" ${t.done ? 'checked' : ''} ${state.user !== 'admin' ? 'disabled' : ''} onchange="toggleTask(${idx})">
-                `;
-                mList.appendChild(item);
+            const list = document.getElementById('mission-list');
+            list.innerHTML = "";
+            const taskNames = ["🏀 Bóng rổ & Thể lực", "🎹 Luyện tập Piano", "📚 Hoàn thành bài tập"];
+            taskNames.forEach((t, i) => {
+                list.innerHTML += `
+                    <div class="mission-item">
+                        <input type="checkbox" ${day.tasks[i]?'checked':''} onchange="toggleTask(${i})" ${window.state.user!=='admin'?'disabled':''}>
+                        <span>${t}</span>
+                    </div>`;
             });
+        }
 
-            // Admin controls visibility
-            if (state.user === 'admin') {
-                document.getElementById('admin-controls').classList.remove('hidden');
-                // Set default inputs if already completed
-                if (dayObj.completed) {
-                    document.getElementById('input-speed').value = dayObj.metrics.speed;
-                    document.getElementById('input-jump').value = dayObj.metrics.jump;
-                    document.getElementById('input-stamina').value = dayObj.metrics.stamina;
-                    document.getElementById('input-discipline').value = dayObj.discipline;
-                } else {
-                    document.getElementById('input-speed').value = '';
-                    document.getElementById('input-jump').value = '';
-                    document.getElementById('input-stamina').value = '';
-                    document.getElementById('input-discipline').value = 10;
-                }
+        function toggleTask(idx) {
+            window.state.days[window.state.currentDay].tasks[idx] = !window.state.days[window.state.currentDay].tasks[idx];
+            window.saveToCloud(window.state);
+        }
+
+        function confirmDay() {
+            const s = window.state;
+            const d = s.days[s.currentDay];
+            
+            d.metrics.s = document.getElementById('in-speed').value || 0;
+            d.metrics.j = document.getElementById('in-jump').value || 0;
+            d.metrics.m = document.getElementById('in-stamina').value || 0;
+            d.completed = true;
+            
+            // Logic tính EXP: Hoàn thành 1 ngày nhận 50 EXP. 100 EXP lên 1 Level
+            s.exp += 50;
+            s.coins += 20;
+            
+            if (s.exp >= s.level * 100) {
+                s.level++;
+            }
+
+            if(s.currentDay < 10) {
+                s.currentDay++;
+                alert("Tuyệt vời! Đã mở khóa Ngày " + s.currentDay);
             } else {
-                document.getElementById('admin-controls').classList.add('hidden');
+                alert("Chúc mừng Bảo Lâm đã hoàn thành chặng đường 10 ngày!");
             }
+            
+            window.saveToCloud(s);
+        }
 
-            // Reward tab logic
-            const rBox = document.getElementById('reward-box');
-            if (dayObj.completed) {
-                const time = dayObj.score >= 90 ? "1 Giờ" : (dayObj.score >= 70 ? "30 Phút" : "0 Phút");
-                const cash = dayObj.score >= 90 ? "50.000đ" : (dayObj.score >= 70 ? "20.000đ" : "0đ");
-                rBox.innerHTML = `
-                    <h2 style="color: var(--secondary)">KẾT QUẢ NGÀY ${state.currentDay}</h2>
-                    <div style="font-size: 2.5rem; font-weight: 900;">${dayObj.score}%</div>
-                    <hr style="border: 0.5px solid #444; margin: 15px 0;">
-                    <p>Giờ chơi game: <strong>${time}</strong></p>
-                    <p>Tiền thưởng: <strong>${cash}</strong></p>
-                `;
-            } else {
-                rBox.innerHTML = `<p>Chưa hoàn thành Ngày ${state.currentDay}</p>`;
-            }
-
-            // Achievements
-            const aList = document.getElementById('achievement-list');
-            aList.innerHTML = '';
-            if (state.achievements.length === 0) {
-                aList.innerHTML = '<p style="text-align:center; color:#555;">Chưa có thành tựu nào. Cố lên Bảo Lâm!</p>';
-            }
-            state.achievements.forEach(a => {
-                const item = document.createElement('div');
-                item.className = 'mission-item';
-                item.innerHTML = `<div><strong>${a.title}</strong><br><small>${a.desc}</small></div><div style="font-size:0.7rem">${a.date}</div>`;
-                aList.appendChild(item);
+        function celebrate() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FF8C00', '#FFD700', '#ffffff']
             });
-
-            // Final Boss Check
-            if (state.currentDay === 10 && state.daysData[10].completed) {
-                showFinalBoss();
-            } else {
-                document.getElementById('final-boss-view').classList.add('hidden');
-            }
         }
-
-        function renderSkill(id, val, prev, unit) {
-            const el = document.getElementById(`val-${id}`);
-            const diffEl = document.getElementById(`diff-${id}`);
-            el.innerText = val + unit;
-            
-            if (prev > 0) {
-                const diff = (val - prev).toFixed(1);
-                // Speed nhỏ hơn là tốt, Jump/Stamina lớn hơn là tốt
-                let isBetter = id === 'speed' ? diff < 0 : diff > 0;
-                if (diff == 0) {
-                    diffEl.innerText = "";
-                } else {
-                    diffEl.className = `skill-diff ${isBetter ? 'diff-plus' : 'diff-minus'}`;
-                    diffEl.innerText = (diff > 0 ? "+" : "") + diff + unit;
-                }
-            } else {
-                diffEl.innerText = "";
-            }
-        }
-
-        function getRankName(lvl) {
-            if (lvl >= 15) return "G.O.A.T";
-            if (lvl >= 10) return "LEGEND";
-            if (lvl >= 7) return "ALL-STAR";
-            if (lvl >= 4) return "PRO";
-            return "ROOKIE";
-        }
-
-        function showFinalBoss() {
-            document.getElementById('final-boss-view').classList.remove('hidden');
-            const d1 = state.daysData[1].metrics;
-            const d10 = state.daysData[10].metrics;
-            
-            const compareHtml = `
-                <div style="display:flex; justify-content:space-around; margin-top:20px;">
-                    <div><small>SPEED</small><br><strong>${d1.speed}s ➔ ${d10.speed}s</strong></div>
-                    <div><small>JUMP</small><br><strong>${d1.jump}cm ➔ ${d10.jump}cm</strong></div>
-                    <div><small>STAMINA</small><br><strong>${d1.stamina}m ➔ ${d10.stamina}m</strong></div>
-                </div>
-            `;
-            document.getElementById('boss-stats-compare').innerHTML = compareHtml;
-            document.getElementById('final-rank').innerText = getRankName(state.level);
-            // Cuộn xuống
-            window.scrollTo(0, document.body.scrollHeight);
-        }
-
-        function resetGame() {
-            if(confirm("Bố có chắc muốn xóa hết dữ liệu để Bảo Lâm tập lại từ đầu không?")) {
-                localStorage.removeItem('bl_game_state');
-                location.reload();
-            }
-        }
-
-        // Init
-        window.onload = loadData;
-
     </script>
 </body>
 </html>
