@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bảo Lâm Basketball - V7 Dashboard</title>
+    <title>Bảo Lâm Basketball - V7 Pro Updated</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { 
@@ -66,11 +66,11 @@
         .tab { 
             flex: 1; text-align: center; padding: 12px 5px; color: var(--text-muted); 
             font-weight: 700; cursor: pointer; position: relative; transition: 0.3s;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
         .tab.active { color: var(--text-light); }
         .tab.active::after { 
-            content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%; 
+            content: ''; position: absolute; bottom: -1px; left: 15%; right: 15%; 
             height: 3px; background: var(--primary); border-radius: 3px;
         }
 
@@ -89,7 +89,7 @@
         .day-btn.done { border-color: var(--success); color: var(--success); }
         .day-btn.locked { opacity: 0.3; }
 
-        /* 6. TASK LIST */
+        /* 6. LISTS & ITEMS */
         .task-list { display: flex; flex-direction: column; gap: 10px; }
         .task-item { 
             background: var(--bg-card); padding: 18px 20px; border-radius: 16px; 
@@ -103,14 +103,14 @@
         .task-item.done .check-circle { background: var(--primary); border-color: var(--primary); }
         .task-item.done .check-circle::after { content: '✓'; color: white; font-weight: bold; }
 
-        /* 7. REWARDS & ACHIEVEMENTS */
-        .reward-card { 
+        /* REWARD / SUMMARY CARDS */
+        .card-item { 
             background: var(--bg-card); padding: 15px; border-radius: 16px; margin-bottom: 10px;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .reward-info b { display: block; color: var(--accent); }
-        .reward-info span { font-size: 0.75rem; color: var(--text-muted); }
-        .btn-claim { background: var(--primary); padding: 8px 15px; border-radius: 10px; color: white; font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; }
+        .info b { display: block; color: var(--accent); }
+        .info span { font-size: 0.75rem; color: var(--text-muted); }
+        .btn-action { background: var(--primary); padding: 8px 15px; border-radius: 10px; color: white; font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; }
 
         /* ADMIN PANEL */
         .admin-box { margin-top: 20px; border: 1px dashed var(--primary); padding: 15px; border-radius: 16px; }
@@ -149,7 +149,7 @@
             <div class="label-sm">Cấp độ</div>
             <div class="lvl-val" id="ui-lvl">LV. 1</div>
             <div class="exp-info">
-                <span>EXP: <b id="ui-exp-text">0 / 100</b></span>
+                <span>EXP: <b id="ui-exp-text">0 / 200</b></span>
             </div>
             <div class="bar"><div id="ui-exp-bar" class="fill"></div></div>
             <div class="coin-info">COIN: <span id="ui-coins">0</span> 🪙</div>
@@ -163,8 +163,8 @@
                 <div class="unit">s</div>
             </div>
             <div class="stat-box">
-                <div class="label">JUMP</div>
-                <div class="val" id="stat-jump">--</div>
+                <div class="label">JUMP<br>(Trái/Phải)</div>
+                <div class="val" id="stat-jump" style="color:var(--primary); font-size:1rem;">--/--</div>
                 <div class="unit">cm</div>
             </div>
             <div class="stat-box">
@@ -177,7 +177,8 @@
         <!-- TABS MENU -->
         <div class="tabs">
             <div class="tab active" onclick="switchTab('tasks')">Nhiệm vụ</div>
-            <div class="tab" onclick="switchTab('rewards')">Phần thưởng</div>
+            <div class="tab" onclick="switchTab('summary')">Tổng kết</div>
+            <div class="tab" onclick="switchTab('rewards')">Thưởng</div>
             <div class="tab" onclick="switchTab('achievements')">Thành tựu</div>
         </div>
 
@@ -195,8 +196,11 @@
                     <input type="number" id="in-s" step="0.1">
                 </div>
                 <div class="input-group">
-                    <label>Bật nhảy (cm):</label>
-                    <input type="number" id="in-j">
+                    <label>Bật nhảy (Trái : Phải cm):</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="in-jL" placeholder="Trái">
+                        <input type="number" id="in-jR" placeholder="Phải">
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Tỷ số 1v1 (Con : Bố):</label>
@@ -213,30 +217,43 @@
             </div>
         </div>
 
+        <!-- TAB CONTENT: SUMMARY (MỚI) -->
+        <div id="tab-summary" class="hidden">
+            <h3 style="color:var(--primary); margin-bottom: 15px; font-size: 1rem;">📊 ĐÁNH GIÁ TIẾN ĐỘ</h3>
+            <div class="card-item">
+                <div class="info"><b>Hoàn thành nhiệm vụ</b><span id="sum-tasks">0 / 0</span></div>
+                <div id="sum-percent" style="font-weight:bold; color:var(--primary);">0%</div>
+            </div>
+            <div class="card-item">
+                <div class="info"><b>Sự tiến bộ Tốc độ (20m)</b><span id="sum-speed-progress">N1: --s ➔ Nay: --s</span></div>
+                <div style="font-size: 1.2rem;">📈</div>
+            </div>
+            <div class="card-item">
+                <div class="info"><b>Sự tiến bộ Bật nhảy (T/P)</b><span id="sum-jump-progress">N1: --/-- ➔ Nay: --/--</span></div>
+                <div style="font-size: 1.2rem;">🦘</div>
+            </div>
+            <div class="card-item">
+                <div class="info"><b>Tổng quãng đường chạy bền</b><span id="sum-run-total">0 m</span></div>
+                <div style="font-size: 1.2rem;">🔋</div>
+            </div>
+        </div>
+
         <!-- TAB CONTENT: REWARDS -->
         <div id="tab-rewards" class="hidden">
-            <div class="reward-card">
-                <div class="reward-info"><b>Trà sữa Full Topping</b><span>Tiêu tốn: 50,000 Coin</span></div>
-                <button class="btn-claim" onclick="redeem(50000)">ĐỔI</button>
+            <div class="card-item">
+                <div class="info"><b>Trà sữa Full Topping</b><span>Tiêu tốn: 50,000 Coin</span></div>
+                <button class="btn-action" onclick="redeem(50000)">ĐỔI</button>
             </div>
-            <div class="reward-card">
-                <div class="reward-info"><b>Thêm 1 giờ chơi Game</b><span>Tiêu tốn: 30,000 Coin</span></div>
-                <button class="btn-claim" onclick="redeem(30000)">ĐỔI</button>
-            </div>
-            <div class="reward-card">
-                <div class="reward-info"><b>Mua đồ chơi (Dưới 200k)</b><span>Tiêu tốn: 150,000 Coin</span></div>
-                <button class="btn-claim" onclick="redeem(150000)">ĐỔI</button>
+            <div class="card-item">
+                <div class="info"><b>Thêm 1 giờ chơi Game</b><span>Tiêu tốn: 30,000 Coin</span></div>
+                <button class="btn-action" onclick="redeem(30000)">ĐỔI</button>
             </div>
         </div>
 
         <!-- TAB CONTENT: ACHIEVEMENTS -->
         <div id="tab-achievements" class="hidden">
-            <div class="reward-card" style="opacity: 0.5;">
-                <div class="reward-info"><b>🏃 Vua tốc độ</b><span>Chạy 20m dưới 5s</span></div>
-                <div style="font-size: 1.5rem;">🔒</div>
-            </div>
-            <div class="reward-card" style="opacity: 0.5;">
-                <div class="reward-info"><b>🎹 Nghệ sĩ Piano</b><span>Hoàn thành 10 ngày luyện tập</span></div>
+            <div class="card-item" style="opacity: 0.5;">
+                <div class="info"><b>🏃 Vua tốc độ</b><span>Chạy 20m dưới 5s</span></div>
                 <div style="font-size: 1.5rem;">🔒</div>
             </div>
         </div>
@@ -248,7 +265,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyBC9kRXaY1S-XVtMSg5hOkbX7A00GRoAqg",
         authDomain: "baolam-5d687.firebaseapp.com",
@@ -256,27 +272,25 @@
         projectId: "baolam-5d687",
         storageBucket: "baolam-5d687.firebasestorage.app",
         messagingSenderId: "141003154965",
-        appId: "1:141003154965:web:05b03aa3759feb55bcd01c",
-        measurementId: "G-8RYCHK9M61"
+        appId: "1:141003154965:web:05b03aa3759feb55bcd01c"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const dataRef = ref(db, 'user_v6_pro');
+    const dataRef = ref(db, 'user_v7_updated');
 
-    // 2. APP STATE
+    // STATE
     window.state = { lvl: 1, exp: 0, coins: 0, currentDay: 1, selectedDay: 1, role: 'player', history: {} };
     const PIANO_PLAN = ["Piano: Trang 1 đầu", "Piano: Xong trang 1", "Piano: Đầu trang 2", "Piano: Xong trang 2", "Piano: Ôn trang 1-2", "Piano: Đầu trang 3", "Piano: Xong trang 3", "Piano: Ghép toàn bài", "Piano: Tăng tốc", "Piano: BIỂU DIỄN"];
 
     const initHistory = () => {
         let h = {};
-        for(let i=1; i<=10; i++) h[i] = { tasks: [false, false, false, false], s:"", j:"", v1: ["",""], m:"", done: false };
+        for(let i=1; i<=10; i++) h[i] = { tasks: [false, false, false, false], s:"", jL:"", jR:"", v1: ["",""], m:"", done: false };
         return h;
     };
 
     window.sync = () => set(dataRef, { ...window.state, role: 'player' });
 
-    // 3. LISTENERS
     onValue(dataRef, (snap) => {
         const d = snap.val();
         if(d) {
@@ -292,7 +306,6 @@
         }
     });
 
-    // 4. FUNCTIONS
     window.checkAdmin = () => {
         if(document.getElementById('admin-pin').value === '1234') {
             window.state.role = 'admin';
@@ -301,26 +314,24 @@
     };
 
     window.goView = (view) => {
-        if(view === 'main') {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-main').classList.remove('hidden');
-            render();
-        }
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-main').classList.remove('hidden');
+        render();
     };
 
     window.logout = () => {
         window.state.role = 'player';
-        document.getElementById('admin-pin').value = '';
         document.getElementById('view-main').classList.add('hidden');
         document.getElementById('view-login').classList.remove('hidden');
     };
 
     window.switchTab = (tabId) => {
-        const tabs = document.querySelectorAll('.tab');
-        const contents = ['tasks', 'rewards', 'achievements'];
-        tabs.forEach((t, i) => {
-            t.classList.toggle('active', contents[i] === tabId);
-            document.getElementById('tab-' + contents[i]).classList.toggle('hidden', contents[i] !== tabId);
+        const tabs = ['tasks', 'summary', 'rewards', 'achievements'];
+        tabs.forEach(t => {
+            document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabId);
+        });
+        document.querySelectorAll('.tab').forEach(el => {
+            el.classList.toggle('active', el.getAttribute('onclick').includes(tabId));
         });
     };
 
@@ -342,7 +353,8 @@
         const d = window.state.selectedDay;
         const h = window.state.history[d];
         h.s = document.getElementById('in-s').value;
-        h.j = document.getElementById('in-j').value;
+        h.jL = document.getElementById('in-jL').value;
+        h.jR = document.getElementById('in-jR').value;
         h.v1 = [document.getElementById('in-v1c').value, document.getElementById('in-v1b').value];
         h.m = document.getElementById('in-m').value;
 
@@ -362,26 +374,25 @@
         if(window.state.coins >= cost) {
             window.state.coins -= cost;
             window.sync();
-            alert("Đổi thành công! Hãy báo với Bố để nhận quà nhé.");
+            alert("Đổi thành công!");
         } else alert("Bạn không đủ Coin!");
     };
 
-    // 5. RENDER UI
     window.render = () => {
         const s = window.state;
         const sel = s.selectedDay;
         const h = s.history[sel];
 
-        // Stats Header
+        // Header
         document.getElementById('ui-lvl').innerText = "LV. " + s.lvl;
         document.getElementById('ui-rank').innerText = s.lvl < 3 ? 'ROOKIE' : (s.lvl < 7 ? 'PRO' : 'LEGEND');
         document.getElementById('ui-exp-text').innerText = `${s.exp % 200} / 200`;
         document.getElementById('ui-exp-bar').style.width = ((s.exp % 200) / 2) + "%";
         document.getElementById('ui-coins').innerText = s.coins.toLocaleString();
 
-        // Quick Stats Box (Dựa vào dữ liệu ngày được chọn hoặc ngày mới nhất)
+        // Main Stats
         document.getElementById('stat-speed').innerText = h.s || '--';
-        document.getElementById('stat-jump').innerText = h.j || '--';
+        document.getElementById('stat-jump').innerText = `${h.jL || '--'}/${h.jR || '--'}`;
         document.getElementById('stat-run').innerText = h.m || '--';
 
         // Day Scroller
@@ -395,9 +406,9 @@
             grid.innerHTML += `<div class="day-btn ${active} ${done} ${locked}" onclick="setDay(${i})">${i}</div>`;
         }
 
-        // Tasks List
+        // Tasks
         document.getElementById('ui-day-title').innerText = "Ngày " + sel;
-        const taskNames = ["Bóng rổ & Thể lực (45-60p)", "Luyện " + PIANO_PLAN[sel-1], "Học Toán & Tiếng Anh (30-45p)", `Thắng 1v1 với Bố (Bonus: ${h.v1[0]||0}-${h.v1[1]||0})` ];
+        const taskNames = ["Bóng rổ & Thể lực", "Luyện " + PIANO_PLAN[sel-1], "Học Toán & Tiếng Anh", `1v1 với Bố (${h.v1[0]||0}-${h.v1[1]||0})` ];
         document.getElementById('ui-tasks').innerHTML = taskNames.map((name, i) => `
             <div class="task-item ${h.tasks[i]?'done':''}" onclick="toggleT(${sel}, ${i})">
                 <span class="task-name">${name}</span>
@@ -405,15 +416,34 @@
             </div>
         `).join('');
 
-        // Admin Panel
+        // Admin
         if(s.role === 'admin') {
             document.getElementById('admin-panel').classList.remove('hidden');
             document.getElementById('in-s').value = h.s;
-            document.getElementById('in-j').value = h.j;
+            document.getElementById('in-jL').value = h.jL;
+            document.getElementById('in-jR').value = h.jR;
             document.getElementById('in-v1c').value = h.v1[0];
             document.getElementById('in-v1b').value = h.v1[1];
             document.getElementById('in-m').value = h.m;
         } else document.getElementById('admin-panel').classList.add('hidden');
+
+        // Summary Calculations
+        let totalT = 0, doneT = 0, totalM = 0;
+        for(let i=1; i<=10; i++){
+            if(s.history[i].done){
+                totalT += 4;
+                doneT += s.history[i].tasks.filter(t => t).length;
+                totalM += parseFloat(s.history[i].m || 0);
+            }
+        }
+        document.getElementById('sum-tasks').innerText = `${doneT} / ${totalT}`;
+        document.getElementById('sum-percent').innerText = (totalT > 0 ? Math.round(doneT/totalT*100) : 0) + "%";
+        document.getElementById('sum-run-total').innerText = totalM + " m";
+
+        const n1 = s.history[1];
+        const nNay = s.history[s.currentDay > 1 ? s.currentDay - 1 : 1];
+        document.getElementById('sum-speed-progress').innerText = `N1: ${n1.s||'--'}s ➔ Nay: ${nNay.s||'--'}s`;
+        document.getElementById('sum-jump-progress').innerText = `N1: ${n1.jL||'--'}/${n1.jR||'--'} ➔ Nay: ${nNay.jL||'--'}/${nNay.jR||'--'}`;
     };
 </script>
 </body>
