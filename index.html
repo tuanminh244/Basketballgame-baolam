@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bảo Lâm Basketball - Final Config</title>
+    <title>Bảo Lâm Basketball - V7 Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { 
@@ -18,111 +18,229 @@
             --bg-item: #1e293b;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             background: var(--bg-dark); color: var(--text-light); 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             margin: 0; padding: 10px; display: flex; justify-content: center; 
         }
-        .container { width: 100%; max-width: 450px; }
+        .container { width: 100%; max-width: 450px; padding-bottom: 50px; }
         .hidden { display: none !important; }
         
-        .card { 
+        /* 1. DASHBOARD HEADER */
+        .dash-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px 20px; }
+        .dash-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        .logout-btn { color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: none; }
+
+        /* 2. LEVEL CARD */
+        .level-card { 
             background: var(--bg-card); border-radius: 24px; padding: 20px; 
-            margin-bottom: 15px; border: 1px solid var(--border); 
-            position: relative; overflow: hidden; 
+            margin-bottom: 20px; border-left: 4px solid var(--accent); position: relative;
         }
-        
-        .lvl-badge { 
-            background: linear-gradient(135deg, #6366f1, #a855f7); 
-            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; 
+        .rank-badge { 
+            position: absolute; top: 20px; right: 20px;
+            background: var(--accent); color: black; padding: 6px 14px; 
+            border-radius: 12px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;
         }
-        .bar { width: 100%; height: 10px; background: var(--bg-item); border-radius: 5px; margin: 10px 0; overflow: hidden; }
-        .fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f59e0b); width: 0%; transition: width 0.5s ease; }
-        
-        .day-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 15px 0; }
-        .day-box { 
-            background: var(--bg-item); aspect-ratio: 1; border-radius: 12px; 
+        .label-sm { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
+        .lvl-val { font-size: 2.2rem; font-weight: 900; margin-bottom: 15px; display: flex; align-items: baseline; gap: 5px; }
+        .lvl-val span { font-size: 1.2rem; }
+        .exp-info { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted); }
+        .coin-info { position: absolute; bottom: 65px; right: 20px; font-weight: bold; color: var(--accent); }
+
+        .bar { width: 100%; height: 12px; background: #232d3d; border-radius: 10px; overflow: hidden; }
+        .fill { height: 100%; background: linear-gradient(90deg, #374151, #9ca3af); width: 0%; transition: width 0.8s ease; }
+
+        /* 3. QUICK STATS GRID */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+        .stat-box { 
+            background: var(--bg-card); padding: 15px 10px; border-radius: 16px; 
+            text-align: center; border-bottom: 3px solid var(--primary);
+        }
+        .stat-box .label { font-size: 0.65rem; color: var(--text-muted); font-weight: bold; margin-bottom: 10px; height: 30px; display: flex; align-items: center; justify-content: center; line-height: 1.2; }
+        .stat-box .val { font-size: 1.2rem; font-weight: 900; }
+        .stat-box .unit { font-size: 0.7rem; color: var(--text-muted); margin-left: 2px; }
+
+        /* 4. TABS SYSTEM */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .tab { 
+            flex: 1; text-align: center; padding: 12px 5px; color: var(--text-muted); 
+            font-weight: 700; cursor: pointer; position: relative; transition: 0.3s;
+            font-size: 0.95rem;
+        }
+        .tab.active { color: var(--text-light); }
+        .tab.active::after { 
+            content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%; 
+            height: 3px; background: var(--primary); border-radius: 3px;
+        }
+
+        /* 5. DAY SELECTOR */
+        .day-scroller { 
+            display: flex; gap: 12px; overflow-x: auto; padding: 5px 0 20px; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .day-scroller::-webkit-scrollbar { display: none; }
+        .day-btn { 
+            min-width: 50px; height: 50px; border-radius: 50%; background: var(--bg-card); 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; cursor: pointer; border: 1px solid transparent; transition: 0.2s; 
+            font-weight: bold; flex-shrink: 0; cursor: pointer; border: 2px solid transparent;
         }
-        .day-box.active { border-color: var(--primary); background: #2d3748; transform: scale(1.05); }
-        .day-box.done { background: var(--success); color: white; }
-        .day-box.locked { opacity: 0.3; cursor: not-allowed; }
+        .day-btn.active { background: var(--success); color: white; border-color: var(--primary); }
+        .day-btn.done { border-color: var(--success); color: var(--success); }
+        .day-btn.locked { opacity: 0.3; }
 
-        .task { 
-            display: flex; align-items: center; background: var(--bg-item); 
-            padding: 12px; border-radius: 14px; margin-bottom: 8px; border: 1px solid transparent; 
+        /* 6. TASK LIST */
+        .task-list { display: flex; flex-direction: column; gap: 10px; }
+        .task-item { 
+            background: var(--bg-card); padding: 18px 20px; border-radius: 16px; 
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .task.done { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
-        .task input { width: 20px; height: 20px; margin-right: 12px; }
+        .task-name { font-weight: 600; font-size: 0.95rem; color: var(--accent); }
+        .check-circle { 
+            width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--primary);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .task-item.done .check-circle { background: var(--primary); border-color: var(--primary); }
+        .task-item.done .check-circle::after { content: '✓'; color: white; font-weight: bold; }
 
-        .btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 5px 0; }
-        .btn-p { background: var(--primary); color: white; }
-        .btn-s { background: var(--border); color: white; }
-        .btn-outline { background: transparent; border: 1px solid #475569; color: var(--text-muted); }
-        
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
-        input[type="number"], input[type="password"] { 
-            width: 100%; padding: 12px; border-radius: 10px; 
-            border: 1px solid var(--border); background: var(--bg-dark); color: white; 
+        /* 7. REWARDS & ACHIEVEMENTS */
+        .reward-card { 
+            background: var(--bg-card); padding: 15px; border-radius: 16px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .reward-info b { display: block; color: var(--accent); }
+        .reward-info span { font-size: 0.75rem; color: var(--text-muted); }
+        .btn-claim { background: var(--primary); padding: 8px 15px; border-radius: 10px; color: white; font-size: 0.8rem; font-weight: bold; border: none; cursor: pointer; }
+
+        /* ADMIN PANEL */
+        .admin-box { margin-top: 20px; border: 1px dashed var(--primary); padding: 15px; border-radius: 16px; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 3px; }
+        input { width: 100%; background: var(--bg-dark); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; }
         
-        .rank-text { color: var(--accent); font-weight: bold; font-size: 0.8rem; }
+        .btn-main { width: 100%; padding: 15px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 10px 0; background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- MÀN HÌNH 1: ĐĂNG NHẬP -->
-    <div id="view-start" class="card" style="text-align: center; padding: 40px 20px;">
-        <div style="font-size: 4rem;">🏀</div>
-        <h1 style="margin: 10px 0;">BẢO LÂM <span style="color:var(--primary)">V6 FRESH</span></h1>
-        <p style="color:var(--text-muted); margin-bottom: 25px;">Kỷ luật tạo nên sức mạnh</p>
-        <button class="btn btn-p" onclick="goView('player')">VÀO XEM TIẾN TRÌNH</button>
-        <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 25px;">
-            <input type="password" id="admin-code" placeholder="Mã PIN..." style="text-align: center; margin-bottom: 10px;">
-            <button class="btn btn-s" onclick="checkAdmin()">QUẢN TRỊ VIÊN</button>
+    <!-- VIEW: LOGIN -->
+    <div id="view-login" style="padding-top: 50px; text-align: center;">
+        <div style="font-size: 5rem;">🏀</div>
+        <h1 style="margin: 20px 0;">BẢO LÂM <span style="color:var(--primary)">V7</span></h1>
+        <p style="color:var(--text-muted); margin-bottom: 40px;">Kỷ luật - Ý chí - Chiến thắng</p>
+        <button class="btn-main" onclick="goView('player')">XEM DASHBOARD</button>
+        <div style="margin-top: 50px; border-top: 1px solid var(--border); padding-top: 30px;">
+            <input type="password" id="admin-pin" placeholder="Mã PIN Admin..." style="text-align: center; margin-bottom: 10px;">
+            <button class="btn-main" style="background:var(--border)" onclick="checkAdmin()">QUẢN TRỊ VIÊN</button>
         </div>
     </div>
 
-    <!-- MÀN HÌNH 2: ỨNG DỤNG CHÍNH -->
+    <!-- VIEW: MAIN -->
     <div id="view-main" class="hidden">
-        <div class="card" style="text-align: center;">
-            <div style="display:flex; justify-content: space-between; align-items:center;">
-                <div class="lvl-badge" id="ui-lvl">LV. 1</div>
-                <div class="rank-text">HUYỀN THOẠI</div>
+        <div class="dash-header">
+            <span class="dash-title">Dashboard</span>
+            <span class="logout-btn" onclick="logout()">Đăng xuất</span>
+        </div>
+
+        <!-- LEVEL CARD -->
+        <div class="level-card">
+            <div class="rank-badge" id="ui-rank">ROOKIE</div>
+            <div class="label-sm">Cấp độ</div>
+            <div class="lvl-val" id="ui-lvl">LV. 1</div>
+            <div class="exp-info">
+                <span>EXP: <b id="ui-exp-text">0 / 100</b></span>
             </div>
-            <div class="bar"><div id="ui-exp" class="fill"></div></div>
-            <div style="display: flex; justify-content: space-around; margin-top: 10px; background: var(--bg-item); padding: 10px; border-radius: 12px;">
-                <span>🪙 <b id="ui-coins">0</b></span>
-                <span>🔥 Day <b id="ui-day">1</b>/10</span>
+            <div class="bar"><div id="ui-exp-bar" class="fill"></div></div>
+            <div class="coin-info">COIN: <span id="ui-coins">0</span> 🪙</div>
+        </div>
+
+        <!-- QUICK STATS -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="label">SPEED<br>(20m)</div>
+                <div class="val" id="stat-speed">--</div>
+                <div class="unit">s</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">JUMP</div>
+                <div class="val" id="stat-jump">--</div>
+                <div class="unit">cm</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">STAMINA</div>
+                <div class="val" id="stat-run">--</div>
+                <div class="unit">m</div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="day-grid" id="ui-grid"></div>
+        <!-- TABS MENU -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('tasks')">Nhiệm vụ</div>
+            <div class="tab" onclick="switchTab('rewards')">Phần thưởng</div>
+            <div class="tab" onclick="switchTab('achievements')">Thành tựu</div>
         </div>
 
-        <div class="card">
-            <h3 id="ui-task-title" style="color:var(--primary); font-size: 1rem; margin-bottom: 15px;">🎯 NHIỆM VỤ</h3>
-            <div id="ui-tasks"></div>
-        </div>
+        <!-- TAB CONTENT: TASKS -->
+        <div id="tab-tasks">
+            <div class="day-scroller" id="ui-grid"></div>
+            <h2 id="ui-day-title" style="font-size: 1.2rem; margin-bottom: 15px;">Ngày 1</h2>
+            <div class="task-list" id="ui-tasks"></div>
 
-        <div id="admin-panel" class="card hidden" style="border: 1px solid var(--primary);">
-            <h3 style="color:var(--primary); margin-bottom: 15px;">⚡ CẬP NHẬT: NGÀY <span id="ui-sel-day">1</span></h3>
-            <div class="input-group"><label>Tốc độ 20m (s):</label><input type="number" id="in-s" step="0.1"></div>
-            <div class="input-group"><label>Bật nhảy (cm):</label><input type="number" id="in-j"></div>
-            <div class="input-group">
-                <label>Tỷ số 1v1 (Con : Bố):</label>
-                <div style="display: flex; gap: 10px;"><input type="number" id="in-1v1-c"> : <input type="number" id="in-1v1-b"></div>
+            <!-- ADMIN PANEL -->
+            <div id="admin-panel" class="admin-box hidden">
+                <h4 style="margin-top:0; color:var(--primary)">CẬP NHẬT DỮ LIỆU</h4>
+                <div class="input-group">
+                    <label>Tốc độ 20m (s):</label>
+                    <input type="number" id="in-s" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Bật nhảy (cm):</label>
+                    <input type="number" id="in-j">
+                </div>
+                <div class="input-group">
+                    <label>Tỷ số 1v1 (Con : Bố):</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="in-v1c" placeholder="Con">
+                        <input type="number" id="in-v1b" placeholder="Bố">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Chạy bền (m):</label>
+                    <input type="number" id="in-m">
+                </div>
+                <button class="btn-main" onclick="saveDay()">HOÀN THÀNH NGÀY</button>
             </div>
-            <div class="input-group"><label>Chạy bền (m):</label><input type="number" id="in-m"></div>
-            <button class="btn btn-p" onclick="saveDay()">XÁC NHẬN HOÀN THÀNH</button>
         </div>
 
-        <button class="btn btn-outline" onclick="logout()">🔒 THOÁT RA MÀN HÌNH CHÍNH</button>
+        <!-- TAB CONTENT: REWARDS -->
+        <div id="tab-rewards" class="hidden">
+            <div class="reward-card">
+                <div class="reward-info"><b>Trà sữa Full Topping</b><span>Tiêu tốn: 50,000 Coin</span></div>
+                <button class="btn-claim" onclick="redeem(50000)">ĐỔI</button>
+            </div>
+            <div class="reward-card">
+                <div class="reward-info"><b>Thêm 1 giờ chơi Game</b><span>Tiêu tốn: 30,000 Coin</span></div>
+                <button class="btn-claim" onclick="redeem(30000)">ĐỔI</button>
+            </div>
+            <div class="reward-card">
+                <div class="reward-info"><b>Mua đồ chơi (Dưới 200k)</b><span>Tiêu tốn: 150,000 Coin</span></div>
+                <button class="btn-claim" onclick="redeem(150000)">ĐỔI</button>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: ACHIEVEMENTS -->
+        <div id="tab-achievements" class="hidden">
+            <div class="reward-card" style="opacity: 0.5;">
+                <div class="reward-info"><b>🏃 Vua tốc độ</b><span>Chạy 20m dưới 5s</span></div>
+                <div style="font-size: 1.5rem;">🔒</div>
+            </div>
+            <div class="reward-card" style="opacity: 0.5;">
+                <div class="reward-info"><b>🎹 Nghệ sĩ Piano</b><span>Hoàn thành 10 ngày luyện tập</span></div>
+                <div style="font-size: 1.5rem;">🔒</div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -130,7 +248,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    /* --- 1. CONFIGURATION --- */
+    // 1. FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyBC9kRXaY1S-XVtMSg5hOkbX7A00GRoAqg",
         authDomain: "baolam-5d687.firebaseapp.com",
@@ -142,145 +260,162 @@
         measurementId: "G-8RYCHK9M61"
     };
 
-    const PIANO_PLAN = ["Piano: Trang 1 đầu", "Piano: Xong trang 1", "Piano: Đầu trang 2", "Piano: Xong trang 2", "Piano: Ôn trang 1-2", "Piano: Đầu trang 3", "Piano: Xong trang 3", "Piano: Ghép toàn bài", "Piano: Tăng tốc", "Piano: BIỂU DIỄN"];
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dataRef = ref(db, 'user_v6_pro');
 
-    /* --- 2. STATE MANAGEMENT --- */
+    // 2. APP STATE
     window.state = { lvl: 1, exp: 0, coins: 0, currentDay: 1, selectedDay: 1, role: 'player', history: {} };
+    const PIANO_PLAN = ["Piano: Trang 1 đầu", "Piano: Xong trang 1", "Piano: Đầu trang 2", "Piano: Xong trang 2", "Piano: Ôn trang 1-2", "Piano: Đầu trang 3", "Piano: Xong trang 3", "Piano: Ghép toàn bài", "Piano: Tăng tốc", "Piano: BIỂU DIỄN"];
 
     const initHistory = () => {
-        let history = {};
-        for(let i=1; i<=10; i++) {
-            history[i] = { tasks: [false, false, false, false], s:"", j:"", v1: ["",""], m:"", done: false };
-        }
-        return history;
+        let h = {};
+        for(let i=1; i<=10; i++) h[i] = { tasks: [false, false, false, false], s:"", j:"", v1: ["",""], m:"", done: false };
+        return h;
     };
 
-    window.syncCloud = () => set(dataRef, { ...window.state, role: 'player' });
+    window.sync = () => set(dataRef, { ...window.state, role: 'player' });
 
-    /* --- 3. DATABASE LISTENERS --- */
+    // 3. LISTENERS
     onValue(dataRef, (snap) => {
-        const data = snap.val();
-        if (data) {
-            const currentRole = window.state.role;
-            const currentSelected = window.state.selectedDay;
-            window.state = data;
-            window.state.role = currentRole;
-            window.state.selectedDay = currentSelected || data.currentDay;
+        const d = snap.val();
+        if(d) {
+            const r = window.state.role;
+            const sel = window.state.selectedDay;
+            window.state = d;
+            window.state.role = r;
+            window.state.selectedDay = sel || d.currentDay;
             render();
         } else {
             window.state.history = initHistory();
-            window.syncCloud();
+            window.sync();
         }
     });
 
-    /* --- 4. ACTION HANDLERS --- */
-    window.checkAdmin = () => { 
-        if(document.getElementById('admin-code').value === "1234") { 
-            window.state.role = 'admin'; 
-            goView('admin'); 
-        } else alert("Sai mã PIN!"); 
+    // 4. FUNCTIONS
+    window.checkAdmin = () => {
+        if(document.getElementById('admin-pin').value === '1234') {
+            window.state.role = 'admin';
+            goView('main');
+        } else alert("Mã PIN sai!");
     };
 
-    window.goView = (mode) => { 
-        if(mode !== 'admin') window.state.role = 'player';
-        document.getElementById('view-start').classList.add('hidden'); 
-        document.getElementById('view-main').classList.remove('hidden'); 
-        render(); 
+    window.goView = (view) => {
+        if(view === 'main') {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-main').classList.remove('hidden');
+            render();
+        }
     };
 
-    window.logout = () => { 
-        window.state.role = 'player'; 
-        document.getElementById('admin-code').value = "";
-        document.getElementById('view-main').classList.add('hidden'); 
-        document.getElementById('view-start').classList.remove('hidden'); 
+    window.logout = () => {
+        window.state.role = 'player';
+        document.getElementById('admin-pin').value = '';
+        document.getElementById('view-main').classList.add('hidden');
+        document.getElementById('view-login').classList.remove('hidden');
     };
 
-    window.setDay = (day) => { 
-        if(day <= window.state.currentDay || window.state.role === 'admin') { 
-            window.state.selectedDay = day; 
-            render(); 
-        } 
+    window.switchTab = (tabId) => {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = ['tasks', 'rewards', 'achievements'];
+        tabs.forEach((t, i) => {
+            t.classList.toggle('active', contents[i] === tabId);
+            document.getElementById('tab-' + contents[i]).classList.toggle('hidden', contents[i] !== tabId);
+        });
     };
 
-    window.toggleT = (day, index) => { 
+    window.setDay = (d) => {
+        if(d <= window.state.currentDay || window.state.role === 'admin') {
+            window.state.selectedDay = d;
+            render();
+        }
+    };
+
+    window.toggleT = (d, i) => {
         if(window.state.role !== 'admin') return;
-        window.state.history[day].tasks[index] = !window.state.history[day].tasks[index]; 
-        render(); 
-        window.syncCloud(); 
+        window.state.history[d].tasks[i] = !window.state.history[d].tasks[i];
+        render();
+        window.sync();
     };
 
     window.saveDay = () => {
-        const selDay = window.state.selectedDay; 
-        const dayData = window.state.history[selDay];
-        
-        dayData.s = document.getElementById('in-s').value; 
-        dayData.j = document.getElementById('in-j').value;
-        dayData.v1 = [document.getElementById('in-1v1-c').value, document.getElementById('in-1v1-b').value];
-        dayData.m = document.getElementById('in-m').value;
+        const d = window.state.selectedDay;
+        const h = window.state.history[d];
+        h.s = document.getElementById('in-s').value;
+        h.j = document.getElementById('in-j').value;
+        h.v1 = [document.getElementById('in-v1c').value, document.getElementById('in-v1b').value];
+        h.m = document.getElementById('in-m').value;
 
-        if(!dayData.done) {
-            dayData.done = true; 
-            window.state.exp += 50; 
+        if(!h.done) {
+            h.done = true;
+            window.state.exp += 50;
             window.state.coins += 20000;
-            if(window.state.exp >= window.state.lvl * 100) window.state.lvl++;
-            if(selDay == window.state.currentDay && window.state.currentDay < 10) window.state.currentDay++;
+            if(window.state.exp >= window.state.lvl * 200) window.state.lvl++;
+            if(d == window.state.currentDay && window.state.currentDay < 10) window.state.currentDay++;
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         }
-        window.syncCloud(); 
-        alert(`Đã lưu dữ liệu Ngày ${selDay}!`);
+        window.sync();
+        alert("Đã lưu dữ liệu!");
     };
 
-    /* --- 5. RENDER ENGINE --- */
-    window.render = () => {
-        const s = window.state; 
-        const sel = s.selectedDay;
-        const currentDayData = s.history[sel];
+    window.redeem = (cost) => {
+        if(window.state.coins >= cost) {
+            window.state.coins -= cost;
+            window.sync();
+            alert("Đổi thành công! Hãy báo với Bố để nhận quà nhé.");
+        } else alert("Bạn không đủ Coin!");
+    };
 
-        // Header Stats
-        document.getElementById('ui-lvl').innerText = `LV. ${s.lvl}`;
+    // 5. RENDER UI
+    window.render = () => {
+        const s = window.state;
+        const sel = s.selectedDay;
+        const h = s.history[sel];
+
+        // Stats Header
+        document.getElementById('ui-lvl').innerText = "LV. " + s.lvl;
+        document.getElementById('ui-rank').innerText = s.lvl < 3 ? 'ROOKIE' : (s.lvl < 7 ? 'PRO' : 'LEGEND');
+        document.getElementById('ui-exp-text').innerText = `${s.exp % 200} / 200`;
+        document.getElementById('ui-exp-bar').style.width = ((s.exp % 200) / 2) + "%";
         document.getElementById('ui-coins').innerText = s.coins.toLocaleString();
-        document.getElementById('ui-day').innerText = s.currentDay;
-        document.getElementById('ui-exp').style.width = (s.exp % 100) + "%";
-        
-        // Day Grid
-        const grid = document.getElementById('ui-grid'); 
+
+        // Quick Stats Box (Dựa vào dữ liệu ngày được chọn hoặc ngày mới nhất)
+        document.getElementById('stat-speed').innerText = h.s || '--';
+        document.getElementById('stat-jump').innerText = h.j || '--';
+        document.getElementById('stat-run').innerText = h.m || '--';
+
+        // Day Scroller
+        const grid = document.getElementById('ui-grid');
         grid.innerHTML = "";
-        for(let i=1; i<=10; i++){
-            const h = s.history[i];
-            const classes = `day-box ${h.done?'done':''} ${sel==i?'active':''} ${(i > s.currentDay && s.role !== 'admin')?'locked':''}`;
-            grid.innerHTML += `<div class="${classes}" onclick="setDay(${i})">${i}</div>`;
+        for(let i=1; i<=10; i++) {
+            const dayH = s.history[i];
+            const active = sel == i ? 'active' : '';
+            const done = dayH.done ? 'done' : '';
+            const locked = (i > s.currentDay && s.role !== 'admin') ? 'locked' : '';
+            grid.innerHTML += `<div class="day-btn ${active} ${done} ${locked}" onclick="setDay(${i})">${i}</div>`;
         }
 
-        // Tasks
-        if(!currentDayData.v1) currentDayData.v1 = ["",""];
-        document.getElementById('ui-task-title').innerText = `🎯 NHIỆM VỤ NGÀY ${sel}`;
-        const taskLabels = ["🏀 Thể lực", `🎹 ${PIANO_PLAN[sel-1]}`, "📚 BTVN", `⚔️ 1v1 (Tỉ số: ${currentDayData.v1[0]||0}-${currentDayData.v1[1]||0})` ];
-        
-        document.getElementById('ui-tasks').innerHTML = taskLabels.map((name, i) => `
-            <div class="task ${currentDayData.tasks[i] ? 'done' : ''}" onclick="toggleT(${sel}, ${i})">
-                <input type="checkbox" ${currentDayData.tasks[i] ? 'checked' : ''} readonly> 
-                <span>${name}</span>
+        // Tasks List
+        document.getElementById('ui-day-title').innerText = "Ngày " + sel;
+        const taskNames = ["Bóng rổ & Thể lực (45-60p)", "Luyện " + PIANO_PLAN[sel-1], "Học Toán & Tiếng Anh (30-45p)", `Thắng 1v1 với Bố (Bonus: ${h.v1[0]||0}-${h.v1[1]||0})` ];
+        document.getElementById('ui-tasks').innerHTML = taskNames.map((name, i) => `
+            <div class="task-item ${h.tasks[i]?'done':''}" onclick="toggleT(${sel}, ${i})">
+                <span class="task-name">${name}</span>
+                <div class="check-circle"></div>
             </div>
         `).join('');
 
-        // Admin Panel Visibility
-        const panel = document.getElementById('admin-panel');
+        // Admin Panel
         if(s.role === 'admin') {
-            panel.classList.remove('hidden');
-            document.getElementById('ui-sel-day').innerText = sel;
-            document.getElementById('in-s').value = currentDayData.s; 
-            document.getElementById('in-j').value = currentDayData.j;
-            document.getElementById('in-1v1-c').value = currentDayData.v1[0]; 
-            document.getElementById('in-1v1-b').value = currentDayData.v1[1];
-            document.getElementById('in-m').value = currentDayData.m;
-        } else {
-            panel.classList.add('hidden');
-        }
+            document.getElementById('admin-panel').classList.remove('hidden');
+            document.getElementById('in-s').value = h.s;
+            document.getElementById('in-j').value = h.j;
+            document.getElementById('in-v1c').value = h.v1[0];
+            document.getElementById('in-v1b').value = h.v1[1];
+            document.getElementById('in-m').value = h.m;
+        } else document.getElementById('admin-panel').classList.add('hidden');
     };
 </script>
 </body>
 </html>
+
