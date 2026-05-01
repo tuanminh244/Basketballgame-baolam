@@ -1,1631 +1,723 @@
 <!DOCTYPE html>
-
-<html lang="vi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Family Quest 🎮</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Gamification</title>
+  <style>
+    /* --- CSS RESET & VARIABLES --- */
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --bg: #F9FAFB;
+      --card-bg: #FFFFFF;
+      --text: #111827;
+      --text-muted: #6B7280;
+      --border: #E5E7EB;
+      --success: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      line-height: 1.5;
+    }
+    .container { width: 100%; max-width: 600px; }
+    
+    /* --- UTILITIES --- */
+    .hidden { display: none !important; }
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-gap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    
+    /* --- TYPOGRAPHY & FORMS --- */
+    h1, h2, h3 { margin-top: 0; color: var(--text); }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    select:disabled { background-color: #F3F4F6; cursor: not-allowed; }
+    
+    /* --- BUTTONS --- */
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button:hover:not(:disabled) { background-color: var(--primary-hover); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-danger { background-color: var(--danger); }
+    .btn-danger:hover:not(:disabled) { background-color: #DC2626; }
+    .btn-success { background-color: var(--success); }
+    .btn-success:hover:not(:disabled) { background-color: #059669; }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover:not(:disabled) { background-color: #F3F4F6; }
+    
+    /* --- COMPONENTS --- */
+    .badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-TODO { background: #FEF3C7; color: #92400E; }
+    .badge-PENDING_APPROVAL { background: #DBEAFE; color: #1E40AF; }
+    .badge-APPROVED { background: #D1FAE5; color: #065F46; }
+    .badge-REJECTED { background: #FEE2E2; color: #991B1B; }
+    .badge-FAILED { background: #E5E7EB; color: #374151; }
+    
+    .task-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease-in-out;
+    }
+    .task-item:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .task-optimistic { opacity: 0.5; pointer-events: none; }
+    
+    /* --- PROFILE STATS --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .stat-box {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .stat-value { font-size: 20px; font-weight: bold; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
 
-/* ═══ DESIGN TOKENS ═══ */
-:root {
-–dk:  #0B0D1A;
-–dk2: #111325;
-–cd:  #181B30;
-–cd2: #1F2340;
-–cd3: #252948;
+    /* --- TOAST NOTIFICATIONS --- */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 6px;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: slideIn 0.3s ease-out forwards;
+      max-width: 300px;
+      word-break: break-word;
+    }
+    .toast.success { background-color: var(--success); }
+    .toast.error { background-color: var(--danger); }
+    .toast.warning { background-color: var(--warning); color: #fff; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
 
-–or:  #FF6B00; –orl: #FF9A3C;
-–ye:  #FFD600; –yel: #FFF176;
-–gr:  #00E676; –grd: #00C853;
-–bl:  #29B6F6; –bld: #0288D1;
-–pu:  #CE93D8; –pud: #AB47BC;
-–rd:  #FF5252;
-–pi:  #F48FB1;
-
-–bl-acc: var(–bl);
-–pi-acc: var(–pi);
-
-–tx:  #F0F4FF;
-–mu:  #7B82A8;
-–mu2: #5A6080;
-
-–r:  12px;
-–r2: 18px;
-–r3: 24px;
-–tr: .2s cubic-bezier(.4,0,.2,1);
-
-/* player themes */
-–bl-g: linear-gradient(135deg,#29B6F6,#0288D1);
-–pi-g: linear-gradient(135deg,#F48FB1,#AB47BC);
-–or-g: linear-gradient(135deg,#FF6B00,#FF9A3C);
-–gr-g: linear-gradient(135deg,#00E676,#00C853);
-}
-
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html { scroll-behavior:smooth; }
-body {
-font-family:‘Nunito’,system-ui,sans-serif;
-background:var(–dk); color:var(–tx);
-min-height:100vh; overflow-x:hidden;
-background-image:
-radial-gradient(ellipse 70% 40% at 20% -10%, rgba(41,182,246,.08) 0%, transparent 55%),
-radial-gradient(ellipse 60% 35% at 80% 110%, rgba(244,143,177,.07) 0%, transparent 55%);
-}
-.ff { font-family:‘Fredoka One’,cursive; }
-button { cursor:pointer; font-family:inherit; }
-
-/* ═══ SCROLLBAR ═══ */
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(–cd3); border-radius:2px; }
-
-/* ════════════════════════════════════════
-LOGIN SCREEN
-════════════════════════════════════════ */
-#login-screen {
-min-height:100vh; display:flex; flex-direction:column;
-align-items:center; justify-content:center;
-padding:2rem 1.5rem; text-align:center;
-overflow-y:auto;
-}
-.login-logo {
-font-size:5rem; animation:float 3s ease-in-out infinite;
-filter:drop-shadow(0 0 30px rgba(255,107,0,.6));
-margin-bottom:.5rem;
-}
-.login-title {
-font-family:‘Fredoka One’,cursive;
-font-size:clamp(2.2rem,8vw,3.8rem);
-background:linear-gradient(135deg,var(–or),var(–ye));
-background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-animation:shimmer 4s linear infinite; line-height:1; margin-bottom:.3rem;
-}
-.login-sub {
-font-size:.8rem; color:var(–mu); letter-spacing:3px;
-text-transform:uppercase; font-weight:800; margin-bottom:2.5rem;
-}
-.player-grid {
-display:grid; grid-template-columns:1fr 1fr; gap:.75rem;
-width:100%; max-width:380px; margin-bottom:1.2rem;
-}
-.player-card {
-background:var(–cd); border:2px solid rgba(255,255,255,.08);
-border-radius:var(–r2); padding:1.4rem 1rem;
-cursor:pointer; transition:all var(–tr); text-align:center;
-position:relative; overflow:hidden;
-}
-.player-card::before {
-content:’’; position:absolute; inset:0;
-opacity:0; transition:opacity var(–tr);
-}
-.player-card.bl::before { background:linear-gradient(135deg,rgba(41,182,246,.12),rgba(2,136,209,.08)); }
-.player-card.pi::before { background:linear-gradient(135deg,rgba(244,143,177,.12),rgba(171,71,188,.08)); }
-.player-card:hover { transform:translateY(-4px); }
-.player-card.bl:hover { border-color:var(–bl); box-shadow:0 8px 32px rgba(41,182,246,.2); }
-.player-card.pi:hover { border-color:var(–pi); box-shadow:0 8px 32px rgba(244,143,177,.2); }
-.player-card:hover::before { opacity:1; }
-.player-card-av { font-size:3rem; margin-bottom:.45rem; }
-.player-card-name { font-family:‘Fredoka One’,cursive; font-size:1.2rem; margin-bottom:.2rem; }
-.player-card-role { font-size:.68rem; color:var(–mu); font-weight:700; letter-spacing:1px; text-transform:uppercase; }
-
-.parent-grid {
-display:grid; grid-template-columns:1fr 1fr; gap:.6rem; width:100%; max-width:380px;
-}
-.parent-btn {
-display:flex; align-items:center; gap:.6rem; justify-content:center;
-background:var(–cd2); border:1px solid rgba(255,255,255,.07);
-border-radius:var(–r); padding:.75rem 1rem;
-font-weight:800; font-size:.88rem; color:var(–mu);
-transition:all var(–tr);
-}
-.parent-btn:hover { background:var(–cd3); color:var(–tx); border-color:rgba(255,255,255,.15); }
-.parent-btn-icon { font-size:1.3rem; }
-
-/* password modal */
-.pwd-overlay {
-position:fixed; inset:0; z-index:900;
-background:rgba(0,0,0,.8); backdrop-filter:blur(8px);
-display:flex; align-items:flex-end; justify-content:center;
-opacity:0; pointer-events:none; transition:opacity .25s;
-}
-.pwd-overlay.open { opacity:1; pointer-events:all; }
-.pwd-sheet {
-background:var(–cd); border-radius:var(–r3) var(–r3) 0 0;
-width:100%; max-width:440px; padding:1.5rem 1.3rem 2rem;
-transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-.pwd-overlay.open .pwd-sheet { transform:translateY(0); }
-.pwd-handle { width:40px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 1.2rem; }
-.pwd-title { font-family:‘Fredoka One’,cursive; font-size:1.3rem; text-align:center; margin-bottom:1rem; }
-.pwd-input {
-width:100%; padding:.9rem 1rem; background:var(–cd2);
-border:2px solid rgba(255,255,255,.08); border-radius:var(–r);
-color:var(–tx); font-family:monospace; font-size:1.6rem;
-font-weight:900; text-align:center; letter-spacing:.6rem;
-outline:none; transition:border-color var(–tr); margin-bottom:.75rem;
-}
-.pwd-input:focus { border-color:var(–or); }
-.pwd-err { color:var(–rd); font-size:.82rem; font-weight:800; text-align:center; min-height:1.2em; margin-bottom:.5rem; }
-.btn-primary {
-width:100%; padding:.9rem; border:none; border-radius:var(–r);
-font-family:‘Fredoka One’,cursive; font-size:1.1rem;
-background:linear-gradient(135deg,var(–or),var(–orl));
-color:#fff; box-shadow:0 6px 20px rgba(255,107,0,.3);
-transition:all var(–tr);
-}
-.btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(255,107,0,.45); }
-.btn-primary:active { transform:scale(.97); }
-.btn-secondary {
-width:100%; padding:.8rem; border:1px solid rgba(255,255,255,.1);
-border-radius:var(–r); background:transparent;
-color:var(–mu); font-weight:800; font-size:.9rem;
-transition:all var(–tr); margin-top:.5rem;
-}
-.btn-secondary:hover { color:var(–tx); border-color:rgba(255,255,255,.25); }
-
-/* ════════════════════════════════════════
-TOPBAR
-════════════════════════════════════════ */
-#topbar {
-position:sticky; top:0; z-index:100;
-background:rgba(11,13,26,.95); backdrop-filter:blur(14px);
-border-bottom:1px solid rgba(255,255,255,.06);
-padding:.6rem .9rem; display:flex; align-items:center; gap:.6rem;
-}
-.tb-av {
-width:38px; height:38px; border-radius:50%;
-display:flex; align-items:center; justify-content:center;
-font-size:1.2rem; flex-shrink:0; border:2px solid rgba(255,255,255,.12);
-}
-.tb-info { flex:1; min-width:0; }
-.tb-name { font-family:‘Fredoka One’,cursive; font-size:1rem; line-height:1.1; }
-.tb-sub  { font-size:.62rem; color:var(–mu); font-weight:700; }
-.tb-right { display:flex; align-items:center; gap:.45rem; flex-shrink:0; }
-.point-pill {
-display:flex; align-items:center; gap:.3rem;
-background:rgba(255,214,0,.1); border:1px solid rgba(255,214,0,.2);
-border-radius:20px; padding:.24rem .65rem;
-font-family:‘Fredoka One’,cursive; font-size:.95rem; color:var(–ye);
-}
-.exp-wrap { width:72px; }
-.exp-lbl  { font-size:.5rem; color:var(–mu); font-weight:700; text-transform:uppercase; }
-.exp-bar  { height:5px; background:var(–cd3); border-radius:3px; overflow:hidden; margin-top:2px; }
-.exp-fill { height:100%; border-radius:3px; transition:width .8s ease; }
-.tb-role  {
-padding:.2rem .55rem; border-radius:20px; font-size:.58rem;
-font-weight:900; text-transform:uppercase; letter-spacing:1px; flex-shrink:0;
-}
-.tb-role.child-bl { background:rgba(41,182,246,.15); color:var(–bl); border:1px solid rgba(41,182,246,.25); }
-.tb-role.child-pi { background:rgba(244,143,177,.15); color:var(–pi); border:1px solid rgba(244,143,177,.25); }
-.tb-role.me  { background:rgba(206,147,216,.15); color:var(–pu); border:1px solid rgba(206,147,216,.25); }
-.tb-role.dad { background:rgba(255,107,0,.15); color:var(–orl); border:1px solid rgba(255,107,0,.25); }
-.icon-btn {
-width:32px; height:32px; border-radius:9px; background:var(–cd);
-border:1px solid rgba(255,255,255,.07); display:flex; align-items:center;
-justify-content:center; font-size:.95rem; transition:all var(–tr); color:var(–mu);
-}
-.icon-btn:hover { background:var(–cd2); color:var(–tx); }
-
-/* ════════════════════════════════════════
-BOTTOM NAV
-════════════════════════════════════════ */
-#bottom-nav {
-position:fixed; bottom:0; left:0; right:0; z-index:100;
-background:rgba(11,13,26,.97); backdrop-filter:blur(14px);
-border-top:1px solid rgba(255,255,255,.06);
-display:flex; align-items:center; justify-content:space-around;
-padding:.5rem .5rem .8rem;
-}
-.bnav-btn {
-display:flex; flex-direction:column; align-items:center; gap:.18rem;
-flex:1; padding:.3rem; border:none; background:transparent;
-color:var(–mu); font-size:.55rem; font-weight:800;
-text-transform:uppercase; letter-spacing:.5px; transition:all var(–tr);
-}
-.bnav-btn.active { color:var(–or); }
-.bnav-icon { font-size:1.35rem; transition:transform var(–tr); }
-.bnav-btn.active .bnav-icon { transform:scale(1.2); }
-
-/* ════════════════════════════════════════
-CONTENT AREA
-════════════════════════════════════════ */
-#content { padding:.9rem; padding-bottom:5.5rem; }
-
-/* ── SHARED COMPONENTS ── */
-.sec {
-font-size:.62rem; font-weight:900; letter-spacing:3px;
-text-transform:uppercase; color:var(–mu); margin-bottom:.65rem;
-display:flex; align-items:center; gap:.5rem;
-}
-.sec::after { content:’’; flex:1; height:1px; background:rgba(255,255,255,.05); }
-.card {
-background:var(–cd); border-radius:var(–r2);
-padding:1.1rem; border:1px solid rgba(255,255,255,.05); margin-bottom:.75rem;
-}
-
-/* progress bar */
-.prog-bar { height:8px; background:var(–cd3); border-radius:4px; overflow:hidden; }
-.prog-fill { height:100%; border-radius:4px; transition:width .8s ease; }
-
-/* percent badge */
-.pct {
-display:inline-block; padding:.18rem .55rem; border-radius:20px;
-font-size:.68rem; font-weight:900;
-}
-.pct-fail   { background:rgba(255,82,82,.15);   color:var(–rd); }
-.pct-ok     { background:rgba(41,182,246,.15);  color:var(–bl); }
-.pct-good   { background:rgba(0,230,118,.15);   color:var(–gr); }
-.pct-perfect{ background:linear-gradient(135deg,rgba(255,214,0,.2),rgba(255,107,0,.15)); color:var(–ye); border:1px solid rgba(255,214,0,.3); }
-
-/* ════════════════════════════════════════
-DASHBOARD (child)
-════════════════════════════════════════ */
-.hero-card {
-border-radius:20px; padding:1.3rem;
-margin-bottom:.9rem; text-align:center;
-position:relative; overflow:hidden;
-}
-.hero-card::before {
-content:’’; position:absolute; inset:0;
-background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);
-}
-.hero-avatar  { font-size:3.5rem; margin-bottom:.4rem; }
-.hero-name    { font-family:‘Fredoka One’,cursive; font-size:2rem; line-height:1.1; margin-bottom:.2rem; }
-.hero-level   { font-size:.72rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; opacity:.7; margin-bottom:.8rem; }
-.exp-hero-lbl { display:flex; justify-content:space-between; font-size:.7rem; font-weight:700; color:rgba(255,255,255,.6); margin-bottom:.3rem; }
-.exp-hero-bar { height:12px; border-radius:6px; background:rgba(0,0,0,.25); overflow:hidden; }
-.exp-hero-fill{ height:100%; border-radius:6px; transition:width .9s ease; }
-
-/* daily progress strip */
-.day-strip {
-background:var(–cd); border-radius:var(–r2); padding:1rem;
-margin-bottom:.75rem;
-}
-.day-strip-top {
-display:flex; align-items:center; justify-content:space-between; margin-bottom:.7rem;
-}
-.day-strip-title { font-family:‘Fredoka One’,cursive; font-size:1rem; }
-.day-strip-date  { font-size:.7rem; color:var(–mu); font-weight:700; }
-
-/* stats row */
-.stats-row { display:flex; gap:.5rem; margin-bottom:.75rem; }
-.stat-box {
-flex:1; background:var(–cd2); border-radius:var(–r);
-padding:.75rem .5rem; text-align:center;
-}
-.stat-box-n { font-family:‘Fredoka One’,cursive; font-size:1.8rem; line-height:1; }
-.stat-box-l { font-size:.62rem; color:var(–mu); font-weight:800; text-transform:uppercase; margin-top:.15rem; }
-
-/* ════════════════════════════════════════
-TASK CARDS (child view)
-════════════════════════════════════════ */
-.task-card {
-background:var(–cd); border-radius:var(–r2);
-padding:.9rem 1rem; margin-bottom:.5rem;
-display:flex; align-items:center; gap:.8rem;
-border:1px solid rgba(255,255,255,.05);
-transition:all var(–tr);
-}
-.task-card.done  { background:rgba(0,230,118,.05); border-color:rgba(0,230,118,.18); }
-.task-card.scored { border-color:rgba(255,214,0,.2); }
-.task-status-ico { font-size:1.5rem; flex-shrink:0; }
-.task-diff {
-width:5px; height:36px; border-radius:3px; flex-shrink:0;
-}
-.task-info { flex:1; min-width:0; }
-.task-name { font-weight:900; font-size:.9rem; margin-bottom:.12rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.task-desc { font-size:.7rem; color:var(–mu); font-weight:700; }
-.task-pts  {
-flex-shrink:0; text-align:right;
-font-family:‘Fredoka One’,cursive; font-size:1.1rem;
-}
-.task-pts-lbl { font-size:.58rem; color:var(–mu); font-weight:700; margin-top:.08rem; }
-.quality-tag {
-font-size:.6rem; font-weight:900; padding:.12rem .45rem;
-border-radius:20px; margin-top:.18rem; white-space:nowrap;
-}
-
-/* ════════════════════════════════════════
-TASK MANAGEMENT (parent)
-════════════════════════════════════════ */
-.task-manage-card {
-background:var(–cd); border-radius:var(–r2);
-padding:.9rem 1rem; margin-bottom:.5rem;
-border:1px solid rgba(255,255,255,.05);
-}
-.task-manage-hdr {
-display:flex; align-items:flex-start; gap:.7rem; margin-bottom:.55rem;
-}
-.task-manage-info { flex:1; }
-.task-manage-name { font-weight:900; font-size:.92rem; margin-bottom:.12rem; }
-.task-manage-meta { font-size:.7rem; color:var(–mu); font-weight:700; display:flex; gap:.55rem; flex-wrap:wrap; }
-.task-manage-actions { display:flex; gap:.4rem; }
-.btn-sm {
-padding:.42rem .75rem; border-radius:9px; font-size:.75rem; font-weight:800;
-border:none; transition:all var(–tr);
-}
-.btn-score { background:rgba(0,230,118,.15); color:var(–gr); }
-.btn-score:hover { background:rgba(0,230,118,.25); }
-.btn-del   { background:rgba(255,82,82,.1);  color:var(–rd); }
-.btn-del:hover { background:rgba(255,82,82,.2); }
-.btn-edit  { background:rgba(255,214,0,.1);  color:var(–ye); }
-.btn-edit:hover { background:rgba(255,214,0,.2); }
-.btn-green-solid { background:var(–gr-g); color:#000; }
-.btn-orange-solid { background:var(–or-g); color:#fff; }
-
-/* assignment chips */
-.assign-chips { display:flex; gap:.35rem; flex-wrap:wrap; }
-.chip {
-padding:.18rem .55rem; border-radius:20px; font-size:.62rem; font-weight:900;
-white-space:nowrap;
-}
-.chip-bl { background:rgba(41,182,246,.15); color:var(–bl); border:1px solid rgba(41,182,246,.2); }
-.chip-pi { background:rgba(244,143,177,.15); color:var(–pi); border:1px solid rgba(244,143,177,.2); }
-.chip-diff-1 { background:rgba(0,230,118,.12); color:var(–gr); }
-.chip-diff-2 { background:rgba(41,182,246,.12); color:var(–bl); }
-.chip-diff-3 { background:rgba(255,107,0,.12); color:var(–orl); }
-.chip-diff-4 { background:rgba(255,82,82,.12); color:var(–rd); }
-
-/* ════════════════════════════════════════
-CREATE TASK FORM
-════════════════════════════════════════ */
-.form-group { margin-bottom:.8rem; }
-.form-label { display:block; font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(–mu); margin-bottom:.35rem; }
-.form-input, .form-select, .form-textarea {
-width:100%; padding:.75rem .9rem; background:var(–cd2);
-border:1px solid rgba(255,255,255,.08); border-radius:var(–r);
-color:var(–tx); font-family:inherit; font-weight:700; font-size:.9rem;
-outline:none; transition:border-color var(–tr);
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-border-color:var(–or); box-shadow:0 0 0 3px rgba(255,107,0,.1);
-}
-.form-select { appearance:none; cursor:pointer; }
-.form-select option { background:var(–cd2); }
-.form-textarea { resize:vertical; min-height:70px; line-height:1.5; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
-.toggle-group { display:flex; gap:.4rem; }
-.toggle-opt {
-flex:1; padding:.55rem; border-radius:9px; border:2px solid rgba(255,255,255,.08);
-background:transparent; color:var(–mu); font-weight:800; font-size:.78rem;
-transition:all var(–tr); text-align:center;
-}
-.toggle-opt.sel-bl { border-color:var(–bl); background:rgba(41,182,246,.12); color:var(–bl); }
-.toggle-opt.sel-pi { border-color:var(–pi); background:rgba(244,143,177,.12); color:var(–pi); }
-.toggle-opt.sel-or { border-color:var(–or); background:rgba(255,107,0,.12); color:var(–orl); }
-.toggle-opt.sel-gr { border-color:var(–gr); background:rgba(0,230,118,.12); color:var(–gr); }
-
-/* ════════════════════════════════════════
-SCORE PANEL
-════════════════════════════════════════ */
-.score-task-info {
-background:var(–cd2); border-radius:var(–r); padding:.8rem;
-margin-bottom:1rem; border-left:3px solid var(–or);
-}
-.quality-grid {
-display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.9rem;
-}
-.quality-opt {
-padding:.7rem; border:2px solid rgba(255,255,255,.08); border-radius:var(–r);
-background:transparent; text-align:center; cursor:pointer; transition:all var(–tr);
-}
-.quality-opt:hover { border-color:rgba(255,255,255,.2); }
-.quality-opt.sel-lazy   { border-color:var(–mu2); background:rgba(123,130,168,.1); color:var(–mu); }
-.quality-opt.sel-ok     { border-color:var(–bl); background:rgba(41,182,246,.1); color:var(–bl); }
-.quality-opt.sel-good   { border-color:var(–gr); background:rgba(0,230,118,.1); color:var(–gr); }
-.quality-opt.sel-great  { border-color:var(–ye); background:rgba(255,214,0,.1); color:var(–ye); }
-.quality-opt-name  { font-family:‘Fredoka One’,cursive; font-size:1rem; margin-bottom:.18rem; }
-.quality-opt-mult  { font-size:.7rem; font-weight:800; opacity:.75; }
-.quality-opt-pts   { font-size:.8rem; font-weight:900; margin-top:.15rem; }
-.preview-pts       { text-align:center; padding:.8rem; background:var(–cd2); border-radius:var(–r); }
-.preview-pts-num   { font-family:‘Fredoka One’,cursive; font-size:2rem; }
-
-/* ════════════════════════════════════════
-REPORT (parent)
-════════════════════════════════════════ */
-.report-player-card {
-border-radius:var(–r2); padding:1.1rem; margin-bottom:.8rem;
-border:1px solid rgba(255,255,255,.07);
-}
-.report-player-hdr {
-display:flex; align-items:center; gap:.75rem; margin-bottom:.8rem;
-}
-.report-av { font-size:2rem; }
-.report-player-name { font-family:‘Fredoka One’,cursive; font-size:1.2rem; }
-.report-player-sub  { font-size:.7rem; color:var(–mu); font-weight:700; margin-top:.08rem; }
-.report-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.4rem; }
-.report-stat { background:var(–cd2); border-radius:var(–r); padding:.65rem .5rem; text-align:center; }
-.report-stat-n { font-family:‘Fredoka One’,cursive; font-size:1.4rem; line-height:1; }
-.report-stat-l { font-size:.58rem; color:var(–mu); font-weight:800; text-transform:uppercase; margin-top:.12rem; }
-
-/* pending score row */
-.pending-row {
-display:flex; align-items:center; gap:.7rem;
-background:var(–cd); border-radius:var(–r); padding:.75rem;
-margin-bottom:.4rem; border:1px solid rgba(255,255,255,.05);
-}
-.pending-info { flex:1; }
-.pending-name  { font-weight:900; font-size:.88rem; }
-.pending-meta  { font-size:.68rem; color:var(–mu); font-weight:700; margin-top:.08rem; }
-
-/* ════════════════════════════════════════
-OVERLAY / MODAL
-════════════════════════════════════════ */
-.overlay-bg {
-position:fixed; inset:0; z-index:500;
-background:rgba(0,0,0,.75); backdrop-filter:blur(6px);
-display:flex; align-items:flex-end; justify-content:center;
-opacity:0; pointer-events:none; transition:opacity .25s;
-}
-.overlay-bg.open { opacity:1; pointer-events:all; }
-.overlay-sheet {
-background:var(–cd); border-radius:var(–r3) var(–r3) 0 0;
-width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
-padding:1.4rem 1.2rem 2rem;
-transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-.overlay-bg.open .overlay-sheet { transform:translateY(0); }
-.overlay-handle { width:40px; height:4px; background:rgba(255,255,255,.15); border-radius:2px; margin:0 auto 1.2rem; }
-.overlay-title { font-family:‘Fredoka One’,cursive; font-size:1.35rem; margin-bottom:1rem; }
-
-/* ════════════════════════════════════════
-LEVEL UP TOAST
-════════════════════════════════════════ */
-#lu-overlay {
-position:fixed; inset:0; z-index:800;
-background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center;
-opacity:0; pointer-events:none; transition:opacity .3s;
-}
-#lu-overlay.show { opacity:1; pointer-events:all; }
-.lu-card {
-background:var(–cd); border-radius:var(–r3);
-padding:2.5rem 2rem; text-align:center; max-width:320px; width:90%;
-border:2px solid var(–or); box-shadow:0 0 80px rgba(255,107,0,.2);
-transform:scale(0); transition:transform .4s cubic-bezier(.4,0,.2,1);
-}
-#lu-overlay.show .lu-card { transform:scale(1); }
-.lu-emoji { font-size:4rem; display:block; margin-bottom:.7rem; animation:float 1s ease-in-out infinite; }
-.lu-title { font-family:‘Fredoka One’,cursify; font-size:2rem; background:linear-gradient(135deg,var(–or),var(–ye)); background-size:200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 3s linear infinite; margin-bottom:.4rem; }
-.lu-msg   { color:var(–mu); font-size:.9rem; font-weight:700; margin-bottom:1.4rem; }
-
-/* toast */
-#toast {
-position:fixed; bottom:5rem; left:50%;
-transform:translateX(-50%) translateY(10px);
-background:var(–cd); border:1px solid rgba(255,107,0,.25);
-border-radius:30px; padding:.55rem 1.1rem;
-font-weight:800; font-size:.83rem; z-index:700;
-opacity:0; transition:all .3s; white-space:nowrap;
-}
-#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* confetti */
-.confetti-pc {
-position:fixed; pointer-events:none; z-index:900;
-border-radius:2px; animation:cfal linear forwards;
-}
-
-/* ════════════════════════════════════════
-KEYFRAMES
-════════════════════════════════════════ */
-@keyframes float   { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
-@keyframes shimmer { 0%{background-position:0%}100%{background-position:200%} }
-@keyframes pop     { 0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)} }
-@keyframes cfal    { 0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
-@keyframes pulse   { 0%,100%{opacity:.6}50%{opacity:1} }
-</style>
-
+    /* --- SKELETON LOADING --- */
+    .skeleton {
+      background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 4px;
+    }
+    .skeleton-text { height: 20px; margin-bottom: 8px; width: 100%; }
+    .skeleton-title { height: 24px; width: 60%; margin-bottom: 12px; }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Overlay to prevent interaction during requests */
+    #global-lock {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 9998;
+      cursor: wait;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════
-     LOGIN SCREEN
-════════════════════════════════════════ -->
+  <div id="global-lock" class="hidden"></div>
+  <div id="toast-container"></div>
 
-<div id="login-screen">
-  <div class="login-logo">🎮</div>
-  <div class="login-title ff">Family Quest</div>
-  <div class="login-sub">Hệ thống nhiệm vụ gia đình</div>
-
-  <div class="player-grid">
-    <div class="player-card bl" onclick="loginChild('baolam')">
-      <div class="player-card-av">🏀</div>
-      <div class="player-card-name" style="color:var(--bl)">Bảo Lâm</div>
-      <div class="player-card-role">Người chơi 1</div>
+  <div class="container">
+    <div id="view-login" class="card hidden">
+      <h2 style="text-align: center; margin-bottom: 24px;">Family Gamification</h2>
+      <form id="form-login">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="pin">PIN (Parents only)</label>
+          <input type="password" id="pin" autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-login" style="width: 100%; margin-top: 8px;">Login</button>
+      </form>
     </div>
-    <div class="player-card pi" onclick="loginChild('baolinh')">
-      <div class="player-card-av">⭐</div>
-      <div class="player-card-name" style="color:var(--pi)">Bảo Linh</div>
-      <div class="player-card-role">Người chơi 2</div>
-    </div>
-  </div>
 
-  <div class="parent-grid">
-    <button class="parent-btn" onclick="showPwdSheet('me')">
-      <span class="parent-btn-icon">👩</span>
-      <span>Mẹ</span>
-    </button>
-    <button class="parent-btn" onclick="showPwdSheet('dad')">
-      <span class="parent-btn-icon">👨</span>
-      <span>Bố</span>
-    </button>
-  </div>
-</div>
-
-<!-- Password Sheet -->
-
-<div class="pwd-overlay" id="pwd-overlay">
-  <div class="pwd-sheet">
-    <div class="pwd-handle"></div>
-    <div class="pwd-title" id="pwd-title">🔐 Nhập mật khẩu</div>
-    <input type="password" inputmode="numeric" class="pwd-input" id="pwd-input" placeholder="••••••" maxlength="6" autocomplete="off">
-    <div class="pwd-err" id="pwd-err"></div>
-    <button class="btn-primary" onclick="submitPwd()">Xác nhận →</button>
-    <button class="btn-secondary" onclick="closePwdSheet()">Huỷ</button>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     GAME SCREEN
-════════════════════════════════════════ -->
-
-<div id="game-screen" style="display:none">
-  <!-- TOPBAR -->
-  <div id="topbar">
-    <div class="tb-av" id="tb-av">🎮</div>
-    <div class="tb-info">
-      <div class="tb-name" id="tb-name">-</div>
-      <div class="tb-sub"  id="tb-sub">-</div>
-    </div>
-    <div class="tb-right">
-      <div class="point-pill" id="tb-pts" style="display:none">💎 <span id="tb-pts-val">0</span></div>
-      <div class="exp-wrap"   id="tb-exp" style="display:none">
-        <div class="exp-lbl">EXP</div>
-        <div class="exp-bar"><div class="exp-fill" id="tb-exp-fill" style="width:0%"></div></div>
+    <div id="view-dashboard" class="hidden">
+      
+      <div class="card">
+        <div class="flex-between">
+          <div>
+            <h2 id="ui-welcome" style="margin: 0;">Loading...</h2>
+            <div id="ui-role" style="font-size: 14px; color: var(--text-muted);"></div>
+          </div>
+          <button id="btn-logout" class="btn-outline btn-danger">Logout</button>
+        </div>
+        
+        <div class="stats-grid" id="ui-stats">
+          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Points</div></div>
+          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Level</div></div>
+          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Streak</div></div>
+        </div>
       </div>
-      <div class="tb-role" id="tb-role">-</div>
-      <div class="icon-btn" id="btn-logout" title="Đăng xuất">⇄</div>
+
+      <div id="parent-controls" class="card hidden">
+        <label for="child-select">Select Child to View Tasks</label>
+        <div class="flex-gap">
+          <select id="child-select">
+            <option value="">Loading children...</option>
+          </select>
+          <button id="btn-refresh-parent" class="btn-outline">↻ Load</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex-between" style="margin-bottom: 16px;">
+          <h3 style="margin: 0;">Today's Tasks</h3>
+          <button id="btn-refresh-player" class="btn-outline hidden">↻ Refresh</button>
+        </div>
+        <div id="task-container">
+          </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- CONTENT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  <div id="content"></div>
+    // 1. FIREBASE CONFIGURATION
+    const firebaseConfig = {
+      apiKey: "YOUR_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT"
+    };
 
-  <!-- BOTTOM NAV -->
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const functions = getFunctions(app, "asia-southeast1"); 
 
-  <div id="bottom-nav" style="display:none">
-    <button class="bnav-btn" id="bnav-home" onclick="renderTab('home')">
-      <span class="bnav-icon">🏠</span>Trang chủ
-    </button>
-    <button class="bnav-btn" id="bnav-tasks" onclick="renderTab('tasks')">
-      <span class="bnav-icon">📋</span>Nhiệm vụ
-    </button>
-    <button class="bnav-btn" id="bnav-report" onclick="renderTab('report')">
-      <span class="bnav-icon">📊</span>Báo cáo
-    </button>
-    <button class="bnav-btn" id="bnav-manage" onclick="renderTab('manage')" style="display:none">
-      <span class="bnav-icon">⚙️</span>Quản lý
-    </button>
-  </div>
-</div>
+    // API Callable References
+    const apiAuthLogin = httpsCallable(functions, 'authLogin');
+    const apiGetProfile = httpsCallable(functions, 'getUserProfile');
+    const apiGetTasks = httpsCallable(functions, 'getTodayTasks');
+    const apiSubmitTask = httpsCallable(functions, 'submitTask');
+    const apiApproveTask = httpsCallable(functions, 'approveTask');
+    const apiRejectTask = httpsCallable(functions, 'rejectTask');
 
-<!-- Main overlay -->
+    // 2. STATE MANAGEMENT
+    const State = {
+      user: null, 
+      role: null, 
+      profile: null, 
+      children: [], 
+      selectedChildId: null,
+      tasks: [],
+      isRequestInFlight: false,
+      currentRequestId: 0 // 🔧 FIX: Prevent async race conditions on UI render
+    };
 
-<div class="overlay-bg" id="main-overlay" onclick="overlayBgClick(event)">
-  <div class="overlay-sheet">
-    <div class="overlay-handle"></div>
-    <div id="overlay-body"></div>
-  </div>
-</div>
+    // 3. UTILITY FUNCTIONS
+    const Utils = {
+      generateIdempotencyKey: () => crypto.randomUUID(),
+      
+      // 🔧 FIX: Deep payload sanitization & validation
+      validateId: (id) => {
+        if (!id || typeof id !== 'string' || id.includes('/')) throw new Error("Invalid ID format");
+        return id;
+      },
+      
+      sanitizeString: (str, maxLen = 200) => {
+        if (!str || typeof str !== 'string') return '';
+        return str.trim().substring(0, maxLen);
+      },
 
-<!-- Level up overlay -->
+      sleep: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
 
-<div id="lu-overlay">
-  <div class="lu-card">
-    <span class="lu-emoji" id="lu-emoji">⭐</span>
-    <div class="lu-title ff" id="lu-title">LEVEL UP!</div>
-    <div class="lu-msg"  id="lu-msg">Bạn đã lên cấp!</div>
-    <button class="btn-primary" onclick="closeLU()" style="margin-top:.5rem">🎉 Tuyệt vời!</button>
-  </div>
-</div>
+      showToast: (msg, type = "success") => {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = msg || "An unexpected error occurred.";
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+      },
 
-<div id="toast"></div>
+      setGlobalLock: (isLocked) => {
+        State.isRequestInFlight = isLocked;
+        const lockEl = document.getElementById('global-lock');
+        if (isLocked) lockEl.classList.remove('hidden');
+        else lockEl.classList.add('hidden');
+      }
+    };
 
-<script>
-'use strict';
+    // 4. API LAYER (HARDENED ERROR BOUNDARIES)
+    const Api = {
+      async callWithRetry(callable, payload, retries = 2, delay = 500) {
+        try {
+          const res = await callable(payload);
+          if (!res || !res.data) throw new Error("Invalid response envelope from server");
+          if (!res.data.success) {
+            throw new Error(res.data.error?.message || "Operation failed on server");
+          }
+          return res.data.data;
+        } catch (error) {
+          // 🔧 FIX: Structured logging for debugability without leaking to UI
+          console.error(`[API_ERROR] ${callable.name || 'Request'}:`, error);
+          
+          // 🔧 FIX: Retry ONLY safe transient network errors
+          const isNetworkError = error.code && ['unavailable', 'deadline-exceeded', 'internal'].includes(error.code);
+          if (retries > 0 && isNetworkError) {
+            console.warn(`[API_RETRY] Retrying in ${delay}ms...`);
+            await Utils.sleep(delay);
+            return this.callWithRetry(callable, payload, retries - 1, delay * 2);
+          }
+          
+          let uxMessage = error.message;
+          if (error.code && error.code.startsWith('functions/')) {
+            uxMessage = "Unable to connect securely. Please check your network.";
+          }
+          throw new Error(uxMessage);
+        }
+      }
+    };
 
-/* ═══════════════════════════════════════════════════════
-   CONFIG & CONSTANTS
-═══════════════════════════════════════════════════════ */
-var PWD_ME  = '888330';
-var PWD_DAD = '004164';
-var LS_KEY  = 'fq_v1_data';
+    // 5. UI RENDER LAYER (WITH ERROR BOUNDARIES)
+    const UI = {
+      setView(viewId) {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById(viewId).classList.remove('hidden');
+      },
 
-var PLAYERS = {
-  baolam:  { name:'Bảo Lâm', avatar:'🏀', theme:'bl', target:110 },
-  baolinh: { name:'Bảo Linh', avatar:'⭐', theme:'pi', target:70  },
-};
+      renderProfile() {
+        try {
+          const fallbackName = State.user?.displayName || State.user?.email || 'User';
+          document.getElementById('ui-welcome').textContent = `Hello, ${fallbackName}`;
+          document.getElementById('ui-role').textContent = `Role: ${(State.role || 'Unknown').toUpperCase()}`;
+          
+          if (State.profile) {
+            const html = `
+              <div class="stat-box"><div class="stat-value">${State.profile.current_points || 0}</div><div class="stat-label">Points</div></div>
+              <div class="stat-box"><div class="stat-value">${State.profile.current_level || 1}</div><div class="stat-label">Level</div></div>
+              <div class="stat-box"><div class="stat-value">${State.profile.current_streak || 0}</div><div class="stat-label">Streak (Days)</div></div>
+            `;
+            document.getElementById('ui-stats').innerHTML = html;
+          }
+        } catch (err) {
+          console.error("[RENDER_ERROR] Profile:", err);
+        }
+      },
 
-var DIFF_CONFIG = {
-  1: { label:'Dễ',    pts:10, exp:5,  color:'var(--gr)',  chip:'chip-diff-1' },
-  2: { label:'Trung', pts:20, exp:10, color:'var(--bl)',  chip:'chip-diff-2' },
-  3: { label:'Khó',   pts:40, exp:20, color:'var(--orl)', chip:'chip-diff-3' },
-  4: { label:'Boss',  pts:80, exp:40, color:'var(--rd)',  chip:'chip-diff-4' },
-};
+      renderParentControls() {
+        if (State.role === 'player') {
+          document.getElementById('parent-controls').classList.add('hidden');
+          document.getElementById('btn-refresh-player').classList.remove('hidden');
+          return;
+        }
+        
+        document.getElementById('parent-controls').classList.remove('hidden');
+        const select = document.getElementById('child-select');
+        select.innerHTML = '<option value="">-- Select a child --</option>';
+        
+        if (State.children && State.children.length > 0) {
+          State.children.forEach(child => {
+            const opt = document.createElement('option');
+            opt.value = child.id;
+            opt.textContent = child.username || child.id;
+            select.appendChild(opt);
+          });
+          select.disabled = false;
+        } else {
+          select.innerHTML = '<option value="">No players found</option>';
+          select.disabled = true;
+        }
+      },
 
-var QUALITY_CONFIG = {
-  lazy:  { label:'Qua loa',  mult:0.5, icon:'😑', cls:'sel-lazy'  },
-  ok:    { label:'Đạt',      mult:1.0, icon:'👍', cls:'sel-ok'    },
-  good:  { label:'Tốt',      mult:1.2, icon:'😊', cls:'sel-good'  },
-  great: { label:'Xuất sắc', mult:1.5, icon:'🌟', cls:'sel-great' },
-};
+      renderTasksLoading() {
+        document.getElementById('task-container').innerHTML = `
+          <div class="task-item skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
+          <div class="task-item skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
+        `;
+      },
 
-var LEVELS = [
-  {lv:1, title:'Mầm non',    icon:'🌱', expReq:0   },
-  {lv:2, title:'Học trò',    icon:'📚', expReq:50  },
-  {lv:3, title:'Chiến binh', icon:'⚔️', expReq:150 },
-  {lv:4, title:'Anh hùng',   icon:'🦸', expReq:300 },
-  {lv:5, title:'Siêu sao',   icon:'⭐', expReq:500 },
-  {lv:6, title:'Huyền thoại',icon:'🔥', expReq:750 },
-  {lv:7, title:'Vô địch',    icon:'🏆', expReq:1050},
-];
+      renderTasksEmpty() {
+        document.getElementById('task-container').innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+            <svg style="width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            <p style="margin: 0; font-weight: 500;">No tasks available right now.</p>
+          </div>
+        `;
+      },
 
-/* ═══════════════════════════════════════════════════════
-   DATA LAYER
-═══════════════════════════════════════════════════════ */
-var DB = { tasks:[], ledger:[], users:{} };
+      renderTasksList() {
+        // 🔧 FIX: Error boundary for main list rendering
+        try {
+          if (!State.tasks || State.tasks.length === 0) {
+            return this.renderTasksEmpty();
+          }
 
-function saveDB() { try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch(e){} }
-function loadDB() {
-  try {
-    var raw = localStorage.getItem(LS_KEY);
-    if (raw) { var p = JSON.parse(raw); if (p && p.tasks) DB = p; }
-  } catch(e) {}
-  if (!DB.users.baolam)  DB.users.baolam  = { points:0, exp:0 };
-  if (!DB.users.baolinh) DB.users.baolinh = { points:0, exp:0 };
-  if (!DB.tasks)   DB.tasks   = [];
-  if (!DB.ledger)  DB.ledger  = [];
-}
+          const container = document.getElementById('task-container');
+          container.innerHTML = ''; 
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function today() { return new Date().toISOString().slice(0,10); }
-function formatDate(iso) {
-  var d = new Date(iso + 'T00:00:00');
-  return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
-}
+          State.tasks.forEach(task => {
+            const item = document.createElement('div');
+            item.className = 'task-item';
+            item.id = `task-card-${task.id}`;
+            
+            const statusDisplay = (task.status || 'UNKNOWN').replace('_', ' ');
+            const titleSafe = Utils.sanitizeString(task.title, 100) || 'Unnamed Task';
+            const diffSafe = task.difficulty || 'N/A';
+            const pointsSafe = task.base_points || 0;
+            
+            item.innerHTML = `
+              <div class="flex-between" style="margin-bottom: 8px;">
+                <span style="font-weight: bold; font-size: 16px;">${titleSafe}</span>
+                <span class="badge badge-${task.status}">${statusDisplay}</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">
+                Diff: ${diffSafe} • Base: ${pointsSafe} pts
+              </div>
+              <div id="actions-${task.id}" class="flex-gap" style="margin-top: 12px;"></div>
+            `;
+            
+            container.appendChild(item);
+            this.attachTaskActions(task, document.getElementById(`actions-${task.id}`));
+          });
+        } catch (err) {
+          console.error("[RENDER_ERROR] Tasks list:", err);
+          document.getElementById('task-container').innerHTML = `<p style="color:var(--danger)">Error rendering tasks. Please refresh.</p>`;
+        }
+      },
 
-/* ── TASKS ── */
-function createTask(data) {
-  var t = {
-    id: uid(), createdAt: Date.now(),
-    title: data.title, desc: data.desc || '',
-    difficulty: parseInt(data.difficulty),
-    assignedTo: data.assignedTo,   // 'baolam' | 'baolinh' | 'both'
-    date: data.date || today(),
-    status: 'pending',             // pending | scored
-    submissions: {},               // { userId: {quality, pts, exp, scoredBy, scoredAt, note} }
-  };
-  DB.tasks.unshift(t);
-  saveDB();
-  return t;
-}
+      attachTaskActions(task, actionContainer) {
+        if (!actionContainer) return;
 
-function deleteTask(id) {
-  DB.tasks = DB.tasks.filter(function(t){ return t.id !== id; });
-  saveDB();
-}
+        if (State.role === 'player') {
+          if (task.status === 'TODO' || task.status === 'REJECTED') {
+            const btn = document.createElement('button');
+            btn.className = 'btn-success';
+            btn.textContent = 'Submit Complete';
+            btn.onclick = () => Handlers.handleTaskAction(btn, task.id, apiSubmitTask, {
+              log_id: task.id,
+              version: task.version,
+              idempotency_key: Utils.generateIdempotencyKey()
+            });
+            actionContainer.appendChild(btn);
+          }
+        } 
+        else if (State.role === 'admin' || State.role === 'controller') {
+          if (task.status === 'PENDING_APPROVAL') {
+            const select = document.createElement('select');
+            select.innerHTML = `
+              <option value="PASS" selected>Pass (x1.0)</option>
+              <option value="GOOD">Good (x1.2)</option>
+              <option value="EXCELLENT">Excellent (x1.5)</option>
+              <option value="POOR">Poor (x0.5)</option>
+            `;
+            select.style.width = '140px';
 
-function scoreTask(taskId, userId, quality, note) {
-  var task = DB.tasks.find(function(t){ return t.id === taskId; });
-  if (!task) return;
+            const btnApprove = document.createElement('button');
+            btnApprove.className = 'btn-success';
+            btnApprove.textContent = 'Approve';
+            // 🔧 FIX: Select value read dynamically AT CLICK TIME to prevent stale closure payload
+            btnApprove.onclick = () => {
+              Handlers.handleTaskAction(btnApprove, task.id, apiApproveTask, {
+                log_id: task.id,
+                version: task.version,
+                quality_rating: select.value,
+                idempotency_key: Utils.generateIdempotencyKey()
+              });
+            };
 
-  var cfg   = DIFF_CONFIG[task.difficulty];
-  var qcfg  = QUALITY_CONFIG[quality];
-  var pts   = Math.round(cfg.pts * qcfg.mult);
-  var exp   = cfg.exp; // EXP never multiplied
+            const btnReject = document.createElement('button');
+            btnReject.className = 'btn-danger btn-outline';
+            btnReject.textContent = 'Reject';
+            btnReject.onclick = () => {
+              const reasonRaw = prompt("Enter reason for rejection:");
+              if (reasonRaw === null) return; // Cancelled
+              const reasonSafe = Utils.sanitizeString(reasonRaw, 200);
+              if (!reasonSafe) return Utils.showToast("Reason cannot be empty", "warning");
 
-  task.submissions[userId] = {
-    quality: quality, pts: pts, exp: exp,
-    scoredBy: SESSION.role, scoredAt: Date.now(), note: note || '',
-  };
+              Handlers.handleTaskAction(btnReject, task.id, apiRejectTask, {
+                log_id: task.id,
+                version: task.version,
+                reason: reasonSafe,
+                idempotency_key: Utils.generateIdempotencyKey()
+              });
+            };
 
-  // Update user wallet
-  DB.users[userId].points += pts;
-  DB.users[userId].exp    += exp;
+            actionContainer.appendChild(select);
+            actionContainer.appendChild(btnApprove);
+            actionContainer.appendChild(btnReject);
+          }
+        }
+      }
+    };
 
-  // Ledger entry
-  DB.ledger.push({
-    id: uid(), userId: userId, taskId: taskId,
-    type:'earn', pts: pts, exp: exp,
-    reason: task.title, quality: quality,
-    at: Date.now(),
-  });
+    // 6. EVENT HANDLERS & BUSINESS LOGIC
+    const Handlers = {
+      async loadUserProfile() {
+        try {
+          const profileData = await Api.callWithRetry(apiGetProfile, {});
+          State.profile = profileData;
+          UI.renderProfile();
+        } catch (err) {
+          Utils.showToast("Warning: Could not load profile stats", "warning");
+        }
+      },
 
-  // Update task status (scored if all assigned users have submission)
-  var assigned = getAssignedUsers(task);
-  var allScored = assigned.every(function(u){ return task.submissions[u]; });
-  if (allScored) task.status = 'scored';
+      async loadChildrenList() {
+        const select = document.getElementById('child-select');
+        select.disabled = true;
+        select.innerHTML = '<option value="">Loading children...</option>';
 
-  saveDB();
-  checkLevelUp(userId);
-  return { pts: pts, exp: exp };
-}
+        try {
+          // 🔧 FIX: Securely querying users using Firestore SDK
+          // Note: Security rules should allow filtering users where role=player 
+          // Future-proofing: where("parent_id", "==", State.user.uid) can be added here
+          const q = query(collection(db, "users"), where("role", "==", "player"));
+          const snap = await getDocs(q);
+          State.children = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          UI.renderParentControls();
+        } catch (err) {
+          console.error("[FIRESTORE_ERROR] Children query:", err);
+          Utils.showToast("Failed to load children list.", "error");
+          select.innerHTML = '<option value="">Error loading</option>';
+        }
+      },
 
-function getAssignedUsers(task) {
-  if (task.assignedTo === 'both') return ['baolam','baolinh'];
-  return [task.assignedTo];
-}
+      async loadTasks() {
+        if (State.role !== 'player' && !State.selectedChildId) {
+          return UI.renderTasksEmpty();
+        }
 
-function getTasksForUser(userId, date) {
-  var d = date || today();
-  return DB.tasks.filter(function(t) {
-    return t.date === d && getAssignedUsers(t).indexOf(userId) >= 0;
-  });
-}
+        UI.renderTasksLoading();
+        
+        // 🔧 FIX: Request ID Guard pattern to prevent old responses overwriting new ones
+        State.currentRequestId++;
+        const reqId = State.currentRequestId;
+        
+        const payload = {};
+        if (State.role !== 'player') {
+          payload.assignee_id = Utils.validateId(State.selectedChildId);
+        }
 
-/* ── LEVEL ── */
-function getLvObj(userId) {
-  var exp = DB.users[userId].exp;
-  var cur = LEVELS[0];
-  for (var i=0;i<LEVELS.length;i++) {
-    if (exp >= LEVELS[i].expReq) cur = LEVELS[i];
-    else break;
-  }
-  return cur;
-}
-function getNextLvObj(userId) {
-  var cur = getLvObj(userId);
-  return LEVELS[Math.min(cur.lv, LEVELS.length-1)] || null;
-}
-function getExpInLv(userId) {
-  var cur = getLvObj(userId), next = getNextLvObj(userId);
-  if (!next || cur.lv === next.lv) return 0;
-  return DB.users[userId].exp - cur.expReq;
-}
-function getExpToNext(userId) {
-  var cur = getLvObj(userId), next = getNextLvObj(userId);
-  if (!next || cur.lv === next.lv) return 1;
-  return next.expReq - cur.expReq;
-}
-function getExpPct(userId) {
-  return Math.min(100, Math.round((getExpInLv(userId)/getExpToNext(userId))*100));
-}
+        try {
+          const result = await Api.callWithRetry(apiGetTasks, payload);
+          if (State.currentRequestId !== reqId) return; // Ignore stale request
+          
+          State.tasks = result.tasks || [];
+          UI.renderTasksList();
+        } catch (err) {
+          if (State.currentRequestId !== reqId) return;
+          document.getElementById('task-container').innerHTML = `<p style="color:var(--danger)">Failed to load tasks.</p>`;
+          Utils.showToast(err.message, "error");
+        }
+      },
 
-var _prevLevels = {};
-function checkLevelUp(userId) {
-  var prevLv = _prevLevels[userId] || getLvObj(userId).lv;
-  var curLv  = getLvObj(userId).lv;
-  if (curLv > prevLv) {
-    var obj = getLvObj(userId);
-    showLU(obj.icon, 'LEVEL UP!', PLAYERS[userId].name + ' đã lên ' + obj.title + '!');
-    confetti(50);
-  }
-  _prevLevels[userId] = curLv;
-}
+      async handleTaskAction(btnElement, taskId, apiCall, payload) {
+        if (State.isRequestInFlight) return;
+        
+        // 🔧 FIX: Lightweight optimistic UI feedback
+        const taskCard = document.getElementById(`task-card-${taskId}`);
+        if (taskCard) taskCard.classList.add('task-optimistic');
 
-/* ── DAY SCORE % ── */
-function calcDayPct(userId, date) {
-  var d     = date || today();
-  var tasks = getTasksForUser(userId, d);
-  if (!tasks.length) return null;
+        const originalText = btnElement.textContent;
+        
+        try {
+          Utils.setGlobalLock(true);
+          btnElement.disabled = true;
+          btnElement.textContent = "...";
+          
+          console.info(`[ACTION_START] Call`, payload);
+          payload.log_id = Utils.validateId(payload.log_id);
 
-  var maxPts = tasks.reduce(function(a,t){ return a + DIFF_CONFIG[t.difficulty].pts * 1.5; }, 0);
-  var earned = tasks.reduce(function(a,t){
-    var sub = t.submissions[userId];
-    return a + (sub ? sub.pts : 0);
-  }, 0);
+          await Api.callWithRetry(apiCall, payload);
+          Utils.showToast("Action completed successfully!");
+          
+          // Refresh state globally
+          await Promise.all([
+            Handlers.loadTasks(),
+            Handlers.loadUserProfile()
+          ]);
 
-  return Math.round((earned / maxPts) * 100);
-}
+        } catch (err) {
+          Utils.showToast(err.message, "error");
+          btnElement.textContent = originalText;
+          btnElement.disabled = false;
+          if (taskCard) taskCard.classList.remove('task-optimistic');
+        } finally {
+          // 🔧 FIX: Guaranteed unlock preventing dead UI state
+          Utils.setGlobalLock(false);
+        }
+      },
 
-function pctClass(pct) {
-  if (pct === null) return 'pct-ok';
-  if (pct < 50) return 'pct-fail';
-  if (pct < 78) return 'pct-ok';
-  if (pct < 100) return 'pct-good';
-  return 'pct-perfect';
-}
-function pctLabel(pct) {
-  if (pct === null) return '-';
-  if (pct < 50) return 'Cần cố gắng';
-  if (pct < 78) return 'Đạt';
-  if (pct < 100) return 'Tốt!';
-  return 'Hoàn hảo! ✨';
-}
+      async handleLogin(e) {
+        e.preventDefault();
+        if (State.isRequestInFlight) return;
+        
+        const rawUsername = document.getElementById('username').value;
+        const rawPin = document.getElementById('pin').value;
+        
+        const username = Utils.sanitizeString(rawUsername, 50);
+        if (!username) return Utils.showToast("Username required", "warning");
 
-/* ═══════════════════════════════════════════════════════
-   SESSION
-═══════════════════════════════════════════════════════ */
-var SESSION = { role: null, userId: null, tab: 'home', pwdTarget: null };
+        const btn = document.getElementById('btn-login');
+        const originalText = btn.textContent;
+        
+        try {
+          Utils.setGlobalLock(true);
+          btn.textContent = "Authenticating...";
 
-function loginChild(userId) {
-  SESSION.role = 'child'; SESSION.userId = userId;
-  startGameScreen();
-}
+          const res = await Api.callWithRetry(apiAuthLogin, { 
+            username, 
+            pin: Utils.sanitizeString(rawPin, 50) || null 
+          });
+          
+          // Implicitly triggers onAuthStateChanged
+          await signInWithCustomToken(auth, res.token);
+          
+        } catch (err) {
+          Utils.showToast(err.message, "error");
+          btn.textContent = originalText;
+        } finally {
+          Utils.setGlobalLock(false);
+        }
+      }
+    };
 
-function loginParent(role) {
-  SESSION.role = role; SESSION.userId = null;
-  startGameScreen();
-}
-
-function startGameScreen() {
-  g('login-screen').style.display = 'none';
-  g('game-screen').style.display  = 'block';
-  updateTopBar();
-  setupNav();
-  renderTab('home');
-}
-
-/* ═══════════════════════════════════════════════════════
-   TOPBAR & NAV
-═══════════════════════════════════════════════════════ */
-function updateTopBar() {
-  var r = SESSION.role, uid = SESSION.userId;
-
-  if (r === 'child') {
-    var pl = PLAYERS[uid];
-    var lv = getLvObj(uid);
-    var bgs = { bl:'var(--bl-g)', pi:'var(--pi-g)' };
-    g('tb-av').style.background = bgs[pl.theme];
-    g('tb-av').textContent = pl.avatar;
-    g('tb-name').textContent = pl.name;
-    g('tb-sub').textContent  = lv.icon + ' Lv.' + lv.lv + ' ' + lv.title;
-    g('tb-pts-val').textContent = DB.users[uid].points;
-    g('tb-pts').style.display = 'flex';
-    g('tb-exp').style.display = 'block';
-    g('tb-exp-fill').style.width = getExpPct(uid) + '%';
-    g('tb-exp-fill').style.background = pl.theme === 'bl' ? 'linear-gradient(90deg,var(--bl),var(--gr))' : 'linear-gradient(90deg,var(--pi),var(--pu))';
-    g('tb-role').textContent = '🏀 Player';
-    g('tb-role').className   = 'tb-role child-' + pl.theme;
-  } else if (r === 'me') {
-    g('tb-av').style.background = 'linear-gradient(135deg,var(--pu),var(--pi))';
-    g('tb-av').textContent = '👩';
-    g('tb-name').textContent = 'Mẹ';
-    g('tb-sub').textContent  = 'Chấm điểm & theo dõi';
-    g('tb-pts').style.display = 'none';
-    g('tb-exp').style.display = 'none';
-    g('tb-role').textContent = '⭐ Mẹ';
-    g('tb-role').className   = 'tb-role me';
-  } else {
-    g('tb-av').style.background = 'linear-gradient(135deg,var(--or),var(--orl))';
-    g('tb-av').textContent = '👨';
-    g('tb-name').textContent = 'Bố';
-    g('tb-sub').textContent  = 'Quản lý hệ thống';
-    g('tb-pts').style.display = 'none';
-    g('tb-exp').style.display = 'none';
-    g('tb-role').textContent = '🔧 Admin';
-    g('tb-role').className   = 'tb-role dad';
-  }
-}
-
-function setupNav() {
-  var r = SESSION.role;
-  g('bottom-nav').style.display = 'flex';
-
-  // show/hide manage tab
-  var manageBtn = g('bnav-manage');
-  manageBtn.style.display = (r === 'dad') ? '' : 'none';
-
-  // tasks tab label
-  g('bnav-tasks').querySelectorAll('.bnav-icon')[0].textContent = (r === 'child') ? '📋' : '✅';
-  var lbl = g('bnav-tasks').lastChild;
-  lbl.textContent = (r === 'child') ? 'Nhiệm vụ' : 'Chấm điểm';
-}
-
-function renderTab(tab) {
-  SESSION.tab = tab;
-  ['home','tasks','report','manage'].forEach(function(t) {
-    var btn = g('bnav-' + t);
-    if (btn) btn.classList.toggle('active', t === tab);
-  });
-
-  var area = g('content');
-  if      (tab === 'home')   area.innerHTML = buildHome();
-  else if (tab === 'tasks')  area.innerHTML = buildTasks();
-  else if (tab === 'report') area.innerHTML = buildReport();
-  else if (tab === 'manage') area.innerHTML = buildManage();
-}
-
-/* ═══════════════════════════════════════════════════════
-   HOME TAB
-═══════════════════════════════════════════════════════ */
-function buildHome() {
-  var r = SESSION.role;
-  if (r === 'child')  return buildChildHome();
-  if (r === 'me')     return buildParentHome('me');
-  return buildParentHome('dad');
-}
-
-/* ── Child Home ── */
-function buildChildHome() {
-  var uid  = SESSION.userId;
-  var pl   = PLAYERS[uid];
-  var lv   = getLvObj(uid);
-  var nxtlv= getNextLvObj(uid);
-  var user = DB.users[uid];
-  var pct  = calcDayPct(uid);
-  var tasks= getTasksForUser(uid, today());
-
-  var themeColor = pl.theme === 'bl'
-    ? 'linear-gradient(135deg,rgba(41,182,246,.15),rgba(2,136,209,.08))'
-    : 'linear-gradient(135deg,rgba(244,143,177,.15),rgba(171,71,188,.08))';
-  var themeBdr = pl.theme === 'bl' ? 'rgba(41,182,246,.25)' : 'rgba(244,143,177,.25)';
-  var expGrad  = pl.theme === 'bl' ? 'linear-gradient(90deg,var(--bl),var(--gr))' : 'linear-gradient(90deg,var(--pi),var(--pu))';
-  var accentCol= pl.theme === 'bl' ? 'var(--bl)' : 'var(--pi)';
-
-  var html = '<div class="hero-card" style="background:' + themeColor + ';border:1px solid ' + themeBdr + ';margin-bottom:.9rem">'
-    + '<div class="hero-avatar">' + pl.avatar + '</div>'
-    + '<div class="hero-name" style="color:' + accentCol + '">' + pl.name + '</div>'
-    + '<div class="hero-level">' + lv.icon + ' Lv.' + lv.lv + ' - ' + lv.title + '</div>'
-    + '<div class="exp-hero-lbl"><span>EXP ' + getExpInLv(uid) + ' / ' + getExpToNext(uid) + '</span>'
-    + (nxtlv && nxtlv.lv !== lv.lv ? '<span>Lv.' + nxtlv.lv + ' ' + nxtlv.icon + ' tiếp theo</span>' : '<span>MAX LEVEL 🔥</span>')
-    + '</div>'
-    + '<div class="exp-hero-bar"><div class="exp-hero-fill" style="width:' + getExpPct(uid) + '%;background:' + expGrad + '"></div></div>'
-    + '</div>';
-
-  // stats row
-  html += '<div class="stats-row">'
-    + statBox('💎', user.points, 'Điểm', 'var(--ye)')
-    + statBox('⚡', user.exp,    'EXP',  accentCol)
-    + statBox('📋', tasks.length, 'Nhiệm vụ', 'var(--mu)')
-    + '</div>';
-
-  // today's progress
-  html += '<div class="sec">HÔM NAY - ' + formatDate(today()) + '</div>';
-  if (pct !== null) {
-    var pcls = pctClass(pct);
-    html += '<div class="day-strip">'
-      + '<div class="day-strip-top">'
-      + '<div class="day-strip-title">📅 Tiến độ hôm nay</div>'
-      + '<span class="pct ' + pcls + '">' + pct + '% - ' + pctLabel(pct) + '</span>'
-      + '</div>'
-      + '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%;background:' + (pct >= 78 ? 'linear-gradient(90deg,var(--gr),var(--grd))' : 'linear-gradient(90deg,var(--or),var(--ye))') + '"></div></div>'
-      + '</div>';
-  }
-
-  // recent tasks (top 3)
-  if (tasks.length) {
-    html += tasks.slice(0,3).map(function(t){ return buildTaskCard(t, uid); }).join('');
-    if (tasks.length > 3) {
-      html += '<div style="text-align:center;padding:.6rem;font-size:.8rem;color:var(--mu);font-weight:700;cursor:pointer" onclick="renderTab(\'tasks\')">'
-        + 'Xem thêm ' + (tasks.length-3) + ' nhiệm vụ →</div>';
-    }
-  } else {
-    html += emptyState('📭', 'Chưa có nhiệm vụ hôm nay', 'Bố sẽ giao nhiệm vụ sớm thôi!');
-  }
-
-  return html;
-}
-
-function statBox(icon, val, lbl, color) {
-  return '<div class="stat-box"><div class="stat-box-n" style="color:' + color + '">' + icon + ' ' + val + '</div><div class="stat-box-l">' + lbl + '</div></div>';
-}
-
-/* ── Parent Home ── */
-function buildParentHome(role) {
-  var today_ = today();
-  var bl     = DB.users.baolam;
-  var pi     = DB.users.baolinh;
-  var pctBl  = calcDayPct('baolam');
-  var pctPi  = calcDayPct('baolinh');
-
-  var pending = DB.tasks.filter(function(t) {
-    return t.date === today_ && Object.keys(t.submissions).length < getAssignedUsers(t).length;
-  });
-
-  var html = '<div class="sec">TỔNG QUAN HÔM NAY</div>';
-
-  // player cards
-  ['baolam','baolinh'].forEach(function(uid) {
-    var pl = PLAYERS[uid]; var user = DB.users[uid];
-    var pct = uid === 'baolam' ? pctBl : pctPi;
-    var pcls = pctClass(pct);
-    var bg = uid === 'baolam'
-      ? 'linear-gradient(135deg,rgba(41,182,246,.1),rgba(2,136,209,.06))'
-      : 'linear-gradient(135deg,rgba(244,143,177,.1),rgba(171,71,188,.06))';
-    var bdr = uid === 'baolam' ? 'rgba(41,182,246,.2)' : 'rgba(244,143,177,.2)';
-    var acc = uid === 'baolam' ? 'var(--bl)' : 'var(--pi)';
-    var lv  = getLvObj(uid);
-
-    html += '<div class="report-player-card" style="background:' + bg + ';border-color:' + bdr + '">'
-      + '<div class="report-player-hdr">'
-      + '<div class="report-av">' + pl.avatar + '</div>'
-      + '<div><div class="report-player-name" style="color:' + acc + '">' + pl.name + '</div>'
-      + '<div class="report-player-sub">' + lv.icon + ' Lv.' + lv.lv + ' ' + lv.title + '</div></div>'
-      + (pct !== null ? '<span class="pct ' + pcls + '" style="margin-left:auto">' + pct + '%</span>' : '')
-      + '</div>'
-      + '<div class="report-stats">'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:var(--ye)">' + user.points + '</div><div class="report-stat-l">Điểm</div></div>'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:' + acc + '">' + user.exp + '</div><div class="report-stat-l">EXP</div></div>'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:var(--gr)">' + getTasksForUser(uid,today_).length + '</div><div class="report-stat-l">Task hôm nay</div></div>'
-      + '</div></div>';
-  });
-
-  // pending score
-  if (pending.length) {
-    html += '<div class="sec">CHỜ CHẤM ĐIỂM (' + pending.length + ')</div>';
-    pending.slice(0,4).forEach(function(t) {
-      var assigned = getAssignedUsers(t);
-      var unscored = assigned.filter(function(u){ return !t.submissions[u]; });
-      html += '<div class="pending-row">'
-        + '<div class="pending-info">'
-        + '<div class="pending-name">' + t.title + '</div>'
-        + '<div class="pending-meta">' + DIFF_CONFIG[t.difficulty].label + ' · ' + unscored.map(function(u){ return PLAYERS[u].name; }).join(', ') + '</div>'
-        + '</div>'
-        + '<button class="btn-sm btn-score" onclick="openScoreSheet(\'' + t.id + '\')">Chấm →</button>'
-        + '</div>';
+    // 7. BIND DOM EVENTS
+    document.getElementById('form-login').addEventListener('submit', Handlers.handleLogin);
+    
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await signOut(auth);
     });
-  } else {
-    html += '<div class="card" style="text-align:center;color:var(--mu)">'
-      + '<div style="font-size:2rem;margin-bottom:.4rem">✅</div>'
-      + '<div style="font-weight:800;font-size:.9rem">Không có task chờ chấm!</div>'
-      + '</div>';
-  }
 
-  return html;
-}
-
-/* ═══════════════════════════════════════════════════════
-   TASKS TAB
-═══════════════════════════════════════════════════════ */
-function buildTasks() {
-  if (SESSION.role === 'child') return buildChildTasks();
-  return buildScorePanel();
-}
-
-/* ── Child Tasks ── */
-function buildChildTasks() {
-  var uid   = SESSION.userId;
-  var tasks = getTasksForUser(uid, today());
-  var pct   = calcDayPct(uid);
-
-  var html = '<div class="sec">NHIỆM VỤ HÔM NAY - ' + formatDate(today()) + '</div>';
-
-  if (pct !== null) {
-    var pcls = pctClass(pct);
-    html += '<div class="day-strip" style="margin-bottom:.75rem">'
-      + '<div class="day-strip-top"><div class="day-strip-title">% Hoàn thành</div>'
-      + '<span class="pct ' + pcls + '">' + pct + '%</span></div>'
-      + '<div class="prog-bar" style="margin-top:.35rem"><div class="prog-fill" style="width:' + pct + '%;background:linear-gradient(90deg,var(--gr),var(--grd))"></div></div>'
-      + '</div>';
-  }
-
-  if (!tasks.length) {
-    return html + emptyState('📭','Chưa có nhiệm vụ hôm nay','Bố sẽ giao nhiệm vụ sớm!');
-  }
-
-  var done    = tasks.filter(function(t){ return t.submissions[uid]; }).length;
-  var pending = tasks.filter(function(t){ return !t.submissions[uid]; });
-  var scored  = tasks.filter(function(t){ return  t.submissions[uid]; });
-
-  if (pending.length) {
-    html += '<div class="sec">CHƯA HOÀN THÀNH (' + pending.length + ')</div>';
-    pending.forEach(function(t){ html += buildTaskCard(t, uid); });
-  }
-  if (scored.length) {
-    html += '<div class="sec" style="margin-top:.5rem">ĐÃ CHẤM ĐIỂM (' + scored.length + ')</div>';
-    scored.forEach(function(t){ html += buildTaskCard(t, uid); });
-  }
-
-  return html;
-}
-
-function buildTaskCard(task, userId) {
-  var sub   = task.submissions[userId];
-  var cfg   = DIFF_CONFIG[task.difficulty];
-  var isDone= !!sub;
-  var qcfg  = sub ? QUALITY_CONFIG[sub.quality] : null;
-
-  var statusIcon = isDone ? '✅' : '⬜';
-  var cardClass  = isDone ? 'task-card scored' : 'task-card';
-
-  return '<div class="' + cardClass + '">'
-    + '<span class="task-status-ico">' + statusIcon + '</span>'
-    + '<div class="task-diff" style="background:' + cfg.color + '"></div>'
-    + '<div class="task-info">'
-    + '<div class="task-name">' + h(task.title) + '</div>'
-    + '<div class="task-desc">' + h(task.desc || cfg.label + ' - ' + cfg.pts + ' điểm tối đa') + '</div>'
-    + (qcfg ? '<span class="quality-tag" style="background:rgba(255,214,0,.1);color:var(--ye)">' + qcfg.icon + ' ' + qcfg.label + '</span>' : '')
-    + '</div>'
-    + '<div class="task-pts">'
-    + '<div style="color:' + (isDone?'var(--gr)':'var(--ye)') + '">' + (isDone ? sub.pts : cfg.pts * 1.5) + '</div>'
-    + '<div class="task-pts-lbl">' + (isDone ? 'điểm nhận' : 'điểm tối đa') + '</div>'
-    + (isDone ? '<div class="task-pts-lbl" style="color:var(--bl)">+' + sub.exp + ' EXP</div>' : '')
-    + '</div>'
-    + '</div>';
-}
-
-/* ── Score Panel (parent) ── */
-function buildScorePanel() {
-  var today_ = today();
-  var allTasks = DB.tasks.filter(function(t){ return t.date === today_; });
-  var pending  = allTasks.filter(function(t){
-    return getAssignedUsers(t).some(function(u){ return !t.submissions[u]; });
-  });
-  var done = allTasks.filter(function(t){
-    return getAssignedUsers(t).every(function(u){ return t.submissions[u]; });
-  });
-
-  var html = '<div class="sec">CHẤM ĐIỂM HÔM NAY</div>';
-
-  if (pending.length) {
-    pending.forEach(function(t) {
-      var assigned = getAssignedUsers(t);
-      var unscored = assigned.filter(function(u){ return !t.submissions[u]; });
-      html += '<div class="task-manage-card">'
-        + '<div class="task-manage-hdr">'
-        + '<div class="task-manage-info">'
-        + '<div class="task-manage-name">' + h(t.title) + '</div>'
-        + '<div class="task-manage-meta">'
-        + '<span class="chip ' + DIFF_CONFIG[t.difficulty].chip + '">' + DIFF_CONFIG[t.difficulty].label + '</span>'
-        + unscored.map(function(u){ return '<span class="chip chip-' + PLAYERS[u].theme + '">' + PLAYERS[u].avatar + ' ' + PLAYERS[u].name + '</span>'; }).join('')
-        + '</div>'
-        + '</div>'
-        + '<button class="btn-sm btn-score" onclick="openScoreSheet(\'' + t.id + '\')">Chấm ✏️</button>'
-        + '</div></div>';
+    document.getElementById('child-select').addEventListener('change', (e) => {
+      State.selectedChildId = e.target.value;
+      if (State.selectedChildId) Handlers.loadTasks();
+      else UI.renderTasksEmpty();
     });
-  } else {
-    html += emptyState('🎉','Tất cả đã được chấm!','Không còn task nào chờ chấm hôm nay.');
-  }
 
-  if (done.length) {
-    html += '<div class="sec" style="margin-top:.5rem">ĐÃ CHẤM (' + done.length + ')</div>';
-    done.forEach(function(t) {
-      html += '<div class="task-manage-card" style="opacity:.6">'
-        + '<div class="task-manage-name" style="font-size:.88rem">✅ ' + h(t.title) + '</div>'
-        + '</div>';
+    document.getElementById('btn-refresh-parent').addEventListener('click', () => {
+      if (State.selectedChildId) Handlers.loadTasks();
     });
-  }
 
-  return html;
-}
-
-/* ═══════════════════════════════════════════════════════
-   REPORT TAB
-═══════════════════════════════════════════════════════ */
-function buildReport() {
-  var today_ = today();
-  var html = '<div class="sec">BÁO CÁO HÔM NAY - ' + formatDate(today_) + '</div>';
-
-  ['baolam','baolinh'].forEach(function(uid) {
-    var pl    = PLAYERS[uid];
-    var user  = DB.users[uid];
-    var tasks = getTasksForUser(uid, today_);
-    var pct   = calcDayPct(uid);
-    var pcls  = pctClass(pct);
-    var lv    = getLvObj(uid);
-    var acc   = uid === 'baolam' ? 'var(--bl)' : 'var(--pi)';
-    var bg    = uid === 'baolam'
-      ? 'linear-gradient(135deg,rgba(41,182,246,.08),rgba(2,136,209,.04))'
-      : 'linear-gradient(135deg,rgba(244,143,177,.08),rgba(171,71,188,.04))';
-    var bdr   = uid === 'baolam' ? 'rgba(41,182,246,.18)' : 'rgba(244,143,177,.18)';
-
-    html += '<div class="report-player-card" style="background:' + bg + ';border-color:' + bdr + '">'
-      + '<div class="report-player-hdr">'
-      + '<div class="report-av">' + pl.avatar + '</div>'
-      + '<div><div class="report-player-name" style="color:' + acc + '">' + pl.name + '</div>'
-      + '<div class="report-player-sub">' + lv.icon + ' Lv.' + lv.lv + ' ' + lv.title + ' · ' + user.exp + ' EXP</div></div>'
-      + (pct !== null ? '<span class="pct ' + pcls + '" style="margin-left:auto">' + pct + '%</span>' : '')
-      + '</div>';
-
-    html += '<div class="report-stats">'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:var(--ye)">' + user.points + '</div><div class="report-stat-l">Tổng điểm</div></div>'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:var(--gr)">' + tasks.filter(function(t){ return t.submissions[uid]; }).length + '</div><div class="report-stat-l">Đã chấm</div></div>'
-      + '<div class="report-stat"><div class="report-stat-n" style="color:var(--or)">' + (tasks.length - tasks.filter(function(t){ return t.submissions[uid]; }).length) + '</div><div class="report-stat-l">Chờ chấm</div></div>'
-      + '</div>';
-
-    if (pct !== null) {
-      var target = pl.target;
-      var actualPts = tasks.reduce(function(a,t){ var s=t.submissions[uid]; return a+(s?s.pts:0);},0);
-      html += '<div style="margin-top:.7rem;font-size:.78rem;font-weight:700;color:var(--mu)">'
-        + 'Điểm hôm nay: <span style="color:var(--tx)">' + actualPts + '</span> / Mục tiêu: <span style="color:' + acc + '">' + target + '</span>'
-        + '</div>'
-        + '<div class="prog-bar" style="margin-top:.3rem">'
-        + '<div class="prog-fill" style="width:' + Math.min(100,Math.round((actualPts/target)*100)) + '%;background:' + acc + '"></div></div>';
-    }
-
-    html += '</div>'; // report-player-card
-  });
-
-  // ledger (recent 5)
-  var recent = DB.ledger.slice(-8).reverse();
-  if (recent.length) {
-    html += '<div class="sec" style="margin-top:.5rem">LỊCH SỬ GẦN ĐÂY</div>';
-    recent.forEach(function(entry) {
-      var pl = PLAYERS[entry.userId];
-      var qcfg = entry.quality ? QUALITY_CONFIG[entry.quality] : null;
-      html += '<div class="pending-row">'
-        + '<span style="font-size:1.2rem">' + pl.avatar + '</span>'
-        + '<div class="pending-info">'
-        + '<div class="pending-name">' + pl.name + ' - ' + h(entry.reason) + '</div>'
-        + '<div class="pending-meta">' + (qcfg ? qcfg.icon + ' ' + qcfg.label + ' · ' : '') + new Date(entry.at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) + '</div>'
-        + '</div>'
-        + '<div style="text-align:right"><div style="font-family:\'Fredoka One\',cursive;color:var(--ye)">+' + entry.pts + ' đ</div>'
-        + '<div style="font-size:.62rem;color:var(--bl)">+' + entry.exp + ' EXP</div></div>'
-        + '</div>';
+    document.getElementById('btn-refresh-player').addEventListener('click', () => {
+      Handlers.loadTasks();
     });
-  }
 
-  return html;
-}
-
-/* ═══════════════════════════════════════════════════════
-   MANAGE TAB (Dad only)
-═══════════════════════════════════════════════════════ */
-function buildManage() {
-  var today_  = today();
-  var allTasks= DB.tasks.filter(function(t){ return t.date === today_; });
-  var upcom   = DB.tasks.filter(function(t){ return t.date > today_; }).slice(0,5);
-
-  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">'
-    + '<button class="btn-primary" onclick="openCreateTask()">➕ Tạo nhiệm vụ</button>'
-    + '<button class="btn-primary" style="background:linear-gradient(135deg,var(--pu),var(--pi))" onclick="openScoreAll()">✏️ Chấm điểm</button>'
-    + '</div>';
-
-  html += '<div class="sec">NHIỆM VỤ HÔM NAY (' + allTasks.length + ')</div>';
-  if (allTasks.length) {
-    allTasks.forEach(function(t) {
-      html += buildManageTaskCard(t);
+    // 8. AUTH STATE OBSERVER (Routing & Bootstrapping)
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.info("[AUTH] Logged in as:", user.uid);
+        State.user = user;
+        UI.setView('view-dashboard');
+        
+        try {
+          const tokenResult = await user.getIdTokenResult();
+          State.role = tokenResult.claims.role || 'player';
+          
+          const initPromises = [Handlers.loadUserProfile()];
+          
+          if (State.role !== 'player') {
+            initPromises.push(Handlers.loadChildrenList());
+          } else {
+            UI.renderParentControls();
+            initPromises.push(Handlers.loadTasks());
+          }
+          
+          await Promise.all(initPromises);
+        } catch (err) {
+          console.error("[AUTH_INIT_ERROR]", err);
+          Utils.showToast("Session setup failed. Logging out.", "error");
+          signOut(auth);
+        }
+      } else {
+        console.info("[AUTH] Logged out. Resetting state.");
+        
+        // 🔧 FIX: Strict state leakage prevention on logout
+        State.user = null;
+        State.role = null;
+        State.profile = null;
+        State.children = [];
+        State.selectedChildId = null;
+        State.tasks = [];
+        State.currentRequestId = 0;
+        
+        // Clear DOM safely
+        document.getElementById('form-login').reset();
+        document.getElementById('btn-login').textContent = "Login";
+        document.getElementById('task-container').innerHTML = '';
+        document.getElementById('ui-stats').innerHTML = '';
+        document.getElementById('child-select').innerHTML = '<option value="">Loading...</option>';
+        document.getElementById('ui-welcome').textContent = 'Loading...';
+        document.getElementById('ui-role').textContent = '';
+        
+        UI.setView('view-login');
+      }
     });
-  } else {
-    html += emptyState('📭','Chưa có nhiệm vụ hôm nay','Nhấn "Tạo nhiệm vụ" để thêm!');
-  }
 
-  if (upcom.length) {
-    html += '<div class="sec" style="margin-top:.5rem">SẮP TỚI</div>';
-    upcom.forEach(function(t) {
-      html += buildManageTaskCard(t);
-    });
-  }
-
-  return html;
-}
-
-function buildManageTaskCard(t) {
-  var cfg      = DIFF_CONFIG[t.difficulty];
-  var assigned = getAssignedUsers(t);
-  var scoredCnt= assigned.filter(function(u){ return t.submissions[u]; }).length;
-
-  return '<div class="task-manage-card">'
-    + '<div class="task-manage-hdr">'
-    + '<div class="task-manage-info">'
-    + '<div class="task-manage-name">' + h(t.title) + '</div>'
-    + '<div class="task-manage-meta">'
-    + '<span class="chip ' + cfg.chip + '">' + cfg.label + ' · ' + cfg.pts + 'đ</span>'
-    + assigned.map(function(u){ return '<span class="chip chip-' + PLAYERS[u].theme + '">' + PLAYERS[u].avatar + ' ' + PLAYERS[u].name + '</span>'; }).join('')
-    + '<span style="font-size:.65rem;color:var(--mu)">✅ ' + scoredCnt + '/' + assigned.length + '</span>'
-    + '</div>'
-    + '</div>'
-    + '<div class="task-manage-actions">'
-    + '<button class="btn-sm btn-score"  onclick="openScoreSheet(\'' + t.id + '\')">Chấm</button>'
-    + '<button class="btn-sm btn-del"    onclick="confirmDeleteTask(\'' + t.id + '\')">🗑</button>'
-    + '</div>'
-    + '</div></div>';
-}
-
-/* ═══════════════════════════════════════════════════════
-   OVERLAYS
-═══════════════════════════════════════════════════════ */
-function openOverlay(html) {
-  g('overlay-body').innerHTML = html;
-  g('main-overlay').classList.add('open');
-}
-function closeOverlay() {
-  g('main-overlay').classList.remove('open');
-}
-function overlayBgClick(e) { if (e.target === g('main-overlay')) closeOverlay(); }
-
-/* ── Create Task ── */
-var _selectedAssign = 'both';
-function openCreateTask() {
-  _selectedAssign = 'both';
-  var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate());
-  var defDate  = today();
-
-  openOverlay('<div class="overlay-title ff">➕ Tạo nhiệm vụ mới</div>'
-    + '<div class="form-group"><label class="form-label">Tên nhiệm vụ *</label>'
-    + '<input class="form-input" id="f-title" placeholder="VD: Làm bài tập Toán..." maxlength="60"></div>'
-    + '<div class="form-group"><label class="form-label">Mô tả (tùy chọn)</label>'
-    + '<textarea class="form-textarea" id="f-desc" placeholder="Chi tiết nhiệm vụ..."></textarea></div>'
-
-```
-+ '<div class="form-row">'
-+ '<div class="form-group"><label class="form-label">Độ khó</label>'
-+ '<select class="form-select" id="f-diff" onchange="updateTaskPreview()">'
-+ '<option value="1">🟢 Dễ - 10 điểm</option>'
-+ '<option value="2" selected>🔵 Trung - 20 điểm</option>'
-+ '<option value="3">🟠 Khó - 40 điểm</option>'
-+ '<option value="4">🔴 Boss - 80 điểm</option>'
-+ '</select></div>'
-+ '<div class="form-group"><label class="form-label">Ngày</label>'
-+ '<input class="form-input" id="f-date" type="date" value="' + defDate + '"></div>'
-+ '</div>'
-+ '<div class="form-group"><label class="form-label">Giao cho</label>'
-+ '<div class="toggle-group">'
-+ '<button class="toggle-opt sel-bl" id="tog-baolam" onclick="toggleAssign(\'baolam\')">🏀 Bảo Lâm</button>'
-+ '<button class="toggle-opt sel-pi" id="tog-baolinh" onclick="toggleAssign(\'baolinh\')">⭐ Bảo Linh</button>'
-+ '<button class="toggle-opt sel-or" id="tog-both"    onclick="toggleAssign(\'both\')"   style="border-color:var(--or);background:rgba(255,107,0,.12);color:var(--orl)">👥 Cả hai</button>'
-+ '</div></div>'
-+ '<div id="task-preview" style="background:var(--cd2);border-radius:var(--r);padding:.75rem;margin-bottom:1rem;font-size:.82rem;color:var(--mu);font-weight:700">'
-+ '📊 Trung · Điểm tối đa: <span style="color:var(--ye)">30</span> · EXP: <span style="color:var(--bl)">10</span>'
-+ '</div>'
-+ '<button class="btn-primary" onclick="submitCreateTask()">Tạo nhiệm vụ 🚀</button>'
-+ '<button class="btn-secondary" onclick="closeOverlay()">Huỷ</button>');
-```
-
-updateTaskPreview();
-}
-
-function toggleAssign(val) {
-_selectedAssign = val;
-[‘baolam’,‘baolinh’,‘both’].forEach(function(v) {
-var btn = g(‘tog-’ + v);
-if (!btn) return;
-if (v === val) {
-btn.classList.add(v === ‘baolam’ ? ‘sel-bl’ : v === ‘baolinh’ ? ‘sel-pi’ : ‘sel-or’);
-} else {
-btn.classList.remove(‘sel-bl’,‘sel-pi’,‘sel-or’);
-}
-});
-updateTaskPreview();
-}
-window.toggleAssign = toggleAssign;
-
-function updateTaskPreview() {
-var diff = parseInt((g(‘f-diff’) || {value:‘2’}).value);
-var cfg  = DIFF_CONFIG[diff];
-var who  = _selectedAssign === ‘both’ ? ‘Bảo Lâm & Bảo Linh’ : PLAYERS[_selectedAssign].name;
-var pr   = g(‘task-preview’);
-if (pr) pr.innerHTML = ‘👤 ’ + who + ’ · ’ + cfg.label
-+ ’ · Tối đa: <span style="color:var(--ye)">’ + Math.round(cfg.pts * 1.5) + ’ điểm</span>’
-+ ’ · EXP: <span style="color:var(--bl)">’ + cfg.exp + ‘</span>’;
-}
-window.updateTaskPreview = updateTaskPreview;
-
-function submitCreateTask() {
-var title = (g(‘f-title’).value || ‘’).trim();
-var desc  = (g(‘f-desc’).value  || ‘’).trim();
-var diff  = g(‘f-diff’).value;
-var date  = g(‘f-date’).value;
-
-if (!title) { toast(‘❌ Nhập tên nhiệm vụ!’); return; }
-createTask({ title:title, desc:desc, difficulty:diff, assignedTo:_selectedAssign, date:date });
-closeOverlay();
-toast(’✅ Đã tạo nhiệm vụ: ’ + title);
-renderTab(SESSION.tab);
-}
-window.submitCreateTask = submitCreateTask;
-
-/* ── Score Sheet ── */
-var _scoreTaskId = null;
-var _scoringUser = null;
-var _selectedQuality = null;
-
-function openScoreSheet(taskId) {
-_scoreTaskId = taskId;
-var task     = DB.tasks.find(function(t){ return t.id === taskId; });
-if (!task) return;
-var assigned = getAssignedUsers(task);
-var unscored = assigned.filter(function(u){ return !task.submissions[u]; });
-if (!unscored.length) { toast(‘✅ Đã chấm hết rồi!’); return; }
-
-_scoringUser    = unscored[0];
-_selectedQuality= null;
-
-var pl  = PLAYERS[_scoringUser];
-var cfg = DIFF_CONFIG[task.difficulty];
-
-openOverlay(’<div class="overlay-title ff">✏️ Chấm điểm</div>’
-+ ‘<div class="score-task-info">’
-+ ‘<div style="font-weight:900;font-size:.95rem;margin-bottom:.3rem">’ + h(task.title) + ‘</div>’
-+ ‘<div style="font-size:.75rem;color:var(--mu);font-weight:700">’ + cfg.label + ’ · Tối đa: ’ + Math.round(cfg.pts*1.5) + ’ điểm · ’ + cfg.exp + ’ EXP</div>’
-+ ‘</div>’
-+ (unscored.length > 1 ? ‘<div class="form-group"><label class="form-label">Chọn người chơi</label><div class="toggle-group" id="score-user-tog">’
-+ unscored.map(function(u){ return ‘<button class="toggle-opt ' + (u===_scoringUser?'sel-'+ PLAYERS[u].theme:'') + '" onclick="selectScoringUser(\'' + u + '\')">’ + PLAYERS[u].avatar + ’ ’ + PLAYERS[u].name + ‘</button>’; }).join(’’) + ‘</div></div>’ : ‘’)
-+ ‘<div class="form-group"><label class="form-label">’ + pl.avatar + ’ ’ + pl.name + ’ - Đánh giá chất lượng</label>’
-+ ‘<div class="quality-grid" id="quality-grid">’
-+ buildQualityOpts(cfg.pts)
-+ ‘</div></div>’
-+ ‘<div class="form-group"><label class="form-label">Ghi chú (tùy chọn)</label>’
-+ ‘<input class="form-input" id="score-note" placeholder="Nhận xét cho bé..."></div>’
-+ ‘<div id="preview-pts-wrap" style="display:none" class="preview-pts" style="margin-bottom:1rem">’
-+ ‘<div style="font-size:.75rem;color:var(--mu);font-weight:700;margin-bottom:.25rem">Điểm sẽ nhận</div>’
-+ ‘<div class="preview-pts-num" style="color:var(--ye)" id="preview-pts-num">-</div>’
-+ ‘</div>’
-+ ‘<button class="btn-primary" onclick="submitScore()">💾 Lưu điểm</button>’
-+ ‘<button class="btn-secondary" onclick="closeOverlay()">Huỷ</button>’);
-}
-window.openScoreSheet = openScoreSheet;
-
-function buildQualityOpts(basePts) {
-return Object.keys(QUALITY_CONFIG).map(function(qk) {
-var qcfg = QUALITY_CONFIG[qk];
-var pts  = Math.round(basePts * qcfg.mult);
-return ‘<div class="quality-opt" id="qopt-' + qk + '" onclick="selectQuality(\'' + qk + '\',' + basePts + ')">’
-+ ‘<div class="quality-opt-name">’ + qcfg.icon + ’ ’ + qcfg.label + ‘</div>’
-+ ‘<div class="quality-opt-mult">x’ + qcfg.mult + ‘</div>’
-+ ‘<div class="quality-opt-pts" style="color:var(--ye)">’ + pts + ’ điểm</div>’
-+ ‘</div>’;
-}).join(’’);
-}
-
-function selectScoringUser(userId) {
-_scoringUser = userId;
-var unscored = getAssignedUsers(DB.tasks.find(function(t){ return t.id === _scoreTaskId; })).filter(function(u){ return !DB.tasks.find(function(t){ return t.id===_scoreTaskId; }).submissions[u]; });
-unscored.forEach(function(u) {
-var btn = document.querySelector(’#score-user-tog [onclick=“selectScoringUser('’ + u + ‘')”]’);
-if (btn) { btn.className = ’toggle-opt ’ + (u === userId ? ‘sel-’ + PLAYERS[u].theme : ‘’); }
-});
-_selectedQuality = null;
-var task = DB.tasks.find(function(t){ return t.id === _scoreTaskId; });
-var cfg  = DIFF_CONFIG[task.difficulty];
-var grid = g(‘quality-grid’); if (grid) grid.innerHTML = buildQualityOpts(cfg.pts);
-}
-window.selectScoringUser = selectScoringUser;
-
-function selectQuality(qk, basePts) {
-_selectedQuality = qk;
-Object.keys(QUALITY_CONFIG).forEach(function(k) {
-var el = g(‘qopt-’ + k);
-if (el) el.className = ‘quality-opt’ + (k === qk ? ’ sel-’ + QUALITY_CONFIG[k].cls.replace(‘sel-’,’’) : ‘’);
-});
-var pts  = Math.round(basePts * QUALITY_CONFIG[qk].mult);
-var wrap = g(‘preview-pts-wrap’);
-var num  = g(‘preview-pts-num’);
-if (wrap) wrap.style.display = ‘block’;
-var _previewTask = DB.tasks.find(function(t){return t.id===_scoreTaskId;});
-var _previewExp  = _previewTask ? DIFF_CONFIG[_previewTask.difficulty].exp : 0;
-if (num)  num.textContent = ‘+’ + pts + ’ diem  +’ + _previewExp + ’ EXP’;
-}
-window.selectQuality = selectQuality;
-
-function submitScore() {
-if (!_selectedQuality) { toast(‘❌ Chọn chất lượng!’); return; }
-var note   = (g(‘score-note’).value || ‘’).trim();
-var result = scoreTask(_scoreTaskId, _scoringUser, _selectedQuality, note);
-closeOverlay();
-toast(‘💾 Đã chấm: +’ + result.pts + ’ điểm, +’ + result.exp + ’ EXP’);
-updateTopBar();
-renderTab(SESSION.tab);
-}
-window.submitScore = submitScore;
-
-function openScoreAll() { renderTab(‘tasks’); }
-window.openScoreAll = openScoreAll;
-
-function confirmDeleteTask(taskId) {
-var task = DB.tasks.find(function(t){ return t.id === taskId; });
-if (!task) return;
-openOverlay(’<div class="overlay-title ff">🗑 Xoá nhiệm vụ?</div>’
-+ ‘<div class="score-task-info"><div style="font-weight:900">’ + h(task.title) + ‘</div></div>’
-+ ‘<div style="font-size:.85rem;color:var(--mu);font-weight:700;text-align:center;margin-bottom:1.2rem">Hành động này không thể hoàn tác!</div>’
-+ ‘<button class="btn-primary" style="background:linear-gradient(135deg,var(--rd),#c62a47)" onclick="doDeleteTask(\'' + taskId + '\')">Xoá</button>’
-+ ‘<button class="btn-secondary" onclick="closeOverlay()">Huỷ</button>’);
-}
-window.confirmDeleteTask = confirmDeleteTask;
-
-function doDeleteTask(taskId) {
-deleteTask(taskId);
-closeOverlay();
-toast(‘🗑 Đã xoá nhiệm vụ’);
-renderTab(SESSION.tab);
-}
-window.doDeleteTask = doDeleteTask;
-
-/* ═══════════════════════════════════════════════════════
-PASSWORD FLOW
-═══════════════════════════════════════════════════════ */
-function showPwdSheet(role) {
-SESSION.pwdTarget = role;
-g(‘pwd-title’).textContent = role === ‘me’ ? ‘👩 Mẹ - Nhập mật khẩu’ : ‘👨 Bố - Nhập mật khẩu’;
-g(‘pwd-input’).value = ‘’;
-g(‘pwd-err’).textContent = ‘’;
-g(‘pwd-overlay’).classList.add(‘open’);
-setTimeout(function(){ g(‘pwd-input’).focus(); }, 350);
-}
-function closePwdSheet() { g(‘pwd-overlay’).classList.remove(‘open’); }
-function submitPwd() {
-var val  = g(‘pwd-input’).value;
-var role = SESSION.pwdTarget;
-var correct = role === ‘me’ ? PWD_ME : PWD_DAD;
-if (val === correct) {
-closePwdSheet();
-loginParent(role);
-} else {
-g(‘pwd-err’).textContent = ‘❌ Sai mật khẩu. Thử lại!’;
-g(‘pwd-input’).value = ‘’;
-g(‘pwd-input’).focus();
-}
-}
-window.submitPwd = submitPwd;
-window.closePwdSheet = closePwdSheet;
-
-// auto-submit on 6 chars
-document.addEventListener(‘input’, function(e) {
-if (e.target.id === ‘pwd-input’ && e.target.value.length === 6) submitPwd();
-});
-document.addEventListener(‘keydown’, function(e) {
-if (e.key === ‘Enter’ && g(‘pwd-overlay’).classList.contains(‘open’)) submitPwd();
-if (e.key === ‘Escape’) { closePwdSheet(); closeOverlay(); closeLU(); }
-});
-
-/* ═══════════════════════════════════════════════════════
-LEVEL UP & FX
-═══════════════════════════════════════════════════════ */
-function showLU(icon, title, msg) {
-g(‘lu-emoji’).textContent = icon;
-g(‘lu-title’).textContent = title;
-g(‘lu-msg’).textContent   = msg;
-g(‘lu-overlay’).classList.add(‘show’);
-}
-function closeLU() { g(‘lu-overlay’).classList.remove(‘show’); }
-window.closeLU = closeLU;
-
-var _tt;
-function toast(msg) {
-var t = g(‘toast’); if (!t) return;
-t.textContent = msg; t.classList.add(‘show’);
-clearTimeout(_tt); _tt = setTimeout(function(){ t.classList.remove(‘show’); }, 2400);
-}
-
-function confetti(n) {
-var cols = [’#FF6B00’,’#FFD600’,’#00E676’,’#29B6F6’,’#CE93D8’,’#FF5252’];
-for (var i=0;i<n;i++) {
-var el = document.createElement(‘div’); el.className = ‘confetti-pc’;
-el.style.cssText = ‘left:’ + (Math.random()*100) + ‘vw;top:-10px;background:’ + cols[Math.floor(Math.random()*cols.length)] + ‘;width:’ + (4+Math.random()*8) + ‘px;height:’ + (4+Math.random()*8) + ‘px;animation-duration:’ + (1.5+Math.random()*2) + ‘s;animation-delay:’ + (Math.random()*.5) + ‘s;’;
-document.body.appendChild(el);
-setTimeout(function(){ el.remove(); }, 4000);
-}
-}
-
-/* ═══════════════════════════════════════════════════════
-MISC HELPERS
-═══════════════════════════════════════════════════════ */
-function g(id)   { return document.getElementById(id); }
-function h(s)    { return String(s).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’); }
-
-function emptyState(ico, title, sub) {
-return ‘<div class="card" style="text-align:center;padding:2rem 1rem">’
-+ ‘<div style="font-size:2.8rem;margin-bottom:.5rem">’ + ico + ‘</div>’
-+ ‘<div style="font-weight:900;font-size:1rem;margin-bottom:.3rem">’ + title + ‘</div>’
-+ ‘<div style="font-size:.8rem;color:var(--mu);font-weight:700">’ + sub + ‘</div>’
-+ ‘</div>’;
-}
-
-/* logout */
-g(‘btn-logout’).addEventListener(‘click’, function() {
-SESSION.role = null; SESSION.userId = null;
-g(‘game-screen’).style.display = ‘none’;
-g(‘login-screen’).style.display = ‘flex’;
-});
-
-/* sample data for demo */
-function seedDemoData() {
-if (DB.tasks.length > 0) return; // already has data
-var samples = [
-{title:‘Đánh răng buổi sáng’,   desc:‘Đánh đúng 2 phút’, difficulty:1, assignedTo:‘both’,     date:today()},
-{title:‘Dọn phòng ngủ’,         desc:‘Gấp chăn, dọn đồ chơi’, difficulty:1, assignedTo:‘both’,date:today()},
-{title:‘Làm bài tập Toán’,      desc:‘Hoàn thành hết bài trong sách’, difficulty:2, assignedTo:‘baolam’, date:today()},
-{title:‘Đọc sách 20 phút’,      desc:‘Đọc cuốn đang đọc’, difficulty:2, assignedTo:‘baolinh’, date:today()},
-{title:‘Tập bóng rổ 30 phút’,   desc:‘Luyện dribble và ném rổ’, difficulty:3, assignedTo:‘baolam’, date:today()},
-];
-samples.forEach(function(s){ createTask(s); });
-}
-
-/* ═══════════════════════════════════════════════════════
-INIT
-═══════════════════════════════════════════════════════ */
-(function init() {
-loadDB();
-seedDemoData();
-
-// init level tracker
-[‘baolam’,‘baolinh’].forEach(function(uid){ _prevLevels[uid] = getLvObj(uid).lv; });
-})();
-</script>
-
+  </script>
 </body>
 </html>
