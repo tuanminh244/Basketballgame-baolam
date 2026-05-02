@@ -1,723 +1,289 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Family Gamification</title>
-  <style>
-    /* --- CSS RESET & VARIABLES --- */
-    :root {
-      --primary: #4F46E5;
-      --primary-hover: #4338CA;
-      --bg: #F9FAFB;
-      --card-bg: #FFFFFF;
-      --text: #111827;
-      --text-muted: #6B7280;
-      --border: #E5E7EB;
-      --success: #10B981;
-      --danger: #EF4444;
-      --warning: #F59E0B;
-      --radius: 8px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      line-height: 1.5;
-    }
-    .container { width: 100%; max-width: 600px; }
-    
-    /* --- UTILITIES --- */
-    .hidden { display: none !important; }
-    .card {
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: var(--radius);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-    }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
-    .flex-gap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    
-    /* --- TYPOGRAPHY & FORMS --- */
-    h1, h2, h3 { margin-top: 0; color: var(--text); }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 16px;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
-    select:disabled { background-color: #F3F4F6; cursor: not-allowed; }
-    
-    /* --- BUTTONS --- */
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    button:hover:not(:disabled) { background-color: var(--primary-hover); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-danger { background-color: var(--danger); }
-    .btn-danger:hover:not(:disabled) { background-color: #DC2626; }
-    .btn-success { background-color: var(--success); }
-    .btn-success:hover:not(:disabled) { background-color: #059669; }
-    .btn-outline { background-color: transparent; border: 1px solid var(--border); color: var(--text); }
-    .btn-outline:hover:not(:disabled) { background-color: #F3F4F6; }
-    
-    /* --- COMPONENTS --- */
-    .badge {
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-TODO { background: #FEF3C7; color: #92400E; }
-    .badge-PENDING_APPROVAL { background: #DBEAFE; color: #1E40AF; }
-    .badge-APPROVED { background: #D1FAE5; color: #065F46; }
-    .badge-REJECTED { background: #FEE2E2; color: #991B1B; }
-    .badge-FAILED { background: #E5E7EB; color: #374151; }
-    
-    .task-item {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      transition: all 0.2s ease-in-out;
-    }
-    .task-item:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .task-optimistic { opacity: 0.5; pointer-events: none; }
-    
-    /* --- PROFILE STATS --- */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 16px;
-    }
-    .stat-box {
-      background: var(--bg);
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .stat-value { font-size: 20px; font-weight: bold; color: var(--primary); }
-    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    /* --- TOAST NOTIFICATIONS --- */
-    #toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .toast {
-      padding: 12px 20px;
-      border-radius: 6px;
-      color: white;
-      font-weight: 500;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      animation: slideIn 0.3s ease-out forwards;
-      max-width: 300px;
-      word-break: break-word;
-    }
-    .toast.success { background-color: var(--success); }
-    .toast.error { background-color: var(--danger); }
-    .toast.warning { background-color: var(--warning); color: #fff; }
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
+  const firebaseConfig = {
+    apiKey: "AIzaSyCucj5cdrP8kAKLuMAPRpBD7o_xLFFcJFM",
+    authDomain: "level-nimbus-443009-i3.firebaseapp.com",
+    projectId: "level-nimbus-443009-i3",
+    storageBucket: "level-nimbus-443009-i3.firebasestorage.app",
+    messagingSenderId: "103072084205",
+    appId: "1:103072084205:web:7f348a01bc8622d7c01ce4"
+  };
 
-    /* --- SKELETON LOADING --- */
-    .skeleton {
-      background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-      background-size: 200% 100%;
-      animation: skeleton-loading 1.5s infinite;
-      border-radius: 4px;
-    }
-    .skeleton-text { height: 20px; margin-bottom: 8px; width: 100%; }
-    .skeleton-title { height: 24px; width: 60%; margin-bottom: 12px; }
-    @keyframes skeleton-loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* Overlay to prevent interaction during requests */
-    #global-lock {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 9998;
-      cursor: wait;
-    }
-  </style>
-</head>
-<body>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const functions = getFunctions(app, "asia-southeast1");
 
-  <div id="global-lock" class="hidden"></div>
-  <div id="toast-container"></div>
+  const api = {
+    login: httpsCallable(functions, 'authLogin'),
+    getProfile: httpsCallable(functions, 'getUserProfile'),
+    getTasks: httpsCallable(functions, 'getTodayTasks'),
+    submitTask: httpsCallable(functions, 'submitTask'),
+    approveTask: httpsCallable(functions, 'approveTask'),
+    approveBulkTasks: httpsCallable(functions, 'approveBulkTasks'),
+    rejectTask: httpsCallable(functions, 'rejectTask')
+  };
 
-  <div class="container">
-    <div id="view-login" class="card hidden">
-      <h2 style="text-align: center; margin-bottom: 24px;">Family Gamification</h2>
-      <form id="form-login">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" required autocomplete="username">
-        </div>
-        <div class="form-group">
-          <label for="pin">PIN (Parents only)</label>
-          <input type="password" id="pin" autocomplete="current-password">
-        </div>
-        <button type="submit" id="btn-login" style="width: 100%; margin-top: 8px;">Login</button>
-      </form>
-    </div>
-
-    <div id="view-dashboard" class="hidden">
-      
-      <div class="card">
-        <div class="flex-between">
-          <div>
-            <h2 id="ui-welcome" style="margin: 0;">Loading...</h2>
-            <div id="ui-role" style="font-size: 14px; color: var(--text-muted);"></div>
-          </div>
-          <button id="btn-logout" class="btn-outline btn-danger">Logout</button>
-        </div>
-        
-        <div class="stats-grid" id="ui-stats">
-          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Points</div></div>
-          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Level</div></div>
-          <div class="stat-box"><div class="stat-value skeleton skeleton-text"></div><div class="stat-label">Streak</div></div>
-        </div>
-      </div>
-
-      <div id="parent-controls" class="card hidden">
-        <label for="child-select">Select Child to View Tasks</label>
-        <div class="flex-gap">
-          <select id="child-select">
-            <option value="">Loading children...</option>
-          </select>
-          <button id="btn-refresh-parent" class="btn-outline">↻ Load</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="flex-between" style="margin-bottom: 16px;">
-          <h3 style="margin: 0;">Today's Tasks</h3>
-          <button id="btn-refresh-player" class="btn-outline hidden">↻ Refresh</button>
-        </div>
-        <div id="task-container">
-          </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    // 1. FIREBASE CONFIGURATION
-    const firebaseConfig = {
-      apiKey: "YOUR_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const functions = getFunctions(app, "asia-southeast1"); 
-
-    // API Callable References
-    const apiAuthLogin = httpsCallable(functions, 'authLogin');
-    const apiGetProfile = httpsCallable(functions, 'getUserProfile');
-    const apiGetTasks = httpsCallable(functions, 'getTodayTasks');
-    const apiSubmitTask = httpsCallable(functions, 'submitTask');
-    const apiApproveTask = httpsCallable(functions, 'approveTask');
-    const apiRejectTask = httpsCallable(functions, 'rejectTask');
-
-    // 2. STATE MANAGEMENT
-    const State = {
-      user: null, 
-      role: null, 
-      profile: null, 
-      children: [], 
+  const State = {
+      user: null,
+      role: null,
+      profile: null,
+      children: [],
       selectedChildId: null,
       tasks: [],
-      isRequestInFlight: false,
-      currentRequestId: 0 // 🔧 FIX: Prevent async race conditions on UI render
-    };
+      taskLocks: new Set(),
+      bulkLock: false,
+      qualityMap: {}
+  };
 
-    // 3. UTILITY FUNCTIONS
-    const Utils = {
-      generateIdempotencyKey: () => crypto.randomUUID(),
+  const Utils = {
+    uuid: () => crypto.randomUUID(),
+    showToast: (msg, type = "success") => {
+      const el = document.createElement('div'); el.className = `toast ${type}`; el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    },
+    setLock: (locked) => {
+      document.getElementById('global-lock').classList.toggle('hidden', !locked);
+    },
+    handleApiError: (err) => {
+      console.error(err);
       
-      // 🔧 FIX: Deep payload sanitization & validation
-      validateId: (id) => {
-        if (!id || typeof id !== 'string' || id.includes('/')) throw new Error("Invalid ID format");
-        return id;
-      },
+      const errorCode = err.code ? err.code.replace('functions/', '') : '';
+
+      if (errorCode === 'unavailable') {
+        Utils.showToast("Cannot connect to server. Please check deployment.", "error");
+      } else if (errorCode === 'unauthenticated') {
+        Utils.showToast("Session expired. Please login again.", "warning");
+      } else if (errorCode === 'aborted') {
+        document.getElementById('sync-banner').classList.remove('hidden');
+        Utils.showToast("Data conflict. Please refresh.", "warning");
+      } else if (errorCode === 'failed-precondition') {
+        Utils.showToast(err.message || "Action not allowed at this time.", "warning");
+      } else if (errorCode === 'already-exists') {
+        Utils.showToast("Action already in progress, please wait.", "warning");
+      } else {
+        Utils.showToast(err.message || "Unexpected error", "error");
+      }
+    }
+  };
+
+  const UI = {
+    setView(id) { document.querySelectorAll('.card:not(.task-item)').forEach(c => c.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); },
+    renderProfile() {
+      document.getElementById('ui-welcome').textContent = `Hello, ${State.user?.displayName || 'User'}`;
+      document.getElementById('ui-role').textContent = `Role: ${State.role}`;
+      if (State.profile) {
+        document.getElementById('ui-stats').innerHTML = `
+          <div class="stat-box"><div class="stat-value">${State.profile.points || 0}</div><div class="stat-label">Points</div></div>
+          <div class="stat-box"><div class="stat-value">${State.profile.level || 1}</div><div class="stat-label">Level</div></div>
+          <div class="stat-box"><div class="stat-value">${State.profile.current_streak || 0}</div><div class="stat-label">Streak</div></div>
+        `;
+      }
+    },
+    renderTasks() {
+      const container = document.getElementById('task-container');
+      container.innerHTML = '';
       
-      sanitizeString: (str, maxLen = 200) => {
-        if (!str || typeof str !== 'string') return '';
-        return str.trim().substring(0, maxLen);
-      },
+      let pendingCount = 0;
 
-      sleep: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
-
-      showToast: (msg, type = "success") => {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = msg || "An unexpected error occurred.";
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-      },
-
-      setGlobalLock: (isLocked) => {
-        State.isRequestInFlight = isLocked;
-        const lockEl = document.getElementById('global-lock');
-        if (isLocked) lockEl.classList.remove('hidden');
-        else lockEl.classList.add('hidden');
-      }
-    };
-
-    // 4. API LAYER (HARDENED ERROR BOUNDARIES)
-    const Api = {
-      async callWithRetry(callable, payload, retries = 2, delay = 500) {
-        try {
-          const res = await callable(payload);
-          if (!res || !res.data) throw new Error("Invalid response envelope from server");
-          if (!res.data.success) {
-            throw new Error(res.data.error?.message || "Operation failed on server");
-          }
-          return res.data.data;
-        } catch (error) {
-          // 🔧 FIX: Structured logging for debugability without leaking to UI
-          console.error(`[API_ERROR] ${callable.name || 'Request'}:`, error);
-          
-          // 🔧 FIX: Retry ONLY safe transient network errors
-          const isNetworkError = error.code && ['unavailable', 'deadline-exceeded', 'internal'].includes(error.code);
-          if (retries > 0 && isNetworkError) {
-            console.warn(`[API_RETRY] Retrying in ${delay}ms...`);
-            await Utils.sleep(delay);
-            return this.callWithRetry(callable, payload, retries - 1, delay * 2);
-          }
-          
-          let uxMessage = error.message;
-          if (error.code && error.code.startsWith('functions/')) {
-            uxMessage = "Unable to connect securely. Please check your network.";
-          }
-          throw new Error(uxMessage);
-        }
-      }
-    };
-
-    // 5. UI RENDER LAYER (WITH ERROR BOUNDARIES)
-    const UI = {
-      setView(viewId) {
-        document.getElementById('view-login').classList.add('hidden');
-        document.getElementById('view-dashboard').classList.add('hidden');
-        document.getElementById(viewId).classList.remove('hidden');
-      },
-
-      renderProfile() {
-        try {
-          const fallbackName = State.user?.displayName || State.user?.email || 'User';
-          document.getElementById('ui-welcome').textContent = `Hello, ${fallbackName}`;
-          document.getElementById('ui-role').textContent = `Role: ${(State.role || 'Unknown').toUpperCase()}`;
-          
-          if (State.profile) {
-            const html = `
-              <div class="stat-box"><div class="stat-value">${State.profile.current_points || 0}</div><div class="stat-label">Points</div></div>
-              <div class="stat-box"><div class="stat-value">${State.profile.current_level || 1}</div><div class="stat-label">Level</div></div>
-              <div class="stat-box"><div class="stat-value">${State.profile.current_streak || 0}</div><div class="stat-label">Streak (Days)</div></div>
-            `;
-            document.getElementById('ui-stats').innerHTML = html;
-          }
-        } catch (err) {
-          console.error("[RENDER_ERROR] Profile:", err);
-        }
-      },
-
-      renderParentControls() {
-        if (State.role === 'player') {
-          document.getElementById('parent-controls').classList.add('hidden');
-          document.getElementById('btn-refresh-player').classList.remove('hidden');
-          return;
-        }
-        
-        document.getElementById('parent-controls').classList.remove('hidden');
-        const select = document.getElementById('child-select');
-        select.innerHTML = '<option value="">-- Select a child --</option>';
-        
-        if (State.children && State.children.length > 0) {
-          State.children.forEach(child => {
-            const opt = document.createElement('option');
-            opt.value = child.id;
-            opt.textContent = child.username || child.id;
-            select.appendChild(opt);
-          });
-          select.disabled = false;
-        } else {
-          select.innerHTML = '<option value="">No players found</option>';
-          select.disabled = true;
-        }
-      },
-
-      renderTasksLoading() {
-        document.getElementById('task-container').innerHTML = `
-          <div class="task-item skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
-          <div class="task-item skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
-        `;
-      },
-
-      renderTasksEmpty() {
-        document.getElementById('task-container').innerHTML = `
-          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
-            <svg style="width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-            <p style="margin: 0; font-weight: 500;">No tasks available right now.</p>
-          </div>
-        `;
-      },
-
-      renderTasksList() {
-        // 🔧 FIX: Error boundary for main list rendering
-        try {
-          if (!State.tasks || State.tasks.length === 0) {
-            return this.renderTasksEmpty();
-          }
-
-          const container = document.getElementById('task-container');
-          container.innerHTML = ''; 
-
+      if (!State.tasks.length) {
+          container.innerHTML = '<p class="text-muted">No tasks available.</p>';
+      } else {
           State.tasks.forEach(task => {
-            const item = document.createElement('div');
-            item.className = 'task-item';
-            item.id = `task-card-${task.id}`;
-            
-            const statusDisplay = (task.status || 'UNKNOWN').replace('_', ' ');
-            const titleSafe = Utils.sanitizeString(task.title, 100) || 'Unnamed Task';
-            const diffSafe = task.difficulty || 'N/A';
-            const pointsSafe = task.base_points || 0;
-            
-            item.innerHTML = `
-              <div class="flex-between" style="margin-bottom: 8px;">
-                <span style="font-weight: bold; font-size: 16px;">${titleSafe}</span>
-                <span class="badge badge-${task.status}">${statusDisplay}</span>
-              </div>
-              <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">
-                Diff: ${diffSafe} • Base: ${pointsSafe} pts
+              if (task.status === 'PENDING_APPROVAL') pendingCount++;
+              const isLocked = State.taskLocks.has(task.id) || State.bulkLock;
+              
+              const item = document.createElement('div');
+              item.className = `task-item ${isLocked ? 'loading' : ''}`;
+              item.id = `task-${task.id}`;
+              item.innerHTML = `
+              <div class="flex-between">
+                  <strong>${task.snapshot?.title || 'Task'}</strong>
+                  <span class="badge badge-${task.status}">${task.status.replace('_', ' ')}</span>
               </div>
               <div id="actions-${task.id}" class="flex-gap" style="margin-top: 12px;"></div>
-            `;
-            
-            container.appendChild(item);
-            this.attachTaskActions(task, document.getElementById(`actions-${task.id}`));
+              `;
+              container.appendChild(item);
+
+              const actions = item.querySelector(`#actions-${task.id}`);
+              
+              if (State.role === 'player' && ['TODO', 'REJECTED'].includes(task.status)) {
+                  const btn = document.createElement('button'); btn.className = 'btn-success'; btn.textContent = 'Submit';
+                  btn.disabled = isLocked;
+                  btn.onclick = () => Handlers.executeTaskAction(task.id, api.submitTask, { log_id: task.id, version: task.version, idempotency_key: Utils.uuid() });
+                  actions.appendChild(btn);
+              } 
+              else if (State.role !== 'player' && task.status === 'PENDING_APPROVAL') {
+                  if (!State.qualityMap[task.id]) {
+                      State.qualityMap[task.id] = "PASS";
+                  }
+
+                  const select = document.createElement('select');
+                  select.disabled = isLocked;
+                  select.innerHTML = `<option value="PASS">Pass</option><option value="GOOD">Good</option><option value="EXCELLENT">Excellent</option>`;
+                  select.value = State.qualityMap[task.id];
+                  select.onchange = (e) => { State.qualityMap[task.id] = e.target.value; };
+                  
+                  const btnApprove = document.createElement('button'); btnApprove.className = 'btn-success'; btnApprove.textContent = 'Approve';
+                  btnApprove.disabled = isLocked;
+                  btnApprove.onclick = () => {
+                      const quality = State.qualityMap[task.id];
+                      Handlers.executeTaskAction(task.id, api.approveTask, { log_id: task.id, quality_rating: quality, version: task.version, idempotency_key: Utils.uuid() });
+                  };
+                  
+                  const btnReject = document.createElement('button'); btnReject.className = 'btn-danger btn-outline'; btnReject.textContent = 'Reject';
+                  btnReject.disabled = isLocked;
+                  btnReject.onclick = () => {
+                      const reason = prompt("Reason:"); if(!reason) return;
+                      Handlers.executeTaskAction(task.id, api.rejectTask, { log_id: task.id, reason, version: task.version, idempotency_key: Utils.uuid() });
+                  };
+                  
+                  actions.append(select, btnApprove, btnReject);
+              }
           });
-        } catch (err) {
-          console.error("[RENDER_ERROR] Tasks list:", err);
-          document.getElementById('task-container').innerHTML = `<p style="color:var(--danger)">Error rendering tasks. Please refresh.</p>`;
-        }
-      },
-
-      attachTaskActions(task, actionContainer) {
-        if (!actionContainer) return;
-
-        if (State.role === 'player') {
-          if (task.status === 'TODO' || task.status === 'REJECTED') {
-            const btn = document.createElement('button');
-            btn.className = 'btn-success';
-            btn.textContent = 'Submit Complete';
-            btn.onclick = () => Handlers.handleTaskAction(btn, task.id, apiSubmitTask, {
-              log_id: task.id,
-              version: task.version,
-              idempotency_key: Utils.generateIdempotencyKey()
-            });
-            actionContainer.appendChild(btn);
-          }
-        } 
-        else if (State.role === 'admin' || State.role === 'controller') {
-          if (task.status === 'PENDING_APPROVAL') {
-            const select = document.createElement('select');
-            select.innerHTML = `
-              <option value="PASS" selected>Pass (x1.0)</option>
-              <option value="GOOD">Good (x1.2)</option>
-              <option value="EXCELLENT">Excellent (x1.5)</option>
-              <option value="POOR">Poor (x0.5)</option>
-            `;
-            select.style.width = '140px';
-
-            const btnApprove = document.createElement('button');
-            btnApprove.className = 'btn-success';
-            btnApprove.textContent = 'Approve';
-            // 🔧 FIX: Select value read dynamically AT CLICK TIME to prevent stale closure payload
-            btnApprove.onclick = () => {
-              Handlers.handleTaskAction(btnApprove, task.id, apiApproveTask, {
-                log_id: task.id,
-                version: task.version,
-                quality_rating: select.value,
-                idempotency_key: Utils.generateIdempotencyKey()
-              });
-            };
-
-            const btnReject = document.createElement('button');
-            btnReject.className = 'btn-danger btn-outline';
-            btnReject.textContent = 'Reject';
-            btnReject.onclick = () => {
-              const reasonRaw = prompt("Enter reason for rejection:");
-              if (reasonRaw === null) return; // Cancelled
-              const reasonSafe = Utils.sanitizeString(reasonRaw, 200);
-              if (!reasonSafe) return Utils.showToast("Reason cannot be empty", "warning");
-
-              Handlers.handleTaskAction(btnReject, task.id, apiRejectTask, {
-                log_id: task.id,
-                version: task.version,
-                reason: reasonSafe,
-                idempotency_key: Utils.generateIdempotencyKey()
-              });
-            };
-
-            actionContainer.appendChild(select);
-            actionContainer.appendChild(btnApprove);
-            actionContainer.appendChild(btnReject);
-          }
-        }
       }
-    };
 
-    // 6. EVENT HANDLERS & BUSINESS LOGIC
-    const Handlers = {
-      async loadUserProfile() {
-        try {
-          const profileData = await Api.callWithRetry(apiGetProfile, {});
-          State.profile = profileData;
-          UI.renderProfile();
-        } catch (err) {
-          Utils.showToast("Warning: Could not load profile stats", "warning");
-        }
-      },
-
-      async loadChildrenList() {
-        const select = document.getElementById('child-select');
-        select.disabled = true;
-        select.innerHTML = '<option value="">Loading children...</option>';
-
-        try {
-          // 🔧 FIX: Securely querying users using Firestore SDK
-          // Note: Security rules should allow filtering users where role=player 
-          // Future-proofing: where("parent_id", "==", State.user.uid) can be added here
-          const q = query(collection(db, "users"), where("role", "==", "player"));
-          const snap = await getDocs(q);
-          State.children = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          UI.renderParentControls();
-        } catch (err) {
-          console.error("[FIRESTORE_ERROR] Children query:", err);
-          Utils.showToast("Failed to load children list.", "error");
-          select.innerHTML = '<option value="">Error loading</option>';
-        }
-      },
-
-      async loadTasks() {
-        if (State.role !== 'player' && !State.selectedChildId) {
-          return UI.renderTasksEmpty();
-        }
-
-        UI.renderTasksLoading();
-        
-        // 🔧 FIX: Request ID Guard pattern to prevent old responses overwriting new ones
-        State.currentRequestId++;
-        const reqId = State.currentRequestId;
-        
-        const payload = {};
-        if (State.role !== 'player') {
-          payload.assignee_id = Utils.validateId(State.selectedChildId);
-        }
-
-        try {
-          const result = await Api.callWithRetry(apiGetTasks, payload);
-          if (State.currentRequestId !== reqId) return; // Ignore stale request
-          
-          State.tasks = result.tasks || [];
-          UI.renderTasksList();
-        } catch (err) {
-          if (State.currentRequestId !== reqId) return;
-          document.getElementById('task-container').innerHTML = `<p style="color:var(--danger)">Failed to load tasks.</p>`;
-          Utils.showToast(err.message, "error");
-        }
-      },
-
-      async handleTaskAction(btnElement, taskId, apiCall, payload) {
-        if (State.isRequestInFlight) return;
-        
-        // 🔧 FIX: Lightweight optimistic UI feedback
-        const taskCard = document.getElementById(`task-card-${taskId}`);
-        if (taskCard) taskCard.classList.add('task-optimistic');
-
-        const originalText = btnElement.textContent;
-        
-        try {
-          Utils.setGlobalLock(true);
-          btnElement.disabled = true;
-          btnElement.textContent = "...";
-          
-          console.info(`[ACTION_START] Call`, payload);
-          payload.log_id = Utils.validateId(payload.log_id);
-
-          await Api.callWithRetry(apiCall, payload);
-          Utils.showToast("Action completed successfully!");
-          
-          // Refresh state globally
-          await Promise.all([
-            Handlers.loadTasks(),
-            Handlers.loadUserProfile()
-          ]);
-
-        } catch (err) {
-          Utils.showToast(err.message, "error");
-          btnElement.textContent = originalText;
-          btnElement.disabled = false;
-          if (taskCard) taskCard.classList.remove('task-optimistic');
-        } finally {
-          // 🔧 FIX: Guaranteed unlock preventing dead UI state
-          Utils.setGlobalLock(false);
-        }
-      },
-
-      async handleLogin(e) {
-        e.preventDefault();
-        if (State.isRequestInFlight) return;
-        
-        const rawUsername = document.getElementById('username').value;
-        const rawPin = document.getElementById('pin').value;
-        
-        const username = Utils.sanitizeString(rawUsername, 50);
-        if (!username) return Utils.showToast("Username required", "warning");
-
-        const btn = document.getElementById('btn-login');
-        const originalText = btn.textContent;
-        
-        try {
-          Utils.setGlobalLock(true);
-          btn.textContent = "Authenticating...";
-
-          const res = await Api.callWithRetry(apiAuthLogin, { 
-            username, 
-            pin: Utils.sanitizeString(rawPin, 50) || null 
-          });
-          
-          // Implicitly triggers onAuthStateChanged
-          await signInWithCustomToken(auth, res.token);
-          
-        } catch (err) {
-          Utils.showToast(err.message, "error");
-          btn.textContent = originalText;
-        } finally {
-          Utils.setGlobalLock(false);
-        }
-      }
-    };
-
-    // 7. BIND DOM EVENTS
-    document.getElementById('form-login').addEventListener('submit', Handlers.handleLogin);
-    
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-      await signOut(auth);
-    });
-
-    document.getElementById('child-select').addEventListener('change', (e) => {
-      State.selectedChildId = e.target.value;
-      if (State.selectedChildId) Handlers.loadTasks();
-      else UI.renderTasksEmpty();
-    });
-
-    document.getElementById('btn-refresh-parent').addEventListener('click', () => {
-      if (State.selectedChildId) Handlers.loadTasks();
-    });
-
-    document.getElementById('btn-refresh-player').addEventListener('click', () => {
-      Handlers.loadTasks();
-    });
-
-    // 8. AUTH STATE OBSERVER (Routing & Bootstrapping)
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        console.info("[AUTH] Logged in as:", user.uid);
-        State.user = user;
-        UI.setView('view-dashboard');
-        
-        try {
-          const tokenResult = await user.getIdTokenResult();
-          State.role = tokenResult.claims.role || 'player';
-          
-          const initPromises = [Handlers.loadUserProfile()];
-          
-          if (State.role !== 'player') {
-            initPromises.push(Handlers.loadChildrenList());
-          } else {
-            UI.renderParentControls();
-            initPromises.push(Handlers.loadTasks());
-          }
-          
-          await Promise.all(initPromises);
-        } catch (err) {
-          console.error("[AUTH_INIT_ERROR]", err);
-          Utils.showToast("Session setup failed. Logging out.", "error");
-          signOut(auth);
-        }
+      const btnBulk = document.getElementById('btn-bulk-approve');
+      btnBulk.disabled = State.bulkLock;
+      if (State.role !== 'player' && pendingCount > 1) {
+          btnBulk.classList.remove('hidden');
       } else {
-        console.info("[AUTH] Logged out. Resetting state.");
-        
-        // 🔧 FIX: Strict state leakage prevention on logout
-        State.user = null;
-        State.role = null;
-        State.profile = null;
-        State.children = [];
-        State.selectedChildId = null;
-        State.tasks = [];
-        State.currentRequestId = 0;
-        
-        // Clear DOM safely
-        document.getElementById('form-login').reset();
-        document.getElementById('btn-login').textContent = "Login";
-        document.getElementById('task-container').innerHTML = '';
-        document.getElementById('ui-stats').innerHTML = '';
-        document.getElementById('child-select').innerHTML = '<option value="">Loading...</option>';
-        document.getElementById('ui-welcome').textContent = 'Loading...';
-        document.getElementById('ui-role').textContent = '';
-        
-        UI.setView('view-login');
+          btnBulk.classList.add('hidden');
       }
-    });
+    }
+  };
 
-  </script>
-</body>
-</html>
+  const Handlers = {
+    async refreshAll() {
+        document.getElementById('sync-banner').classList.add('hidden');
+        await Promise.all([this.loadProfile(), this.loadTasks()]);
+    },
+    async loadProfile() {
+      try { State.profile = (await api.getProfile()).data.data; UI.renderProfile(); } 
+      catch (e) { Utils.handleApiError(e); }
+    },
+    async loadTasks() {
+      try {
+        const payload = State.role !== 'player' ? { assignee_id: State.selectedChildId } : {};
+        if (State.role !== 'player' && !State.selectedChildId) return;
+        
+        State.tasks = (await api.getTasks(payload)).data.data.tasks;
+        UI.renderTasks();
+      } catch (e) { Utils.handleApiError(e); }
+    },
+    async executeTaskAction(taskId, apiCall, payload) {
+      if (State.bulkLock) {
+          Utils.showToast("Bulk operation in progress", "warning");
+          return;
+      }
+      if (State.taskLocks.has(taskId)) return;
+      
+      State.taskLocks.add(taskId);
+      UI.renderTasks(); 
+      
+      try {
+        await apiCall(payload);
+        Utils.showToast("Success");
+        await this.loadTasks(); 
+      } catch (e) {
+        Utils.handleApiError(e);
+      } finally {
+        State.taskLocks.delete(taskId);
+        UI.renderTasks(); 
+      }
+    },
+    async bulkApprove() {
+        if (State.bulkLock) return;
+        
+        const pending = State.tasks.filter(t => t.status === 'PENDING_APPROVAL');
+        if (!pending.length) return;
+
+        const task_ids = [];
+        const version_map = {};
+        const quality_map = {};
+
+        for (const task of pending) {
+            const q = State.qualityMap[task.id];
+            if (!q) {
+                Utils.showToast("Missing quality rating for one or more tasks.", "error");
+                return;
+            }
+            task_ids.push(task.id);
+            version_map[task.id] = task.version;
+            quality_map[task.id] = q;
+        }
+
+        State.bulkLock = true;
+        UI.renderTasks();
+
+        try {
+           const res = await api.approveBulkTasks({
+                task_ids, version_map, quality_map, idempotency_key: Utils.uuid()
+            });
+            if (res.data.data.tasks.length !== task_ids.length) {
+                Utils.showToast("Some tasks failed. Please refresh.", "warning");
+            } else {
+                Utils.showToast("All tasks approved");
+            }
+            await this.loadTasks();
+        } catch(e) {
+            Utils.handleApiError(e);
+        } finally {
+            State.bulkLock = false;
+            UI.renderTasks();
+        }
+    }
+  };
+
+  document.getElementById('form-login').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login-submit');
+      btn.disabled = true;
+      Utils.setLock(true);
+      try {
+          const username = document.getElementById('username').value;
+          const pin = document.getElementById('pin').value;
+          const res = await api.login({ username, pin });
+          await signInWithCustomToken(auth, res.data.data.token);
+      } catch (e) { 
+          Utils.handleApiError(e); 
+      } finally { 
+          btn.disabled = false;
+          Utils.setLock(false);
+      }
+  };
+  
+  document.getElementById('btn-logout').onclick = () => signOut(auth);
+  document.getElementById('btn-refresh-player').onclick = () => Handlers.refreshAll();
+  document.getElementById('btn-refresh-parent').onclick = () => Handlers.refreshAll();
+  document.getElementById('btn-bulk-approve').onclick = () => Handlers.bulkApprove();
+  document.getElementById('child-select').onchange = (e) => { State.selectedChildId = e.target.value; Handlers.refreshAll(); };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      State.user = user;
+      State.role = (await user.getIdTokenResult()).claims.role || 'player';
+      UI.setView('view-dashboard');
+      document.getElementById('parent-controls').classList.toggle('hidden', State.role === 'player');
+      document.getElementById('btn-refresh-player').classList.toggle('hidden', State.role !== 'player');
+      
+      Handlers.refreshAll();
+      if (State.role !== 'player') {
+          try {
+            const snap = await getDocs(query(collection(db, "users"), where("role", "==", "player")));
+            const sel = document.getElementById('child-select'); sel.innerHTML = '<option value="">Select Child</option>';
+            snap.docs.forEach(d => sel.add(new Option(d.data().username, d.id)));
+          } catch (e) {
+            console.error("Failed to load children", e);
+          }
+      }
+    } else {
+      State.profile = null; State.tasks = []; UI.setView('view-login');
+    }
+  });
+</script>
