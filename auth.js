@@ -11,15 +11,19 @@ export async function logout() {
 }
 
 export function observeAuth(callback) {
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const roleRef = ref(db, `users/${user.uid}/role`);
-      onValue(roleRef, (snap) => {
-        const role = snap.val() || 'player';
+      try {
+        const roleRef = ref(db, `users/${user.uid}/role`);
+        const snap = await get(roleRef);
+        const role = snap.exists() && snap.val() ? snap.val() : 'player';
         callback({ uid: user.uid, email: user.email, role });
-      }, { onlyOnce: true });
+      } catch (error) {
+        callback({ uid: user.uid, email: user.email, role: 'player' });
+      }
     } else {
       callback(null);
     }
   });
 }
+
