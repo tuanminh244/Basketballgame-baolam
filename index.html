@@ -1,486 +1,694 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
-  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  window.onerror = function (msg, src, line, col, err) {
-    console.error("GLOBAL ERROR:", msg, err);
-    if (window._showToast) {
-      window._showToast("App Error: " + msg, "error");
-    } else {
-      alert("App Error: " + msg);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Gamification</title>
+  <style>
+    :root {
+      --primary: #4F46E5; 
+      --primary-hover: #4338CA;
+      --bg: #F9FAFB; 
+      --card-bg: #FFFFFF;
+      --text: #111827; 
+      --text-muted: #6B7280;
+      --border: #E5E7EB;
+      --success: #10B981; 
+      --danger: #EF4444; 
+      --warning: #F59E0B;
+      --radius: 8px;
     }
-  };
-
-  window.onunhandledrejection = function (event) {
-    console.error("PROMISE ERROR:", event.reason);
-    const errorMsg = event.reason?.message || event.reason || "Unknown Promise Error";
-    if (window._showToast) {
-      window._showToast("Async Error: " + errorMsg, "error");
-    } else {
-      alert("Async Error: " + errorMsg);
+    * { box-sizing: border-box; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      margin: 0; 
+      padding: 20px; 
+      display: flex; 
+      justify-content: center; 
     }
-  };
+    .container { width: 100%; max-width: 600px; }
+    .hidden { display: none !important; }
+    .card { 
+      background: var(--card-bg); 
+      padding: 24px; 
+      border-radius: var(--radius); 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+      margin-bottom: 20px; 
+      border: 1px solid var(--border); 
+    }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-gap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    h1, h2, h3 { margin-top: 0; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+    input, select { 
+      width: 100%; 
+      padding: 10px; 
+      border: 1px solid var(--border); 
+      border-radius: 6px; 
+      font-size: 16px; 
+    }
+    button { 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      padding: 10px 16px; 
+      border-radius: 6px; 
+      font-size: 14px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) { background: var(--primary-hover); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-danger { background: var(--danger); }
+    .btn-success { background: var(--success); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+    .badge-TODO { background: #FEF3C7; color: #92400E; }
+    .badge-PENDING_APPROVAL { background: #DBEAFE; color: #1E40AF; }
+    .badge-APPROVED { background: #D1FAE5; color: #065F46; }
+    .badge-REJECTED { background: #FEE2E2; color: #991B1B; }
+    .task-item { 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius); 
+      padding: 16px; 
+      margin-bottom: 12px; 
+      transition: opacity 0.2s; 
+    }
+    .task-item.loading { opacity: 0.5; pointer-events: none; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .stat-box { 
+      background: var(--bg); 
+      padding: 12px; 
+      border-radius: 8px; 
+      text-align: center; 
+      border: 1px solid var(--border); 
+    }
+    .stat-value { font-size: 20px; font-weight: bold; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+    
+    #toast-container { 
+      position: fixed; top: 20px; right: 20px; z-index: 9999; 
+      display: flex; flex-direction: column; gap: 10px; 
+    }
+    .toast { 
+      padding: 12px 20px; border-radius: 6px; color: white; font-weight: 500; 
+      animation: slideIn 0.3s forwards; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #fff; }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    
+    #global-lock { 
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+      z-index: 9998; cursor: wait; background: rgba(255,255,255,0.5);
+    }
+    .refresh-banner { 
+      background: var(--warning); color: white; padding: 12px; text-align: center; 
+      border-radius: var(--radius); margin-bottom: 16px; font-weight: bold; cursor: pointer; 
+    }
+  </style>
+</head>
+<body>
+  <div id="global-lock" class="hidden"></div>
+  <div id="toast-container"></div>
 
-  function renderFallback(errorMsg = "Unknown Error") {
-    document.body.innerHTML = `<h2 style='padding: 20px; text-align: center; color: var(--danger, #EF4444);'>App failed to load.<br><small style='color: var(--text-muted, #6B7280); font-size: 14px;'>Check console for details. <br/>${errorMsg}</small></h2>`;
-  }
+  <div class="container">
+    <div id="view-login" class="card">
+      <h2 style="text-align: center;">Gamification Login</h2>
+      <form id="form-login">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+          <label for="pin">PIN</label>
+          <input type="password" id="pin">
+        </div>
+        <button type="submit" id="btn-login-submit" style="width: 100%;">Login</button>
+      </form>
+    </div>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    try {
-      console.log("App starting...");
+    <div id="view-dashboard" class="hidden">
+      <div id="sync-banner" class="refresh-banner hidden">
+        ⚠️ Data is out of sync. Click here to refresh.
+      </div>
 
-      const viewLogin = document.getElementById('view-login');
-      if (viewLogin) viewLogin.classList.remove('hidden');
+      <div class="card">
+        <div class="flex-between">
+          <div>
+            <h2 id="ui-welcome" style="margin: 0;">Loading...</h2>
+            <div id="ui-role" class="stat-label"></div>
+          </div>
+          <button id="btn-logout" class="btn-outline btn-danger">Logout</button>
+        </div>
+        <div class="stats-grid" id="ui-stats"></div>
+      </div>
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCucj5cdrP8kAKLuMAPRpBD7o_xLFFcJFM",
-        authDomain: "level-nimbus-443009-i3.firebaseapp.com",
-        projectId: "level-nimbus-443009-i3",
-        storageBucket: "level-nimbus-443009-i3.firebasestorage.app",
-        messagingSenderId: "103072084205",
-        appId: "1:103072084205:web:7f348a01bc8622d7c01ce4"
-      };
+      <div id="parent-controls" class="card hidden">
+        <label for="child-select">Select Child</label>
+        <div class="flex-gap">
+          <select id="child-select"><option value="">Loading...</option></select>
+          <button id="btn-refresh-parent" class="btn-outline">↻ Load</button>
+        </div>
+      </div>
 
-      let app, auth, db, functions, api;
+      <div class="card">
+        <div class="flex-between" style="margin-bottom: 16px;">
+          <h3 style="margin: 0;">Today's Tasks</h3>
+          <div class="flex-gap">
+            <button id="btn-bulk-approve" class="btn-success hidden">Approve All Pending</button>
+            <button id="btn-refresh-player" class="btn-outline hidden">↻ Refresh</button>
+          </div>
+        </div>
+        <div id="task-container"></div>
+      </div>
+    </div>
+  </div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    window.onerror = function (msg, src, line, col, err) {
+      console.error(`GLOBAL ERROR:`, msg, err);
+      if (window._showToast) {
+        window._showToast(`App Error: ${msg}`, `error`);
+      } else {
+        alert(`App Error: ${msg}`);
+      }
+    };
+
+    window.onunhandledrejection = function (event) {
+      console.error(`PROMISE ERROR:`, event.reason);
+      const errorMsg = event.reason?.message || event.reason || `Unknown Promise Error`;
+      if (window._showToast) {
+        window._showToast(`Async Error: ${errorMsg}`, `error`);
+      } else {
+        alert(`Async Error: ${errorMsg}`);
+      }
+    };
+
+    function renderFallback(errorMsg = `Unknown Error`) {
+      document.body.innerHTML = `<h2 style='padding: 20px; text-align: center; color: var(--danger, #EF4444);'>App failed to load.<br><small style='color: var(--text-muted, #6B7280); font-size: 14px;'>Check console for details. <br/>${errorMsg}</small></h2>`;
+    }
+
+    document.addEventListener(`DOMContentLoaded`, () => {
       try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+        console.log(`App starting...`);
 
-        const FUNCTIONS_REGION = "asia-southeast1"; 
-        functions = getFunctions(app, FUNCTIONS_REGION);
-        
-        console.log("Firebase initialized");
-        console.log(`Using region: ${FUNCTIONS_REGION}`);
-
-        api = {
-          login: httpsCallable(functions, 'authLogin'),
-          getProfile: httpsCallable(functions, 'getUserProfile'),
-          getTasks: httpsCallable(functions, 'getTodayTasks'),
-          submitTask: httpsCallable(functions, 'submitTask'),
-          approveTask: httpsCallable(functions, 'approveTask'),
-          approveBulkTasks: httpsCallable(functions, 'approveBulkTasks'),
-          rejectTask: httpsCallable(functions, 'rejectTask')
+        const firebaseConfig = {
+          apiKey: `AIzaSyCucj5cdrP8kAKLuMAPRpBD7o_xLFFcJFM`,
+          authDomain: `level-nimbus-443009-i3.firebaseapp.com`,
+          projectId: `level-nimbus-443009-i3`,
+          storageBucket: `level-nimbus-443009-i3.firebasestorage.app`,
+          messagingSenderId: `103072084205`,
+          appId: `1:103072084205:web:7f348a01bc8622d7c01ce4`
         };
-      } catch (e) {
-        console.error("Firebase init failed", e);
-        renderFallback("Firebase initialization failed.");
-        return; 
-      }
 
-      const State = {
-          user: null,
-          role: null,
-          profile: null,
-          children: [],
-          selectedChildId: null,
-          tasks: [],
-          taskLocks: new Set(),
-          bulkLock: false,
-          qualityMap: {}
-      };
+        let app, auth, db, functions, api;
 
-      const Utils = {
-        uuid: () => crypto.randomUUID(),
-        showToast: (msg, type = "success") => {
-          const container = document.getElementById('toast-container');
-          if (!container) return;
-          const el = document.createElement('div'); 
-          el.className = `toast ${type}`; 
-          el.textContent = msg;
-          container.appendChild(el);
-          setTimeout(() => el.remove(), 4000);
-        },
-        setLock: (locked) => {
-          const lockEl = document.getElementById('global-lock');
-          if (lockEl) lockEl.classList.toggle('hidden', !locked);
-        },
-        handleApiError: (err) => {
-          if (err.message === "Timeout") {
-            Utils.showToast("Connection timed out. Please try again.", "error");
-            return;
-          }
-          
-          const errorCode = err.code ? err.code.replace('functions/', '') : '';
-          if (errorCode === 'unavailable') {
-            Utils.showToast("Cannot connect to server. Please check deployment.", "error");
-          } else if (errorCode === 'unauthenticated') {
-            Utils.showToast("Session expired. Please login again.", "warning");
-          } else if (errorCode === 'aborted') {
-            const syncBanner = document.getElementById('sync-banner');
-            if (syncBanner) syncBanner.classList.remove('hidden');
-            Utils.showToast("Data conflict. Please refresh.", "warning");
-          } else if (errorCode === 'failed-precondition') {
-            Utils.showToast(err.message || "Action not allowed at this time.", "warning");
-          } else if (errorCode === 'already-exists') {
-            Utils.showToast("Action already in progress, please wait.", "warning");
-          } else {
-            Utils.showToast(err.message || "Operation failed. Please retry.", "error");
-          }
-        }
-      };
-
-      window._showToast = Utils.showToast;
-
-      async function safeCall(apiName, fn, payload) {
-        console.log(`Calling API: ${apiName}`);
         try {
-          let completed = false;
-          
-          const timeout = new Promise((_, reject) =>
-            setTimeout(() => {
-              if (!completed) reject(new Error("Timeout"));
-            }, 10000)
-          );
-          
-          const result = await Promise.race([
-            fn(payload).then(r => {
-              completed = true;
-              return r;
-            }), 
-            timeout
-          ]);
-          
-          if (!completed) {
-            console.warn(`[${apiName}] Request still running after timeout`);
-          }
+          app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
 
-          if (!result || !result.data || !result.data.data) {
-            throw new Error("Invalid response structure");
-          }
+          const FUNCTIONS_REGION = `asia-southeast1`; 
+          functions = getFunctions(app, FUNCTIONS_REGION);
+          
+          console.log(`Firebase initialized. Using region: ${FUNCTIONS_REGION}`);
 
-          return { ok: true, data: result.data.data };
+          api = {
+            login: httpsCallable(functions, `authLogin`),
+            getProfile: httpsCallable(functions, `getUserProfile`),
+            getTasks: httpsCallable(functions, `getTodayTasks`),
+            submitTask: httpsCallable(functions, `submitTask`),
+            approveTask: httpsCallable(functions, `approveTask`),
+            approveBulkTasks: httpsCallable(functions, `approveBulkTasks`),
+            rejectTask: httpsCallable(functions, `rejectTask`)
+          };
         } catch (e) {
-          console.error(`API ERROR [${apiName}]:`, e);
-          Utils.handleApiError(e);
-          return { ok: false, error: e };
+          console.error(`Firebase init failed`, e);
+          renderFallback(`Firebase initialization failed.`);
+          return; 
         }
-      }
 
-      const UI = {
-        setView(id) { 
-          document.querySelectorAll('[id^="view-"]').forEach(c => c.classList.add('hidden')); 
-          const el = document.getElementById(id);
-          if (el) el.classList.remove('hidden'); 
-        },
-        renderProfile() {
-          const welcomeEl = document.getElementById('ui-welcome');
-          const roleEl = document.getElementById('ui-role');
-          const statsEl = document.getElementById('ui-stats');
+        const State = {
+            user: null,
+            role: null,
+            profile: null,
+            children: [],
+            selectedChildId: null,
+            tasks: [],
+            taskLocks: new Set(),
+            bulkLock: false,
+            qualityMap: {}
+        };
 
-          if (welcomeEl) welcomeEl.textContent = `Hello, ${State.user?.displayName || 'User'}`;
-          if (roleEl) roleEl.textContent = `Role: ${State.role}`;
-          if (State.profile && statsEl) {
-            statsEl.innerHTML = `
-              <div class="stat-box"><div class="stat-value">${State.profile.points || 0}</div><div class="stat-label">Points</div></div>
-              <div class="stat-box"><div class="stat-value">${State.profile.level || 1}</div><div class="stat-label">Level</div></div>
-              <div class="stat-box"><div class="stat-value">${State.profile.current_streak || 0}</div><div class="stat-label">Streak</div></div>
-            `;
-          }
-        },
-        renderTasks() {
-          const container = document.getElementById('task-container');
-          if (!container) return;
-          container.innerHTML = '';
-          
-          let pendingCount = 0;
-
-          if (!State.tasks || !State.tasks.length) {
-              container.innerHTML = '<p class="text-muted" style="text-align: center; padding: 20px;">No tasks available.</p>';
-          } else {
-              State.tasks.forEach(task => {
-                  if (!task || !task.id) return;
-
-                  if (task.status === 'PENDING_APPROVAL') pendingCount++;
-                  const isLocked = State.taskLocks.has(task.id) || State.bulkLock;
-                  
-                  const item = document.createElement('div');
-                  item.className = `task-item ${isLocked ? 'loading' : ''}`;
-                  item.id = `task-${task.id}`;
-                  item.innerHTML = `
-                  <div class="flex-between">
-                      <strong>${task.snapshot?.title || 'Task'}</strong>
-                      <span class="badge badge-${task.status}">${task.status.replace('_', ' ')}</span>
-                  </div>
-                  <div id="actions-${task.id}" class="flex-gap" style="margin-top: 12px;"></div>
-                  `;
-                  container.appendChild(item);
-
-                  const actions = item.querySelector(`#actions-${task.id}`);
-                  if (!actions) return;
-                  
-                  if (State.role === 'player' && ['TODO', 'REJECTED'].includes(task.status)) {
-                      const btn = document.createElement('button'); btn.className = 'btn-success'; btn.textContent = 'Submit';
-                      btn.disabled = isLocked;
-                      btn.onclick = () => Handlers.executeTaskAction(task.id, 'submitTask', api.submitTask, { log_id: task.id, version: task.version, idempotency_key: Utils.uuid() });
-                      actions.appendChild(btn);
-                  } 
-                  else if (State.role !== 'player' && task.status === 'PENDING_APPROVAL') {
-                      if (!State.qualityMap[task.id]) {
-                          State.qualityMap[task.id] = "PASS";
-                      }
-
-                      const select = document.createElement('select');
-                      select.disabled = isLocked;
-                      select.innerHTML = `<option value="PASS">Pass</option><option value="GOOD">Good</option><option value="EXCELLENT">Excellent</option>`;
-                      select.value = State.qualityMap[task.id];
-                      select.onchange = (e) => { State.qualityMap[task.id] = e.target.value; };
-                      
-                      const btnApprove = document.createElement('button'); btnApprove.className = 'btn-success'; btnApprove.textContent = 'Approve';
-                      btnApprove.disabled = isLocked;
-                      btnApprove.onclick = () => {
-                          const quality = State.qualityMap[task.id];
-                          Handlers.executeTaskAction(task.id, 'approveTask', api.approveTask, { log_id: task.id, quality_rating: quality, version: task.version, idempotency_key: Utils.uuid() });
-                      };
-                      
-                      const btnReject = document.createElement('button'); btnReject.className = 'btn-danger btn-outline'; btnReject.textContent = 'Reject';
-                      btnReject.disabled = isLocked;
-                      btnReject.onclick = () => {
-                          const reason = prompt("Reason:"); if(!reason) return;
-                          Handlers.executeTaskAction(task.id, 'rejectTask', api.rejectTask, { log_id: task.id, reason, version: task.version, idempotency_key: Utils.uuid() });
-                      };
-                      
-                      actions.append(select, btnApprove, btnReject);
-                  }
-              });
-          }
-
-          const btnBulk = document.getElementById('btn-bulk-approve');
-          if (btnBulk) {
-              btnBulk.disabled = State.bulkLock;
-              if (State.role !== 'player' && pendingCount > 1) {
-                  btnBulk.classList.remove('hidden');
-              } else {
-                  btnBulk.classList.add('hidden');
-              }
-          }
-        }
-      };
-
-      const Handlers = {
-        async refreshAll() {
-            const syncBanner = document.getElementById('sync-banner');
-            if (syncBanner) syncBanner.classList.add('hidden');
-            
-            Utils.setLock(true);
-            await Promise.all([this.loadProfile(), this.loadTasks()]);
-            Utils.setLock(false);
-        },
-        async loadProfile() {
-          const res = await safeCall('getProfile', api.getProfile, {});
-          if (res.ok && res.data) {
-              State.profile = res.data; 
-              UI.renderProfile();
-          }
-        },
-        async loadTasks() {
-          const payload = State.role !== 'player' ? { assignee_id: State.selectedChildId } : {};
-          if (State.role !== 'player' && !State.selectedChildId) return;
-          
-          const res = await safeCall('getTasks', api.getTasks, payload);
-          if (res.ok && res.data && res.data.tasks) {
-              State.qualityMap = {};
-              State.tasks = res.data.tasks;
-              console.log("Tasks loaded");
-              UI.renderTasks();
-          }
-        },
-        async executeTaskAction(taskId, apiName, apiCall, payload) {
-          if (State.bulkLock) {
-              Utils.showToast("Bulk operation in progress", "warning");
+        const Utils = {
+          uuid: () => crypto.randomUUID(),
+          showToast: (msg, type = `success`) => {
+            const container = document.getElementById(`toast-container`);
+            if (!container) return;
+            const el = document.createElement(`div`); 
+            el.className = `toast ${type}`; 
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+          },
+          setLock: (locked) => {
+            const lockEl = document.getElementById(`global-lock`);
+            if (lockEl) lockEl.classList.toggle(`hidden`, !locked);
+          },
+          handleApiError: (err) => {
+            if (err.message === `Timeout`) {
+              Utils.showToast(`Connection timed out. Please try again.`, `error`);
               return;
-          }
-          if (State.taskLocks.has(taskId)) return;
-          
-          State.taskLocks.add(taskId);
-          Utils.setLock(true);
-          UI.renderTasks(); 
-          
-          const res = await safeCall(apiName, apiCall, payload);
-          State.taskLocks.delete(taskId);
-          Utils.setLock(false);
-
-          if (res.ok) {
-            Utils.showToast("Success");
-            await this.loadTasks(); 
-          } else {
-            UI.renderTasks(); 
-          }
-        },
-        async bulkApprove() {
-            if (State.bulkLock) return;
+            }
             
-            const pending = State.tasks.filter(t => t && t.status === 'PENDING_APPROVAL');
-            if (!pending.length) return;
+            const errorCode = err.code ? err.code.replace(`functions/`, ``) : ``;
+            if (errorCode === `unavailable`) {
+              Utils.showToast(`Cannot connect to server. Please check deployment.`, `error`);
+            } else if (errorCode === `unauthenticated`) {
+              Utils.showToast(`Session expired. Please login again.`, `warning`);
+            } else if (errorCode === `aborted`) {
+              const syncBanner = document.getElementById(`sync-banner`);
+              if (syncBanner) syncBanner.classList.remove(`hidden`);
+              Utils.showToast(`Data conflict. Please refresh.`, `warning`);
+            } else if (errorCode === `failed-precondition`) {
+              Utils.showToast(err.message || `Action not allowed at this time.`, `warning`);
+            } else if (errorCode === `already-exists`) {
+              Utils.showToast(`Action already in progress, please wait.`, `warning`);
+            } else {
+              Utils.showToast(err.message || `Operation failed. Please retry.`, `error`);
+            }
+          }
+        };
 
-            const task_ids = [];
-            const version_map = {};
-            const quality_map = {};
+        window._showToast = Utils.showToast;
 
-            for (const task of pending) {
-                if (!task || !task.id) continue;
-                const q = State.qualityMap[task.id];
-                if (!q) {
-                    Utils.showToast("Missing quality rating for one or more tasks.", "error");
-                    return;
-                }
-                task_ids.push(task.id);
-                version_map[task.id] = task.version;
-                quality_map[task.id] = q;
+        async function safeCall(apiName, fn, payload) {
+          console.log(`Calling API: ${apiName}`);
+          try {
+            let isTimeout = false;
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => {
+                isTimeout = true;
+                reject(new Error(`Timeout`));
+              }, 10000)
+            );
+            
+            const result = await Promise.race([fn(payload), timeoutPromise]);
+            
+            if (isTimeout) {
+              console.warn(`[${apiName}] Request ignored after timeout`);
+              return { ok: false, error: new Error(`Timeout`) };
             }
 
-            State.bulkLock = true;
-            Utils.setLock(true);
-            UI.renderTasks();
+            if (!result || result.error) {
+              return { ok: false, error: new Error(result?.error || `Invalid response`) };
+            }
 
-            const res = await safeCall('approveBulkTasks', api.approveBulkTasks, {
-                task_ids, version_map, quality_map, idempotency_key: Utils.uuid()
-            });
+            const raw = result?.data;
+            const normalizedPayload = raw?.data ?? raw;
 
-            State.bulkLock = false;
-            Utils.setLock(false);
+            return { ok: true, data: normalizedPayload };
+          } catch (e) {
+            console.error(`API ERROR [${apiName}]:`, e);
+            if (e.code === `functions/unavailable` || e.message?.includes(`CORS`) || e.message?.includes(`network`)) {
+                console.warn(`Possible region mismatch or network issue`);
+            }
+            Utils.handleApiError(e);
+            return { ok: false, error: e };
+          }
+        }
 
-            if (res.ok) {
-                if (res.data && res.data.tasks && res.data.tasks.length !== task_ids.length) {
-                    Utils.showToast("Some tasks failed. Please refresh.", "warning");
-                } else {
-                    Utils.showToast("All tasks approved");
-                }
-                await this.loadTasks();
+        const UI = {
+          setView(id) { 
+            document.querySelectorAll(`[id^="view-"]`).forEach(c => c.classList.add(`hidden`)); 
+            const el = document.getElementById(id);
+            if (el) el.classList.remove(`hidden`); 
+          },
+          renderProfile() {
+            const welcomeEl = document.getElementById(`ui-welcome`);
+            const roleEl = document.getElementById(`ui-role`);
+            const statsEl = document.getElementById(`ui-stats`);
+
+            if (welcomeEl) welcomeEl.textContent = `Hello, ${State.user?.displayName || 'User'}`;
+            if (roleEl) roleEl.textContent = `Role: ${State.role}`;
+            if (State.profile && statsEl) {
+              statsEl.innerHTML = `
+                <div class="stat-box"><div class="stat-value">${State.profile.points || 0}</div><div class="stat-label">Points</div></div>
+                <div class="stat-box"><div class="stat-value">${State.profile.level || 1}</div><div class="stat-label">Level</div></div>
+                <div class="stat-box"><div class="stat-value">${State.profile.current_streak || 0}</div><div class="stat-label">Streak</div></div>
+              `;
+            }
+          },
+          renderTasks() {
+            const container = document.getElementById(`task-container`);
+            if (!container) return;
+            container.innerHTML = ``;
+            
+            let pendingCount = 0;
+
+            if (!State.tasks || !State.tasks.length) {
+                container.innerHTML = `<p class="text-muted" style="text-align: center; padding: 20px;">No tasks available.</p>`;
             } else {
+                State.tasks.forEach(task => {
+                    if (!task || !task.id || task.version === undefined || task.version === null) return;
+
+                    const safeStatus = [`TODO`,`PENDING_APPROVAL`,`APPROVED`,`REJECTED`].includes(task.status)
+                      ? task.status
+                      : `TODO`;
+
+                    if (safeStatus === `PENDING_APPROVAL`) pendingCount++;
+                    const isLocked = State.taskLocks.has(task.id) || State.bulkLock;
+                    
+                    const item = document.createElement(`div`);
+                    item.className = `task-item ${isLocked ? 'loading' : ''}`;
+                    item.id = `task-${task.id}`;
+                    item.innerHTML = `
+                    <div class="flex-between">
+                        <strong>${task.snapshot?.title || 'Task'}</strong>
+                        <span class="badge badge-${safeStatus}">${safeStatus.replace('_', ' ')}</span>
+                    </div>
+                    <div id="actions-${task.id}" class="flex-gap" style="margin-top: 12px;"></div>
+                    `;
+                    container.appendChild(item);
+
+                    const actions = item.querySelector(`#actions-${task.id}`);
+                    if (!actions) return;
+                    
+                    if (State.role === `player` && [`TODO`, `REJECTED`].includes(safeStatus)) {
+                        const btn = document.createElement(`button`); 
+                        btn.className = `btn-success`; 
+                        btn.textContent = `Submit`;
+                        btn.disabled = isLocked;
+                        btn.onclick = () => Handlers.executeTaskAction(task.id, `submitTask`, api.submitTask, { log_id: task.id, version: task.version, idempotency_key: Utils.uuid() });
+                        actions.appendChild(btn);
+                    } 
+                    else if (State.role !== `player` && safeStatus === `PENDING_APPROVAL`) {
+                        if (!State.qualityMap[task.id]) {
+                            State.qualityMap[task.id] = `PASS`;
+                        }
+
+                        const select = document.createElement(`select`);
+                        select.disabled = isLocked;
+                        select.innerHTML = `<option value="PASS">Pass</option><option value="GOOD">Good</option><option value="EXCELLENT">Excellent</option>`;
+                        select.value = State.qualityMap[task.id];
+                        select.onchange = (e) => { State.qualityMap[task.id] = e.target.value; };
+                        
+                        const btnApprove = document.createElement(`button`); 
+                        btnApprove.className = `btn-success`; 
+                        btnApprove.textContent = `Approve`;
+                        btnApprove.disabled = isLocked;
+                        btnApprove.onclick = () => {
+                            const quality = State.qualityMap[task.id];
+                            Handlers.executeTaskAction(task.id, `approveTask`, api.approveTask, { log_id: task.id, quality_rating: quality, version: task.version, idempotency_key: Utils.uuid() });
+                        };
+                        
+                        const btnReject = document.createElement(`button`); 
+                        btnReject.className = `btn-danger btn-outline`; 
+                        btnReject.textContent = `Reject`;
+                        btnReject.disabled = isLocked;
+                        btnReject.onclick = () => {
+                            const reason = prompt(`Reason:`); 
+                            if (!reason) return;
+                            Handlers.executeTaskAction(task.id, `rejectTask`, api.rejectTask, { log_id: task.id, reason, version: task.version, idempotency_key: Utils.uuid() });
+                        };
+                        
+                        actions.append(select, btnApprove, btnReject);
+                    }
+                });
+            }
+
+            const btnBulk = document.getElementById(`btn-bulk-approve`);
+            if (btnBulk) {
+                btnBulk.disabled = State.bulkLock;
+                if (State.role !== `player` && pendingCount > 1) {
+                    btnBulk.classList.remove(`hidden`);
+                } else {
+                    btnBulk.classList.add(`hidden`);
+                }
+            }
+          }
+        };
+
+        const Handlers = {
+          async refreshAll() {
+              const syncBanner = document.getElementById(`sync-banner`);
+              if (syncBanner) syncBanner.classList.add(`hidden`);
+              
+              Utils.setLock(true);
+              try {
+                await this.loadProfile();
+                await this.loadTasks();
+              } finally {
+                Utils.setLock(false);
+              }
+          },
+          async loadProfile() {
+            const res = await safeCall(`getProfile`, api.getProfile, {});
+            if (res.ok && res.data) {
+                State.profile = res.data; 
+                UI.renderProfile();
+            }
+          },
+          async loadTasks() {
+            const payload = State.role !== `player` ? { assignee_id: State.selectedChildId } : {};
+            if (State.role !== `player` && !State.selectedChildId) return;
+            
+            const res = await safeCall(`getTasks`, api.getTasks, payload);
+            if (res.ok) {
+                State.qualityMap = {};
+                State.tasks = Array.isArray(res.data?.tasks) ? res.data.tasks : [];
+                console.log(`Tasks loaded`);
                 UI.renderTasks();
             }
-        }
-      };
-
-      const formLogin = document.getElementById('form-login');
-      if (formLogin) {
-        formLogin.onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-login-submit');
-            const usernameEl = document.getElementById('username');
-            const pinEl = document.getElementById('pin');
+          },
+          async executeTaskAction(taskId, apiName, apiCall, payload) {
+            if (State.bulkLock) {
+                Utils.showToast(`Bulk operation in progress`, `warning`);
+                return;
+            }
+            if (State.taskLocks.has(taskId)) return;
             
-            if (!btn || !usernameEl || !pinEl) return;
-
-            btn.disabled = true;
+            State.taskLocks.add(taskId);
             Utils.setLock(true);
+            UI.renderTasks(); 
             
-            const username = usernameEl.value;
-            const pin = pinEl.value;
-
-            const res = await safeCall('login', api.login, { username, pin });
-            
-            if (!res.ok || !res.data || !res.data.token) {
-                Utils.showToast("Login failed: Invalid server response", "error");
-                pinEl.value = "";
-                pinEl.focus();
-                btn.disabled = false;
-                Utils.setLock(false);
-                return; 
-            }
-
+            let success = false;
             try {
-                await signInWithCustomToken(auth, res.data.token);
-            } catch (err) {
-                console.error("Auth Sign-In Error", err);
-                Utils.showToast("Authentication failed. Check credentials.", "error");
-                pinEl.value = "";
-                pinEl.focus();
+              const res = await safeCall(apiName, apiCall, payload);
+              if (res.ok) {
+                Utils.showToast(`Success`, `success`);
+                success = true;
+              }
+            } finally {
+              State.taskLocks.delete(taskId);
+              Utils.setLock(false);
+              if (success) {
+                  await this.loadTasks(); 
+              } else {
+                  UI.renderTasks();
+              }
             }
-            
-            btn.disabled = false;
-            Utils.setLock(false);
-        };
-      }
-      
-      const bindClick = (id, handler) => {
-          const el = document.getElementById(id);
-          if (el) el.onclick = handler;
-      };
+          },
+          async bulkApprove() {
+              if (State.bulkLock) return;
+              
+              const pending = State.tasks.filter(t => t && t.id && t.status === `PENDING_APPROVAL`);
+              if (!pending.length) return;
 
-      bindClick('btn-logout', () => signOut(auth));
-      bindClick('btn-refresh-player', () => Handlers.refreshAll());
-      bindClick('btn-refresh-parent', () => Handlers.refreshAll());
-      bindClick('btn-bulk-approve', () => Handlers.bulkApprove());
-      
-      const syncBanner = document.getElementById('sync-banner');
-      if (syncBanner) syncBanner.onclick = () => Handlers.refreshAll();
+              const task_ids = [];
+              const version_map = {};
+              const quality_map = {};
 
-      const childSelect = document.getElementById('child-select');
-      if (childSelect) {
-          childSelect.onchange = (e) => { 
-              State.selectedChildId = e.target.value; 
-              Handlers.refreshAll(); 
-          };
-      }
+              for (const task of pending) {
+                  if (task.version === undefined || task.version === null) return;
+                  const q = State.qualityMap[task.id];
+                  if (!q) {
+                      Utils.showToast(`Missing quality rating for one or more tasks.`, `error`);
+                      return;
+                  }
+                  task_ids.push(task.id);
+                  version_map[task.id] = task.version;
+                  quality_map[task.id] = q;
+              }
 
-      if (auth) {
-        onAuthStateChanged(auth, async (user) => {
-          console.log("Auth state changed");
-          if (user) {
-            State.user = user;
-            try {
-                const tokenResult = await user.getIdTokenResult();
-                State.role = tokenResult.claims.role || 'player';
-            } catch(err) {
-                console.error("Token claims error", err);
-                State.role = 'player';
-            }
-            
-            UI.setView('view-dashboard');
-            
-            const parentControls = document.getElementById('parent-controls');
-            if (parentControls) parentControls.classList.toggle('hidden', State.role === 'player');
-            
-            const btnRefreshPlayer = document.getElementById('btn-refresh-player');
-            if (btnRefreshPlayer) btnRefreshPlayer.classList.toggle('hidden', State.role !== 'player');
-            
-            if (State.role !== 'player') {
-                try {
-                    const snap = await getDocs(query(collection(db, "users"), where("role", "==", "player")));
-                    const sel = document.getElementById('child-select');
-                    if (sel) {
-                        sel.innerHTML = '<option value="">Select Child</option>';
-                        snap.docs.forEach(d => sel.add(new Option(d.data().username, d.id)));
-                        
-                        if (snap.docs.length === 0) {
-                            Utils.showToast("No child accounts found", "warning");
-                        } else if (!State.selectedChildId) {
-                            State.selectedChildId = snap.docs[0].id;
-                            sel.value = snap.docs[0].id;
-                        }
+              State.bulkLock = true;
+              Utils.setLock(true);
+              UI.renderTasks();
+
+              let success = false;
+              try {
+                const res = await safeCall(`approveBulkTasks`, api.approveBulkTasks, {
+                    task_ids, version_map, quality_map, idempotency_key: Utils.uuid()
+                });
+
+                if (res.ok) {
+                    const resTasks = res.data?.tasks || [];
+                    if (resTasks.length !== task_ids.length) {
+                        Utils.showToast(`Some tasks failed. Please refresh.`, `warning`);
+                    } else {
+                        Utils.showToast(`All tasks approved`, `success`);
                     }
-                    Handlers.refreshAll();
-                } catch (e) {
-                    console.error("Failed to load children options", e);
+                    success = true;
                 }
-            } else {
-                Handlers.refreshAll();
-            }
-          } else {
-            Object.assign(State, {
-              user: null,
-              role: null,
-              profile: null,
-              children: [],
-              selectedChildId: null,
-              tasks: [],
-              taskLocks: new Set(),
-              bulkLock: false,
-              qualityMap: {}
-            });
-            UI.setView('view-login');
+              } finally {
+                State.bulkLock = false;
+                Utils.setLock(false);
+                if (success) {
+                    await this.loadTasks();
+                } else {
+                    UI.renderTasks();
+                }
+              }
           }
-        });
-      }
+        };
 
-    } catch (e) {
-      console.error("FATAL APP ERROR:", e);
-      renderFallback(e.message);
-    }
-  });
-</script>
+        const formLogin = document.getElementById(`form-login`);
+        if (formLogin) {
+          formLogin.onsubmit = async (e) => {
+              e.preventDefault();
+              const btn = document.getElementById(`btn-login-submit`);
+              const usernameEl = document.getElementById(`username`);
+              const pinEl = document.getElementById(`pin`);
+              
+              if (!btn || !usernameEl || !pinEl) return;
+
+              const username = usernameEl.value?.trim();
+              const pin = pinEl.value?.trim();
+
+              if (!username || !pin) {
+                  Utils.showToast(`Please enter username and PIN`, `warning`);
+                  return;
+              }
+
+              btn.disabled = true;
+              btn.textContent = `Logging in...`;
+              Utils.setLock(true);
+              
+              try {
+                const res = await safeCall(`login`, api.login, { username, pin });
+                
+                const token = res?.data?.token || res?.data?.data?.token;
+
+                if (!res.ok || !token) {
+                    Utils.showToast(`Login failed: Invalid server response`, `error`);
+                    pinEl.value = ``;
+                    pinEl.focus();
+                    return; 
+                }
+
+                try {
+                    await signInWithCustomToken(auth, token);
+                } catch (err) {
+                    console.error(`Auth Sign-In Error`, err);
+                    Utils.showToast(`Authentication failed. Check credentials.`, `error`);
+                    pinEl.value = ``;
+                    pinEl.focus();
+                }
+              } finally {
+                btn.disabled = false;
+                btn.textContent = `Login`;
+                Utils.setLock(false);
+              }
+          };
+        }
+        
+        const bindClick = (id, handler) => {
+            const el = document.getElementById(id);
+            if (el) el.onclick = handler;
+        };
+
+        bindClick(`btn-logout`, () => signOut(auth));
+        bindClick(`btn-refresh-player`, () => Handlers.refreshAll());
+        bindClick(`btn-refresh-parent`, () => Handlers.refreshAll());
+        bindClick(`btn-bulk-approve`, () => Handlers.bulkApprove());
+        
+        const syncBanner = document.getElementById(`sync-banner`);
+        if (syncBanner) syncBanner.onclick = () => Handlers.refreshAll();
+
+        const childSelect = document.getElementById(`child-select`);
+        if (childSelect) {
+            childSelect.onchange = (e) => { 
+                State.selectedChildId = e.target.value; 
+                Handlers.refreshAll(); 
+            };
+        }
+
+        if (auth) {
+          onAuthStateChanged(auth, async (user) => {
+            console.log(`Auth state changed`);
+            if (user) {
+              State.user = user;
+              try {
+                  const tokenResult = await user.getIdTokenResult();
+                  State.role = tokenResult.claims.role || `player`;
+              } catch(err) {
+                  console.error(`Token claims error`, err);
+                  State.role = `player`;
+              }
+              
+              UI.setView(`view-dashboard`);
+              
+              const parentControls = document.getElementById(`parent-controls`);
+              if (parentControls) parentControls.classList.toggle(`hidden`, State.role === `player`);
+              
+              const btnRefreshPlayer = document.getElementById(`btn-refresh-player`);
+              if (btnRefreshPlayer) btnRefreshPlayer.classList.toggle(`hidden`, State.role !== `player`);
+              
+              if (State.role !== `player`) {
+                  try {
+                      const snap = await getDocs(query(collection(db, `users`), where(`role`, `==`, `player`)));
+                      const sel = document.getElementById(`child-select`);
+                      if (sel) {
+                          sel.innerHTML = `<option value="">Select Child</option>`;
+                          snap.docs.forEach(d => sel.add(new Option(d.data().username, d.id)));
+                          
+                          if (snap.docs.length === 0) {
+                              Utils.showToast(`No child accounts found`, `warning`);
+                          } else if (!State.selectedChildId) {
+                              State.selectedChildId = snap.docs[0].id;
+                              sel.value = snap.docs[0].id;
+                          }
+                      }
+                      Handlers.refreshAll();
+                  } catch (e) {
+                      console.error(`Failed to load children options`, e);
+                  }
+              } else {
+                  Handlers.refreshAll();
+              }
+            } else {
+              Object.assign(State, {
+                user: null,
+                role: null,
+                profile: null,
+                children: [],
+                selectedChildId: null,
+                tasks: [],
+                taskLocks: new Set(),
+                bulkLock: false,
+                qualityMap: {}
+              });
+              UI.setView(`view-login`);
+            }
+          });
+        }
+
+      } catch (e) {
+        console.error(`FATAL APP ERROR:`, e);
+        renderFallback(e.message);
+      }
+    });
+  </script>
+</body>
+</html>
