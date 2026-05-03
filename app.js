@@ -1,37 +1,32 @@
 import { ref, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { db } from "./firebase.js";
 import { login, logout, observeAuth } from "./auth.js";
-import { createTask, submitTask, approveTask, rejectTask, applyPoints } from "./taskService.js";
+import { seedUsersIfEmpty, createTaskLog, submitTask, approveTask, rejectTask, getLocalYMD } from "./taskService.js";
 
+// DOM Setup
 const DOM = {
   loginView: document.getElementById('login-view'),
   playerView: document.getElementById('player-view'),
   parentView: document.getElementById('parent-view'),
   userInfo: document.getElementById('user-info'),
-  userEmail: document.getElementById('user-email'),
-  userRole: document.getElementById('user-role'),
-  userUid: document.getElementById('user-uid'),
+  userDisplay: document.getElementById('user-display'),
   loginForm: document.getElementById('login-form'),
   logoutBtn: document.getElementById('logout-btn'),
-  globalError: document.getElementById('global-error'),
+  errorBanner: document.getElementById('error-banner'),
   playerTasks: document.getElementById('player-tasks'),
+  playerStats: document.getElementById('player-stats'),
   createTaskForm: document.getElementById('create-task-form'),
-  assigneeSelect: document.getElementById('assignee-id'),
   pendingTasks: document.getElementById('pending-tasks'),
   approvedTasks: document.getElementById('approved-tasks'),
-  taskDate: document.getElementById('task-date')
 };
 
 let currentUser = null;
 let activeListeners = [];
 
-const getTodayDate = () => new Date().toISOString().split('T')[0];
-if(DOM.taskDate) DOM.taskDate.value = getTodayDate();
-
 function showError(msg) {
-  DOM.globalError.textContent = msg;
-  DOM.globalError.classList.remove('hidden');
-  setTimeout(() => DOM.globalError.classList.add('hidden'), 5000);
+  DOM.errorBanner.textContent = msg;
+  DOM.errorBanner.classList.remove('hidden');
+  setTimeout(() => DOM.errorBanner.classList.add('hidden'), 5000);
 }
 
 function clearListeners() {
@@ -39,33 +34,40 @@ function clearListeners() {
   activeListeners = [];
 }
 
-observeAuth((user) => {
-  currentUser = user;
-  clearListeners();
-  
-  if (user) {
-    DOM.userInfo.classList.remove('hidden');
-    DOM.userEmail.textContent = user.email;
-    DOM.userRole.textContent = user.role;
-    DOM.userUid.textContent = `UID: ${user.uid}`;
-    DOM.loginView.classList.add('hidden');
-    
-    if (user.role === 'parent') {
-      DOM.playerView.classList.add('hidden');
-      DOM.parentView.classList.remove('hidden');
-      initParentView();
-    } else {
-      DOM.parentView.classList.add('hidden');
-      DOM.playerView.classList.remove('hidden');
-      initPlayerView();
-    }
-  } else {
-    DOM.userInfo.classList.add('hidden');
-    DOM.playerView.classList.add('hidden');
-    DOM.parentView.classList.add('hidden');
-    DOM.loginView.classList.remove('hidden');
+// Initialization Sequence
+(async function init() {
+  try {
+    await seedUsersIfEmpty(); // Auto-seed 4 users if empty
+  } catch (e) {
+    console.error("Seed error (ignore if rules restrict):", e);
   }
-});
+
+  observeAuth((user) => {
+    currentUser = user;
+    clearListeners();
+    
+    if (user) {
+      DOM.userInfo.classList.remove('hidden');
+      DOM.userDisplay.textContent = `${user.email} (${user.role})`;
+      DOM.loginView.classList.add('hidden');
+      
+      if (user.role === 'parent') {
+        DOM.playerView.classList.add('hidden');
+        DOM.parentView.classList.remove('hidden');
+        initParentView();
+      } else {
+        DOM.parentView.classList.add('hidden');
+        DOM.playerView.classList.remove('hidden');
+        initPlayerView();
+      }
+    } else {
+      DOM.userInfo.classList.add('hidden');
+      DOM.playerView.classList.add('hidden');
+      DOM.parentView.classList.add('hidden');
+      DOM.loginView.classList.remove('hidden');
+    }
+  });
+})();
 
 DOM.loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -77,11 +79,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
 });
 
 DOM.logoutBtn.addEventListener('click', async () => {
-  try {
-    await logout();
-  } catch(err) {
-    showError("Logout failed: " + err.message);
-  }
+  await logout();
 });
 
 function renderTaskCard(logId, task, role, context = '') {
@@ -91,35 +89,29 @@ function renderTaskCard(logId, task, role, context = '') {
   let actionsHTML = '';
   
   if (role === 'player' && task.status === 'TODO') {
-    actionsHTML = `<button class="submit-btn">Submit Task</button>`;
-  } else if (role === 'player' && task.status === 'PENDING_APPROVAL') {
-    actionsHTML = `<button disabled>Waiting for Parent...</button>`;
-  } else if (role === 'player' && task.status === 'REJECTED') {
-    actionsHTML = `<button disabled style="background:red">Task Rejected</button>`;
-  }
-  
-  if (role === 'parent' && task.status === 'PENDING_APPROVAL') {
+    actionsHTML = `<button class="submit-btn">Complete & Submit</button>`;
+  } else if (role === 'parent' && task.status === 'PENDING_APPROVAL' && context === 'pending') {
     actionsHTML = `
       <select class="rating-select">
-        <option value="PASS">PASS</option>
-        <option value="GOOD">GOOD</option>
-        <option value="EXCELLENT">EXCELLENT</option>
+        <option value="PASS">PASS (x1.0)</option>
+        <option value="GOOD">GOOD (x1.2)</option>
+        <option value="EXCELLENT">EXCELLENT (x1.5)</option>
       </select>
-      <button class="approve-btn" style="background:green">Approve</button>
-      <button class="reject-btn" style="background:red">Reject</button>
+      <button class="approve-btn btn-success">Approve</button>
+      <button class="reject-btn btn-danger">Reject</button>
     `;
-  } else if (role === 'parent' && task.status === 'APPROVED' && task.pointsApplied === false) {
-    actionsHTML = `<button class="apply-btn" style="background:purple">Apply Points</button>`;
   }
 
   card.innerHTML = `
-    <h3>${task.taskId}</h3>
-    <div class="data-row"><span class="status-badge">${task.status}</span></div>
-    <div class="data-row"><strong>Task Points:</strong> ${task.taskPoints}</div>
-    <div class="data-row"><strong>Earned:</strong> ${task.pointsEarned} | <strong>Applied:</strong> ${task.pointsApplied}</div>
-    <div class="data-row"><strong>Version:</strong> ${task.version}</div>
-    ${task.submittedBy ? `<div class="data-row"><strong>Submitted By:</strong> ${task.submittedBy}</div>` : ''}
-    ${task.qualityRating ? `<div class="data-row"><strong>Rating:</strong> ${task.qualityRating}</div>` : ''}
+    <h4>${task.taskId}</h4>
+    <div class="badge">${task.status}</div>
+    <div style="font-size: 0.9em; margin-top: 8px;">
+      <strong>Base Points:</strong> ${task.taskPoints} <br>
+      <strong>Version:</strong> ${task.version} <br>
+      ${task.pointsEarned ? `<strong>Points Earned:</strong> ${task.pointsEarned} <br>` : ''}
+      ${task.qualityRating ? `<strong>Rating:</strong> ${task.qualityRating} <br>` : ''}
+      ${task.assigneeId !== currentUser?.uid ? `<strong>Assignee:</strong> ${task.assigneeId}` : ''}
+    </div>
     <div style="margin-top:10px">${actionsHTML}</div>
   `;
 
@@ -140,55 +132,48 @@ function renderTaskCard(logId, task, role, context = '') {
       try { await rejectTask(logId, task); } catch (e) { showError(e.message); }
     };
   }
-
-  if (role === 'parent' && task.status === 'APPROVED' && task.pointsApplied === false && context === 'approved') {
-    card.querySelector('.apply-btn').onclick = async () => {
-      try { await applyPoints(logId, task); } catch (e) { showError(e.message); }
-    };
-  }
-
   return card;
 }
 
 function initPlayerView() {
-  const today = getTodayDate();
-  const tasksRef = ref(db, `todayTasksByUser/${currentUser.uid}/${today}`);
+  const today = getLocalYMD();
   
-  const unsub = onValue(tasksRef, (snapshot) => {
+  // Player Stats Listener
+  const userRef = ref(db, `users/${currentUser.uid}`);
+  const unsubUser = onValue(userRef, (snap) => {
+    const data = snap.val();
+    if(data) {
+        DOM.playerStats.innerHTML = `
+           <strong>Level:</strong> ${data.level || 1} &nbsp;|&nbsp; 
+           <strong>EXP:</strong> ${data.exp || 0} / ${50 * (data.level || 1)} &nbsp;|&nbsp; 
+           <strong>Points:</strong> ${data.points || 0}
+        `;
+    }
+  });
+  activeListeners.push(unsubUser);
+
+  // Player Tasks Listener
+  const tasksRef = ref(db, `todayTasksByUser/${currentUser.uid}/${today}`);
+  const unsubTasks = onValue(tasksRef, (snapshot) => {
     DOM.playerTasks.innerHTML = '';
     const tasks = snapshot.val() || {};
     Object.entries(tasks).forEach(([logId, task]) => {
       DOM.playerTasks.appendChild(renderTaskCard(logId, task, 'player'));
     });
   }, (err) => showError(err.message));
-  
-  activeListeners.push(unsub);
+  activeListeners.push(unsubTasks);
 }
 
 function initParentView() {
-  const usersRef = ref(db, 'users');
-  const unsubUsers = onValue(usersRef, (snapshot) => {
-    DOM.assigneeSelect.innerHTML = '<option value="">Select Player...</option>';
-    const users = snapshot.val() || {};
-    Object.entries(users).forEach(([uid, data]) => {
-      if (data.role === 'player') {
-        DOM.assigneeSelect.innerHTML += `<option value="${uid}">${data.email || uid}</option>`;
-      }
-    });
-  }, (err) => showError(err.message));
-  activeListeners.push(unsubUsers);
-
   DOM.createTaskForm.onsubmit = async (e) => {
     e.preventDefault();
     try {
-      await createTask(
-        DOM.assigneeSelect.value,
+      await createTaskLog(
+        document.getElementById('assignee-id').value,
         document.getElementById('task-id').value,
-        document.getElementById('task-points').value,
-        document.getElementById('task-date').value
+        document.getElementById('task-points').value
       );
       DOM.createTaskForm.reset();
-      DOM.taskDate.value = getTodayDate();
     } catch (err) {
       showError(err.message);
     }
@@ -208,10 +193,11 @@ function initParentView() {
   const unsubApproved = onValue(approvedQuery, (snapshot) => {
     DOM.approvedTasks.innerHTML = '';
     const tasks = snapshot.val() || {};
+    const today = getLocalYMD();
     Object.entries(tasks).forEach(([logId, task]) => {
-      if (!task.pointsApplied) {
-        DOM.approvedTasks.appendChild(renderTaskCard(logId, task, 'parent', 'approved'));
-      }
+       if (task.date === today) {
+         DOM.approvedTasks.appendChild(renderTaskCard(logId, task, 'parent', 'approved'));
+       }
     });
   }, (err) => showError(err.message));
   activeListeners.push(unsubApproved);
