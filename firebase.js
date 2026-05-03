@@ -3,13 +3,14 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDh1xUt7GHDnJ2PmA6454Hz4KBJNaVnGCQ",
-  authDomain: "family-gamification.firebaseapp.com",
-  projectId: "family-gamification",
-  storageBucket: "family-gamification.firebasestorage.app",
-  messagingSenderId: "649855761910",
-  appId: "1:649855761910:web:e2e1061af47290cb1a9bd7",
-  databaseURL: "https://family-gamification-default-rtdb.firebaseio.com"
+  // REPLACE WITH YOUR ACTUAL CONFIG
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.firebasestorage.app",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com"
 };
 
 export const app = initializeApp(firebaseConfig);
