@@ -3,65 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Family Gamification</title>
+  <title>Family Gamification System</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+    body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
     .hidden { display: none !important; }
-    .error-banner { background: #ffcccc; color: #cc0000; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
-    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    button { padding: 8px 12px; margin-top: 10px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #007bff; color: white; }
+    .card { background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { padding: 8px 12px; margin-top: 8px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; font-weight: bold; }
     button:disabled { background: #ccc; cursor: not-allowed; }
-    input, select { padding: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; background: #eee; }
-    .data-row { font-size: 0.9em; color: #555; margin: 4px 0; }
+    .btn-success { background: #28a745; }
+    .btn-danger { background: #dc3545; }
+    input, select { padding: 8px; margin-bottom: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; background: #e9ecef; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #ddd; }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>Task System</h1>
+    <h2>Family Gamification</h2>
     <div id="user-info" class="hidden">
-      Logged in as: <strong id="user-email"></strong> (<span id="user-role"></span>)
-      <br><small id="user-uid"></small>
-      <button id="logout-btn">Logout</button>
+      <span id="user-display"></span>
+      <button id="logout-btn" class="btn-danger">Logout</button>
     </div>
   </header>
 
-  <div id="global-error" class="error-banner hidden"></div>
+  <div id="error-banner" class="card hidden" style="background: #ffcccc; color: #cc0000; font-weight: bold;"></div>
 
   <main>
     <!-- LOGIN VIEW -->
     <section id="login-view">
-      <h2>Login</h2>
-      <form id="login-form">
-        <input type="email" id="email" placeholder="Email" required />
-        <input type="password" id="password" placeholder="Password" required />
-        <button type="submit">Log In</button>
-      </form>
+      <div class="card">
+        <h3>Login</h3>
+        <p><small>Note: Use Auth UIDs that match seeded users (e.g., usr_player_1) for testing.</small></p>
+        <form id="login-form">
+          <input type="email" id="email" placeholder="Email" required />
+          <input type="password" id="password" placeholder="Password" required />
+          <button type="submit">Log In</button>
+        </form>
+      </div>
     </section>
 
     <!-- PLAYER VIEW -->
     <section id="player-view" class="hidden">
-      <h2>My Tasks Today</h2>
+      <h3>My Tasks Today</h3>
+      <div id="player-stats" class="card" style="background: #e3f2fd;"></div>
       <div id="player-tasks"></div>
     </section>
 
     <!-- PARENT VIEW -->
     <section id="parent-view" class="hidden">
-      <h2>Create Task</h2>
-      <form id="create-task-form" class="card">
-        <select id="assignee-id" required>
-          <option value="">Loading users...</option>
-        </select>
-        <input type="text" id="task-id" placeholder="Task Name" required />
-        <input type="number" id="task-points" placeholder="Points" required />
-        <input type="date" id="task-date" required />
-        <button type="submit">Create Task</button>
-      </form>
+      <div class="card">
+        <h3>Create Task</h3>
+        <form id="create-task-form">
+          <select id="assignee-id" required>
+            <option value="">Select Player...</option>
+            <option value="usr_player_1">Kid A (usr_player_1)</option>
+            <option value="usr_player_2">Kid B (usr_player_2)</option>
+          </select>
+          <input type="text" id="task-id" placeholder="Task Name" required />
+          <input type="number" id="task-points" placeholder="Base Points (e.g., Dễ:10, Trung:20, Khó:40)" required />
+          <button type="submit">Create Task</button>
+        </form>
+      </div>
 
-      <h2>Pending Approvals</h2>
+      <h3>Pending Approvals</h3>
       <div id="pending-tasks"></div>
 
-      <h2>Approved Tasks (Ready for Points)</h2>
+      <h3>Approved Tasks</h3>
       <div id="approved-tasks"></div>
     </section>
   </main>
