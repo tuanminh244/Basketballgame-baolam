@@ -99,11 +99,14 @@ try {
 
         updates[`${basePath}/tasks`] = clonedTasks;
         
+        // 👉 SUMMARY SCHEMA V2 (Cron Ledger Architecture)
         updates[`${basePath}/summary`] = {
           completion_rate: 0,
-          status: "incomplete", 
+          status: "ongoing", 
           reward_78_unlocked: false,
           reward_100_unlocked: false,
+          xp_granted: 0,
+          points_granted: 0,
         };
         
         console.log(`✅ Đã clone task log mới cho user ${userId} ngày ${date}`);
