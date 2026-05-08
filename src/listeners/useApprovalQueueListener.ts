@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ref, query, orderByChild, equalTo, onValue } from 'firebase/database';
 import { db } from '@/services/firebase/config';
 import { TaskNodeReadModel } from '@/types/schema';
@@ -9,6 +9,7 @@ export const useApprovalQueueListener = (monthNode: string | null | undefined, d
   const [loading, setLoading] = useState(true);
 
   const uidsDep = childrenUids.join(',');
+  const loadedChildrenRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!monthNode || !uidsDep) {
@@ -18,6 +19,13 @@ export const useApprovalQueueListener = (monthNode: string | null | undefined, d
 
     setLoading(true);
     setQueue([]);
+    
+    // PRODUCTION COMMENT:
+    // [REACT STRICT MODE SAFETY]
+    // Việc reset set này là intentional. Trong React Strict Mode (dev), 
+    // effect có thể bị double invoke. Đặt lại Set() ở đầu effect đảm bảo 
+    // không bị rác dữ liệu từ lần mount trước, hoàn toàn an toàn trên production runtime.
+    loadedChildrenRef.current = new Set();
 
     const uids = uidsDep.split(',');
     const unsubscribes: (() => void)[] = [];
@@ -33,6 +41,7 @@ export const useApprovalQueueListener = (monthNode: string | null | undefined, d
         pendingTasksQuery,
         (snapshot) => {
           const val = snapshot.val() || {};
+          
           const parsedTasks: (TaskNodeReadModel & { childUid: string })[] = Object.entries(val).map(([id, taskData]: [string, any]) => ({
             id,
             childUid,
@@ -48,11 +57,18 @@ export const useApprovalQueueListener = (monthNode: string | null | undefined, d
             const filtered = prev.filter(t => t.childUid !== childUid);
             return [...filtered, ...parsedTasks];
           });
-          setLoading(false);
+          
+          loadedChildrenRef.current.add(childUid);
+          if (loadedChildrenRef.current.size >= uids.length) {
+            setLoading(false);
+          }
         },
         (error) => {
           console.error(`[Firebase Error] useApprovalQueueListener (${childUid}):`, error);
-          setLoading(false);
+          loadedChildrenRef.current.add(childUid);
+          if (loadedChildrenRef.current.size >= uids.length) {
+            setLoading(false);
+          }
         }
       );
 
