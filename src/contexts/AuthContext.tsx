@@ -1,66 +1,71 @@
-'use client';
+"use client";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { User } from '@/types';
+import { auth } from '@/services/firebase/config';
+import { signInWithCustomToken, onAuthStateChanged, signOut } from 'firebase/auth';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ref, get, child } from 'firebase/database';
-import { database } from '@/services/firebase/config';
-
-type Role = 'player' | 'checker' | 'admin';
-
-interface User {
-  id: string;
-  role: Role;
-  name?: string;
-}
-
-interface AuthContextType {
+type AuthContextType = {
   user: User | null;
-  isLoading: boolean;
-  login: (uid: string, pass_pin: string) => Promise<void>;
-  logout: () => void;
-}
+  loading: boolean;
+  loginWithPin: (pin: string) => Promise<void>;
+  logout: () => Promise<void>;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('family_app_session');
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } 
-      catch { localStorage.removeItem('family_app_session'); }
-    }
-    setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const storedUser = localStorage.getItem('game_user_meta');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          signOut(auth).then(() => setUser(null));
+        }
+      } else {
+        setUser(null);
+        localStorage.removeItem('game_user_meta');
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const login = async (uid: string, pass_pin: string) => {
-    const dbRef = ref(database);
-    const snapshot = await get(child(dbRef, `users/${uid}`));
-    
-    if (snapshot.exists() && snapshot.val().pass_pin === pass_pin) {
-      const userData = snapshot.val();
-      const loggedInUser: User = { id: uid, role: userData.role as Role, name: userData.name || uid };
-      setUser(loggedInUser);
-      localStorage.setItem('family_app_session', JSON.stringify(loggedInUser));
+  const loginWithPin = async (pin: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
       
-      if (loggedInUser.role === 'player') router.push('/child-home');
-      else router.push('/dashboard');
-    } else {
-      throw new Error('Sai ID hoặc mã PIN');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Đăng nhập thất bại');
+
+      await signInWithCustomToken(auth, data.token);
+      
+      setUser(data.user);
+      localStorage.setItem('game_user_meta', JSON.stringify(data.user));
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      throw e;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
-    localStorage.removeItem('family_app_session');
-    router.push('/login');
+    localStorage.removeItem('game_user_meta');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithPin, logout }}>
       {children}
     </AuthContext.Provider>
   );
