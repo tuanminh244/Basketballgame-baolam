@@ -54,8 +54,10 @@ export const useChildTasksListener = (monthNode: string | null | undefined, date
       tasksRef,
       (snapshot) => {
         const val = snapshot.val() || {};
+        
         const parsedTasks: TaskNodeReadModel[] = Object.entries(val).map(([id, taskData]: [string, any]) => ({
           id,
+          childUid: uid,
           title: taskData.title,
           status: taskData.status,
           xp_earned: taskData.xp_earned,
