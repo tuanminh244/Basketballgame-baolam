@@ -13,7 +13,7 @@ export const ChildHomePage: React.FC = () => {
   const dateKey = getTodayKey();
 
   const { tasks, loading: tasksLoading } = useChildTasksListener(config?.current_month_node, dateKey, user?.uid);
-  const { data: stats } = useStatsListener(user?.uid);
+  const { data: stats } = useStatsListener(user?.id);
   const { data: summary } = useSummaryListener(config?.current_month_node, dateKey, user?.uid);
 
   const [processingId, setProcessingId] = useState<string | null>(null);
