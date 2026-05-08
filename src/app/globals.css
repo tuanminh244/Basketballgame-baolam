@@ -2,18 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-input {
-  font-size: 16px !important; /* Chống auto-zoom iOS */
+/* Ngăn Auto-Zoom trên Safari iPhone */
+input[type="text"], input[type="password"], input[type="number"] {
+  font-size: 16px !important;
 }
