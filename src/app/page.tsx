@@ -1,19 +1,23 @@
-'use client';
+"use client";
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function RootPage() {
-  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) router.replace('/login');
-      else if (user.role === 'player') router.replace('/child-home');
-      else router.replace('/dashboard');
+    if (loading) return;
+    
+    if (!user) {
+      router.push('/login');
+    } else if (user.role === 'checker' || user.role === 'admin') {
+      router.push('/dashboard');
+    } else if (user.role === 'player') {
+      router.push('/player-home');
     }
-  }, [user, isLoading, router]);
+  }, [user, loading, router]);
 
-  return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  return <div className="p-8 text-center font-bold text-gray-500">Đang tải hệ thống...</div>;
 }
