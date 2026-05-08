@@ -1,0 +1,19 @@
+name: Economy Engine
+on:
+  schedule:
+    - cron: "*/5 * * * *" 
+  workflow_dispatch:
+jobs:
+  task-approval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: Run Task Approval Script
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+        run: node scripts/task_approval.js
