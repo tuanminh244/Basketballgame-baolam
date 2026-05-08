@@ -1,55 +1,53 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [uid, setUid] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { loginWithPin, user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   const handleLogin = async () => {
-    if (!uid || !pin) return setError('Vui lòng điền đủ thông tin');
-    setLoading(true);
+    if (!pin) return;
     setError('');
     try {
-      await login(uid, pin);
-    } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
+      await loginWithPin(pin);
+      router.push('/');
+    } catch (e: any) {
+      setError(e.message || 'Lỗi đăng nhập');
     }
   };
 
+  if (loading) return <div className="text-center p-8 font-bold text-gray-500">Đang tải...</div>;
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-slate-50">
-      <div className="w-full space-y-6">
-        <h1 className="text-3xl font-bold text-center text-slate-800">Đăng nhập</h1>
-        {error && <p className="text-red-500 text-center text-sm">{error}</p>}
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Tên đăng nhập (UID)"
-            value={uid}
-            onChange={(e) => setUid(e.target.value)}
-            className="w-full p-4 border border-slate-300 rounded-2xl outline-none focus:border-blue-500"
-          />
-          <input
-            type="password"
-            placeholder="Mã PIN"
-            inputMode="numeric"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            className="w-full p-4 border border-slate-300 rounded-2xl outline-none focus:border-blue-500"
-          />
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl active:scale-95 disabled:opacity-50"
-          >
-            {loading ? 'Đang xử lý...' : 'Vào Game'}
-          </button>
-        </div>
+    <div className="flex items-center justify-center min-h-screen bg-blue-50">
+      <div className="bg-white p-8 rounded-xl shadow-md w-80">
+        <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Đăng Nhập</h1>
+        {error && <p className="text-red-500 text-center mb-4 font-bold text-sm bg-red-50 p-2 rounded">{error}</p>}
+        <input 
+          type="password" 
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          placeholder="Nhập mã PIN"
+          className="w-full border-2 border-gray-200 p-3 rounded-lg mb-4 text-center text-xl outline-none focus:border-blue-500 transition"
+          maxLength={6}
+          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+        />
+        <button 
+          onClick={handleLogin}
+          className="w-full bg-blue-500 text-white p-3 rounded-lg font-bold hover:bg-blue-600 shadow-sm transition"
+        >
+          Vào Game
+        </button>
       </div>
     </div>
   );
