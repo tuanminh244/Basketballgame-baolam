@@ -1,21 +1,17 @@
-import { getApps, initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC9XUd8hwlgvWtiXJcbvEszyS0TJw4G43U",
-  authDomain: "webapp-e3266.firebaseapp.com",
-  databaseURL: "https://webapp-e3266-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "webapp-e3266",
-  storageBucket: "webapp-e3266.firebasestorage.app",
-  messagingSenderId: "460689591719",
-  appId: "1:460689591719:web:fdf9f84e9e80c808c67a82",
-  measurementId: "G-NMV91QHS77"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length === 0 
-  ? initializeApp(firebaseConfig) 
-  : getApps()[0];
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const database = getDatabase(app);
 
-export { app };
-
-export const db = getDatabase(app);
+export { app, database };
