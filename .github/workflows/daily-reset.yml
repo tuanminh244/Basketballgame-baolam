@@ -1,28 +1,19 @@
 name: Daily Reset Engine
-
 on:
   schedule:
-    # 00:00 Asia/Ho_Chi_Minh = 17:00 UTC (previous day)
-    - cron: "0 17 * * *"
+    - cron: "0 17 * * *" 
   workflow_dispatch:
-
 jobs:
   daily-reset:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Install dependencies
-        run: cd scripts && npm install firebase-admin
-
+      - run: npm ci
       - name: Run Daily Reset Script
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
         run: node scripts/daily_reset.js
