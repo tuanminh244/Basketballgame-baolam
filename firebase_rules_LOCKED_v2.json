@@ -2,13 +2,15 @@
   "rules": {
     ".read": false,
     ".write": false,
+
     "system_config": {
       ".read": "auth != null",
       ".write": "auth != null && auth.token.role == 'admin'"
     },
     "task_templates": {
       ".read": "auth != null",
-      ".write": "auth != null && auth.token.role == 'admin'"
+      ".write": "auth != null && auth.token.role == 'admin'",
+      ".indexOn": ["owner_id"]
     },
     "task_batches": {
       ".read": "auth != null",
@@ -18,29 +20,16 @@
       ".read": "auth != null",
       "$item_id": {
         ".write": "auth != null && auth.token.role == 'admin'",
-        "name": {
-          ".validate": "newData.isString()"
-        },
-        "cost": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "stock": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "owner_id": {
-          ".validate": "newData.isString()"
-        },
-        "created_by": {
-          ".validate": "newData.isString()"
-        },
-        "created_at": {
-          ".validate": "newData.isNumber()"
-        },
-        "$other": {
-          ".validate": false
-        }
+        "name": { ".validate": "newData.isString()" },
+        "cost": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "stock": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "owner_id": { ".validate": "newData.isString()" },
+        "created_by": { ".validate": "newData.isString()" },
+        "created_at": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
       }
     },
+
     "user_index": {
       ".read": "auth != null && (auth.token.role == 'admin' || auth.token.role == 'checker')",
       "$uid": {
@@ -48,9 +37,9 @@
         ".validate": "newData.isBoolean()"
       }
     },
+
     "users": {
       "$user_id": {
-        ".read": true,
         ".write": "auth != null && auth.token.role == 'admin'",
         "name": {
           ".read": "auth != null && (auth.uid == $user_id || auth.token.role == 'admin' || auth.token.role == 'checker')",
@@ -66,244 +55,149 @@
         },
         "stats": {
           ".read": "auth != null && (auth.uid == $user_id || auth.token.role == 'admin' || auth.token.role == 'checker')",
-          "level": {
-            ".validate": "newData.isNumber() && newData.val() >= 1"
-          },
-          "current_xp": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "total_points": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "current_streak": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "daily_penalty_accumulated": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "$other": {
-            ".validate": false
-          }
+          "level":                     { ".validate": "newData.isNumber() && newData.val() >= 1" },
+          "current_xp":               { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "total_points":             { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "current_streak":           { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "daily_penalty_accumulated": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "$other": { ".validate": false }
         },
-        "$other": {
-          ".validate": false
-        }
+        "$other": { ".validate": false }
       }
     },
+
     "transactions": {
       "$user_id": {
         ".read": "auth != null && (auth.uid == $user_id || auth.token.role == 'admin' || auth.token.role == 'checker')",
         "$trans_id": {
-          ".write": "auth != null && newData.exists() && ( auth.token.role == 'admin' || (!data.exists() && auth.uid == $user_id && newData.child('status').val() == 'pending_delivery' && newData.child('cost').val() == root.child('store_items').child(newData.child('item_id').val()).child('cost').val() && root.child('users').child(auth.uid).child('stats').child('total_points').val() >= newData.child('cost').val() && root.child('store_items').child(newData.child('item_id').val()).child('stock').val() > 0) || (data.exists() && auth.token.role == 'checker' && data.child('status').val() == 'pending_delivery' && (newData.child('status').val() == 'delivered' || newData.child('status').val() == 'cancelled')) )",
-          "user_id": {
-            ".validate": "newData.val() == $user_id"
-          },
-          "item_type": {
-            ".validate": "newData.isString()"
-          },
-          "item_id": {
-            ".validate": "auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val())"
-          },
-          "cost": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && (auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val()))"
-          },
-          "status": {
-            ".validate": "newData.val() == 'pending_delivery' || newData.val() == 'delivered' || newData.val() == 'cancelled'"
-          },
-          "created_at": {
-            ".validate": "newData.isNumber() && (auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val()))"
-          },
-          "updated_at": {
-            ".validate": "newData.isNumber()"
-          },
-          "$other": {
-            ".validate": false
-          }
+          ".write": "auth != null && newData.exists() && (
+            auth.token.role == 'admin' ||
+            (!data.exists() &&
+             auth.uid == $user_id &&
+             newData.child('status').val() == 'pending_delivery' &&
+             newData.child('cost').val() == root.child('store_items').child(newData.child('item_id').val()).child('cost').val() &&
+             root.child('users').child(auth.uid).child('stats').child('total_points').val() >= newData.child('cost').val() &&
+             root.child('store_items').child(newData.child('item_id').val()).child('stock').val() > 0) ||
+            (data.exists() &&
+             auth.token.role == 'checker' &&
+             data.child('status').val() == 'pending_delivery' &&
+             (newData.child('status').val() == 'delivered' || newData.child('status').val() == 'cancelled'))
+          )",
+          "user_id":    { ".validate": "newData.val() == $user_id" },
+          "item_type":  { ".validate": "newData.isString()" },
+          "item_id":    { ".validate": "auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val())" },
+          "cost":       { ".validate": "newData.isNumber() && newData.val() >= 0 && (auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val()))" },
+          "status":     { ".validate": "newData.val() == 'pending_delivery' || newData.val() == 'delivered' || newData.val() == 'cancelled'" },
+          "created_at": { ".validate": "newData.isNumber() && (auth.token.role == 'admin' || (!data.exists() || data.val() == newData.val()))" },
+          "updated_at": { ".validate": "newData.isNumber()" },
+          "$other":     { ".validate": false }
         }
       }
     },
+
     "penalty_logs": {
       "$user_id": {
         ".read": "auth != null && (auth.uid == $user_id || auth.token.role == 'admin' || auth.token.role == 'checker')",
         "$pen_id": {
           ".write": "auth != null && newData.exists() && auth.token.role == 'admin'",
-          "user_id": {
-            ".validate": "newData.val() == $user_id"
-          },
-          "points_deducted": {
-            ".validate": "newData.isNumber() && newData.val() > 0 && (!data.exists() || data.val() == newData.val())"
-          },
-          "reason": {
-            ".validate": "newData.isString()"
-          },
-          "created_by": {
-            ".validate": "newData.isString()"
-          },
-          "created_at": {
-            ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())"
-          },
-          "$other": {
-            ".validate": false
-          }
+          "user_id":         { ".validate": "newData.val() == $user_id" },
+          "points_deducted": { ".validate": "newData.isNumber() && newData.val() > 0 && (!data.exists() || data.val() == newData.val())" },
+          "reason":          { ".validate": "newData.isString()" },
+          "created_by":      { ".validate": "newData.isString()" },
+          "created_at":      { ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())" },
+          "$other":          { ".validate": false }
         }
       }
     },
+
     "$monthly_log": {
       ".validate": "$monthly_log.matches(/^daily_logs_\\d{4}_\\d{2}$/)",
       "$date": {
         ".validate": "$date.matches(/^\\d{4}-\\d{2}-\\d{2}$/)",
         "$user_id": {
           ".read": "auth != null && (auth.uid == $user_id || auth.token.role == 'admin' || auth.token.role == 'checker')",
+
           "summary": {
             ".write": "auth != null && newData.exists() && auth.token.role == 'admin'",
-            "completion_rate": {
-              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
-            },
-            "status": {
-              ".validate": "newData.val() == 'ongoing' || newData.val() == 'incomplete' || newData.val() == 'partial' || newData.val() == 'completed'"
-            },
-            "reward_78_unlocked": {
-              ".validate": "newData.isBoolean() && (!data.exists() || data.val() == false || newData.val() == true)"
-            },
-            "reward_100_unlocked": {
-              ".validate": "newData.isBoolean() && (!data.exists() || data.val() == false || newData.val() == true)"
-            },
-            "xp_granted": {
-              ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() >= data.val())"
-            },
-            "points_granted": {
-              ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() >= data.val())"
-            },
-            "$other": {
-              ".validate": false
-            }
+            "completion_rate":    { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+            "status":             { ".validate": "newData.val() == 'ongoing' || newData.val() == 'incomplete' || newData.val() == 'partial' || newData.val() == 'completed'" },
+            "reward_78_unlocked":  { ".validate": "newData.isBoolean() && (!data.exists() || data.val() == false || newData.val() == true)" },
+            "reward_100_unlocked": { ".validate": "newData.isBoolean() && (!data.exists() || data.val() == false || newData.val() == true)" },
+            "xp_granted":         { ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() >= data.val())" },
+            "points_granted":     { ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() >= data.val())" },
+            "$other": { ".validate": false }
           },
+
           "tasks": {
             "$task_id": {
-              ".write": "auth != null && newData.exists() && ( auth.token.role == 'admin' || (auth.uid == $user_id && data.child('status').val() == 'todo' && newData.child('status').val() == 'pending') || (auth.token.role == 'checker' && data.child('status').val() == 'pending' && (newData.child('status').val() == 'approved' || newData.child('status').val() == 'rejected')) )",
-              "status": {
-                ".validate": "newData.val() == 'todo' || newData.val() == 'pending' || newData.val() == 'approved' || newData.val() == 'rejected'"
-              },
-              "xp_earned": {
-                ".validate": "auth.token.role == 'admin' || !newData.exists() || (data.exists() && data.val() == newData.val())"
-              },
-              "point_earned": {
-                ".validate": "auth.token.role == 'admin' || !newData.exists() || (data.exists() && data.val() == newData.val())"
-              },
-              "verified_by": {
-                ".validate": "auth.token.role == 'admin' || auth.token.role == 'checker' || !newData.exists()"
-              },
-              "updated_at": {
-                ".validate": "newData.isNumber()"
-              },
-              "$other": {
-                ".validate": false
-              }
+              ".write": "auth != null && newData.exists() && (
+                auth.token.role == 'admin' ||
+                (auth.uid == $user_id && data.child('status').val() == 'todo' && newData.child('status').val() == 'pending') ||
+                (auth.token.role == 'checker' && data.child('status').val() == 'pending' && (newData.child('status').val() == 'approved' || newData.child('status').val() == 'rejected'))
+              )",
+              "status":       { ".validate": "newData.val() == 'todo' || newData.val() == 'pending' || newData.val() == 'approved' || newData.val() == 'rejected'" },
+              "xp_earned":    { ".validate": "auth.token.role == 'admin' || !newData.exists() || (data.exists() && data.val() == newData.val())" },
+              "point_earned": { ".validate": "auth.token.role == 'admin' || !newData.exists() || (data.exists() && data.val() == newData.val())" },
+              "verified_by":  { ".validate": "auth.token.role == 'admin' || auth.token.role == 'checker' || !newData.exists()" },
+              "updated_at":   { ".validate": "newData.isNumber()" },
+              "$other":       { ".validate": false }
             }
           }
         }
       }
     },
+
     "rewards": {
       ".read": "auth != null",
       "$rew_id": {
         ".write": "auth != null && auth.token.role == 'admin'",
-        "owner_id": {
-          ".validate": "newData.isString()"
-        },
-        "name": {
-          ".validate": "newData.isString()"
-        },
-        "type": {
-          ".validate": "newData.isString()"
-        },
-        "lifecycle": {
-          ".validate": "newData.hasChildren()"
-        },
-        "$other": {
-          ".validate": false
-        }
+        "owner_id":  { ".validate": "newData.isString()" },
+        "name":      { ".validate": "newData.isString()" },
+        "type":      { ".validate": "newData.isString()" },
+        "lifecycle": { ".validate": "newData.hasChildren()" },
+        "$other":    { ".validate": false }
       }
     },
+
     "reward_batches": {
       ".read": "auth != null",
       "$batch_id": {
         ".write": "auth != null && auth.token.role == 'admin'",
-        "owner_id": {
-          ".validate": "newData.isString()"
-        },
-        "reward_level": {
-          ".validate": "newData.isNumber()"
-        },
-        "status": {
-          ".validate": "newData.val() == 'active' || newData.val() == 'inactive'"
-        },
-        "created_by": {
-          ".validate": "newData.isString()"
-        },
-        "rewards": {
-          ".validate": "newData.hasChildren()"
-        },
-        "$other": {
-          ".validate": false
-        }
+        "owner_id":     { ".validate": "newData.isString()" },
+        "reward_level": { ".validate": "newData.isNumber()" },
+        "status":       { ".validate": "newData.val() == 'active' || newData.val() == 'inactive'" },
+        "created_by":   { ".validate": "newData.isString()" },
+        "rewards":      { ".validate": "newData.hasChildren()" },
+        "$other":       { ".validate": false }
       }
     },
+
     "achievements": {
       ".read": "auth != null",
       "$achv_id": {
         ".write": "auth != null && auth.token.role == 'admin'",
-        "owner_id": {
-          ".validate": "newData.isString()"
-        },
-        "type": {
-          ".validate": "newData.isString()"
-        },
-        "name": {
-          ".validate": "newData.isString()"
-        },
-        "xp_bonus": {
-          ".validate": "newData.isNumber()"
-        },
-        "point_bonus": {
-          ".validate": "newData.isNumber()"
-        },
-        "created_by": {
-          ".validate": "newData.isString()"
-        },
-        "date": {
-          ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)"
-        },
-        "created_at": {
-          ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())"
-        },
-        "$other": {
-          ".validate": false
-        }
+        "owner_id":    { ".validate": "newData.isString()" },
+        "type":        { ".validate": "newData.isString()" },
+        "name":        { ".validate": "newData.isString()" },
+        "xp_bonus":    { ".validate": "newData.isNumber()" },
+        "point_bonus": { ".validate": "newData.isNumber()" },
+        "created_by":  { ".validate": "newData.isString()" },
+        "date":        { ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)" },
+        "created_at":  { ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())" },
+        "$other":      { ".validate": false }
       }
     },
+
     "admin_logs": {
       ".read": "auth != null && auth.token.role == 'admin'",
       "$log_id": {
         ".write": "auth != null && newData.exists() && auth.token.role == 'admin'",
-        "action_type": {
-          ".validate": "newData.isString() && (!data.exists() || data.val() == newData.val())"
-        },
-        "target_user": {
-          ".validate": "newData.isString() && (!data.exists() || data.val() == newData.val())"
-        },
-        "value_changed": {
-          ".validate": "newData.hasChildren()"
-        },
-        "reason": {
-          ".validate": "newData.isString()"
-        },
-        "created_at": {
-          ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())"
-        },
-        "$other": {
-          ".validate": false
-        }
+        "action_type":   { ".validate": "newData.isString() && (!data.exists() || data.val() == newData.val())" },
+        "target_user":   { ".validate": "newData.isString() && (!data.exists() || data.val() == newData.val())" },
+        "value_changed": { ".validate": "newData.hasChildren()" },
+        "reason":        { ".validate": "newData.isString()" },
+        "created_at":    { ".validate": "newData.isNumber() && (!data.exists() || data.val() == newData.val())" },
+        "$other":        { ".validate": false }
       }
     }
   }
