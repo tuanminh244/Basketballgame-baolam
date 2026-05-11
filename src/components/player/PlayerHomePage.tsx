@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from '@/services/firebase/config';
-import { submitTaskAtomic } from '@/services/firebase/dbService';
+import { submitTaskAtomic } from '@/services/taskService';
 import { getVietnamDate } from '@/utils/time';
 import { TaskLog } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +27,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
   const [processing, setProcessing] = useState<string | null>(null);
   const { user, logout } = useAuth();
 
-  // Config listener
   useEffect(() => {
     const unsub = onValue(ref(db, 'system_config/current_month_node'), snap => {
       if (snap.exists()) setMonthNode(snap.val());
@@ -35,7 +34,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     return () => unsub();
   }, []);
 
-  // Stats listener
   useEffect(() => {
     const unsub = onValue(ref(db, `users/${userId}/stats`), snap => {
       if (snap.exists()) setStats(snap.val());
@@ -43,7 +41,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     return () => unsub();
   }, [userId]);
 
-  // Templates listener
   useEffect(() => {
     const q = query(ref(db, 'task_templates'), orderByChild('owner_id'), equalTo(userId));
     const unsub = onValue(q, snap => {
@@ -56,7 +53,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     return () => unsub();
   }, [userId]);
 
-  // Tasks listener
   useEffect(() => {
     if (!monthNode) return;
     const unsub = onValue(ref(db, `${monthNode}/${getVietnamDate()}/${userId}/tasks`), snap => {
@@ -69,7 +65,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     return () => unsub();
   }, [userId, monthNode]);
 
-  // Summary listener — backend authority for economy state
   useEffect(() => {
     if (!monthNode) return;
     const unsub = onValue(
@@ -91,7 +86,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     }
   };
 
-  // Stats derived
   const level     = stats?.level ?? 1;
   const currentXp = stats?.current_xp ?? 0;
   const points    = stats?.total_points ?? 0;
@@ -103,14 +97,12 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
     ? Math.min(100, Math.round(((currentXp - prevLvXp) / range) * 100))
     : 0;
 
-  // Economy state — backend authoritative only
-  const donePct        = summary?.completion_rate ?? 0;
+  const donePct          = summary?.completion_rate ?? 0;
   const isRewardUnlocked = summary?.reward_78_unlocked || summary?.reward_100_unlocked;
 
   return (
     <div className="min-h-screen bg-slate-950 pb-8">
 
-      {/* Header */}
       <div className="bg-gradient-to-br from-sky-600 to-blue-800 px-5 pt-12 pb-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -126,7 +118,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
           </button>
         </div>
 
-        {/* Stats row */}
         <div className="flex gap-3 mt-6 relative z-10">
           <div className="flex-1 bg-white/10 rounded-2xl p-3 text-center">
             <p className="text-sky-200 text-xs font-medium">Cấp độ</p>
@@ -142,7 +133,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
           </div>
         </div>
 
-        {/* XP Bar */}
         <div className="mt-4 relative z-10">
           <div className="flex justify-between text-xs text-sky-200 mb-1.5">
             <span>XP: {currentXp}</span>
@@ -155,7 +145,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* Daily progress — backend authoritative */}
       <div className="px-5 -mt-4">
         <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl">
           <div className="flex justify-between items-center mb-2">
@@ -176,7 +165,6 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* Task list */}
       <div className="px-5 mt-5">
         <h2 className="text-white font-bold text-lg mb-3">📋 Nhiệm vụ hôm nay</h2>
 
