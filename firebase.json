@@ -1,0 +1,5 @@
+{
+  "database": {
+    "rules": "firebase_rules_LOCKED_v2.json"
+  }
+}
