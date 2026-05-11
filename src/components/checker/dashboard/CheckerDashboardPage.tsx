@@ -47,7 +47,6 @@ export default function CheckerDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-950 pb-10">
 
-      {/* Header */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-800 px-5 pt-12 pb-10 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
@@ -64,7 +63,6 @@ export default function CheckerDashboardPage() {
           </button>
         </div>
 
-        {/* Stats */}
         <div className="flex gap-3 mt-6 relative z-10">
           <div className="flex-1 bg-white/10 rounded-2xl p-3 text-center">
             <p className="text-emerald-200 text-xs font-medium">Tổng</p>
@@ -81,7 +79,6 @@ export default function CheckerDashboardPage() {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="px-5 -mt-4 space-y-3">
         <Link href="/queue"
           className="block bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl hover:bg-slate-700 transition active:scale-95 relative overflow-hidden">
@@ -109,7 +106,6 @@ export default function CheckerDashboardPage() {
           </div>
         </div>
 
-        {/* Today summary bar */}
         <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 mt-2">
           <p className="text-slate-400 text-xs uppercase tracking-widest font-semibold mb-3">Hôm nay</p>
           <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
