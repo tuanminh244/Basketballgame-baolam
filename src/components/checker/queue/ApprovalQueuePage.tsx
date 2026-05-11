@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/services/firebase/config';
-import { approveTaskAtomic } from '@/services/firebase/dbService';
+import { approveTaskAtomic } from '@/services/approvalService';
 import { getVietnamDate } from '@/utils/time';
 import { TaskLog } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -77,7 +77,6 @@ export default function ApprovalQueuePage() {
   return (
     <div className="min-h-screen bg-slate-950 pb-10">
 
-      {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-5 pt-14 pb-5">
         <div className="flex items-center gap-3 mb-1">
           <Link href="/dashboard" className="text-slate-400 hover:text-white transition text-sm">
@@ -114,7 +113,6 @@ export default function ApprovalQueuePage() {
                 <div key={key}
                   className={`bg-slate-800 border border-slate-700 rounded-2xl p-4 transition-all ${isBusy ? 'opacity-60' : ''}`}>
 
-                  {/* Player info */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center text-xl">
                       {player.emoji}
@@ -129,7 +127,6 @@ export default function ApprovalQueuePage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAction(task, true)}
