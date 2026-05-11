@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@/types';
 import { auth } from '@/services/firebase/config';
 import { signInWithCustomToken, onAuthStateChanged, signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -16,15 +17,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("AUTH STATE:", firebaseUser);
+      
       if (firebaseUser) {
         const storedUser = localStorage.getItem('game_user_meta');
+        console.log("LOCAL USER:", storedUser);
+
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         } else {
-          signOut(auth).then(() => setUser(null));
+          setUser({
+            id: firebaseUser.uid
+          } as User);
         }
       } else {
         setUser(null);
@@ -32,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
     });
+    
     return () => unsubscribe();
   }, []);
 
@@ -47,10 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Đăng nhập thất bại');
 
+      // PREVENT RACE CONDITION: Store in localStorage BEFORE triggering auth state change
+      localStorage.setItem('game_user_meta', JSON.stringify(data.user));
+      
       await signInWithCustomToken(auth, data.token);
       
       setUser(data.user);
-      localStorage.setItem('game_user_meta', JSON.stringify(data.user));
       setLoading(false);
     } catch (e) {
       setLoading(false);
@@ -62,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
     setUser(null);
     localStorage.removeItem('game_user_meta');
+    router.replace('/login');
   };
 
   return (
