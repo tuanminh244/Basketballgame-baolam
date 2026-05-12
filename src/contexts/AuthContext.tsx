@@ -1,78 +1,108 @@
-"use client";
-import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@/types';
-import { auth } from '@/services/firebase/config';
-import { signInWithCustomToken, onAuthStateChanged, signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+'use client';
 
-type AuthContextType = {
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { ref, get } from 'firebase/database';
+import { db } from '@/lib/firebase/config';
+
+export interface User {
+  id: string;
+  role: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface AuthContextType {
   user: User | null;
   loading: boolean;
   loginWithPin: (pin: string) => Promise<void>;
-  logout: () => Promise<void>;
-};
+  logout: () => void;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Session Restore Logic (Preserved)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("AUTH STATE:", firebaseUser);
-      
-      if (firebaseUser) {
-        const storedUser = localStorage.getItem('game_user_meta');
-        console.log("LOCAL USER:", storedUser);
+    try {
+      const storedUser = localStorage.getItem('game_user_meta');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        
+        // Normalize the restored object
+        const normalizedUser: User = {
+          ...parsed,
+          id: parsed.id || parsed.uid
+        };
 
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        // Corrupted session guard
+        if (normalizedUser.id) {
+          setUser(normalizedUser);
         } else {
-          setUser({
-            id: firebaseUser.uid
-          } as User);
+          console.warn('Session data is missing user id. Clearing corrupted session.');
+          setUser(null);
+          localStorage.removeItem('game_user_meta');
         }
       } else {
         setUser(null);
-        localStorage.removeItem('game_user_meta');
       }
+    } catch (error) {
+      console.error('Lỗi khi khôi phục phiên đăng nhập:', error);
+      setUser(null);
+      localStorage.removeItem('game_user_meta');
+    } finally {
       setLoading(false);
-    });
-    
-    return () => unsubscribe();
+    }
   }, []);
 
+  // Direct RTDB PIN Auth Flow (No API transport layer)
   const loginWithPin = async (pin: string) => {
-    setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Đăng nhập thất bại');
+      // 1. Read users/ from RTDB using Firebase Client SDK
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
 
-      // PREVENT RACE CONDITION: Store in localStorage BEFORE triggering auth state change
-      localStorage.setItem('game_user_meta', JSON.stringify(data.user));
-      
-      await signInWithCustomToken(auth, data.token);
-      
-      setUser(data.user);
-      setLoading(false);
-    } catch (e) {
-      setLoading(false);
-      throw e;
+      if (!snapshot.exists()) {
+        throw new Error('Hệ thống chưa có dữ liệu người dùng');
+      }
+
+      const usersData = snapshot.val();
+      let matchedSessionUser: User | null = null;
+
+      // 2. Iterate users & Compare PIN (Client-side plaintext compare)
+      for (const [userId, userData] of Object.entries<any>(usersData)) {
+        if (userData.pass_pin === pin) {
+          // 4. If matched: create normalized session user
+          matchedSessionUser = {
+            id: userId,
+            role: userData.role,
+            name: userData.name,
+          };
+          break; // Stop iterating once matched
+        }
+      }
+
+      // 5. Invalid PIN or Valid PIN flow
+      if (matchedSessionUser) {
+        localStorage.setItem('game_user_meta', JSON.stringify(matchedSessionUser));
+        setUser(matchedSessionUser);
+      } else {
+        throw new Error('Mã PIN không đúng');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
   };
 
-  const logout = async () => {
-    await signOut(auth);
-    setUser(null);
+  // Logout Flow (Preserved)
+  const logout = () => {
     localStorage.removeItem('game_user_meta');
+    setUser(null);
     router.replace('/login');
   };
 
@@ -83,8 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
-};
+}
