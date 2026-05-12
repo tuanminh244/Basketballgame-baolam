@@ -1,19 +1,22 @@
+// src/hooks/useUserStats.ts
 import { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase/config';
-import type { UserStats } from '@/types/economy';
+import { UserStats } from '@/types/auth';
 
-export function useUserStats(userId: string) {
+export function useUserStats(userId: string | undefined) {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!userId) {
+      setStats(null);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     const statsRef = ref(db, `users/${userId}/stats`);
 
     const unsubscribe = onValue(
@@ -25,7 +28,6 @@ export function useUserStats(userId: string) {
           setStats(null);
         }
         setLoading(false);
-        setError(null);
       },
       (err) => {
         setError(err);
@@ -38,13 +40,5 @@ export function useUserStats(userId: string) {
     };
   }, [userId]);
 
-  return {
-    stats,
-    loading,
-    error,
-    level: stats?.level || 1,
-    currentXp: stats?.current_xp || 0,
-    totalPoints: stats?.total_points || 0,
-    currentStreak: stats?.current_streak || 0
-  };
+  return { stats, loading, error };
 }
