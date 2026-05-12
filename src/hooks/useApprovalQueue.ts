@@ -1,52 +1,56 @@
+// src/hooks/useApprovalQueue.ts
 import { useState, useEffect, useCallback } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase/config';
-import { approveTaskAtomic, rejectTaskAtomic } from '@/services/approvalService';
-import type { Task } from '@/types/tasks';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { ApprovalQueueItem } from '@/types/tasks';
+import { useCurrentVNDate } from '@/hooks/useCurrentVNDate';
+import { buildDailyLogsNode } from '@/utils/time';
 
-export function useApprovalQueue(dateKey: string) {
-  const [queue, setQueue] = useState<Record<string, Record<string, Task>>>({});
+export function useApprovalQueue() {
+  const { user } = useAuthContext();
+  const [queue, setQueue] = useState<ApprovalQueueItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const { yyyy_mm, date } = useCurrentVNDate();
 
   useEffect(() => {
-    if (!dateKey) {
+    if (!user || user.role === 'player') {
+      setQueue([]);
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
-    const monthKey = dateKey.substring(0, 7).replace('-', '_');
-    const dailyLogsRef = ref(db, `daily_logs_${monthKey}/${dateKey}`);
+    const logsNode = buildDailyLogsNode(yyyy_mm);
+    const dailyLogsRef = ref(db, `${logsNode}/${date}`);
 
     const unsubscribe = onValue(
       dailyLogsRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          const allLogs = snapshot.val();
-          const pendingQueue: Record<string, Record<string, Task>> = {};
-          
-          Object.keys(allLogs).forEach((uid) => {
-            const userTasks = allLogs[uid]?.tasks || {};
-            const pendingTasks: Record<string, Task> = {};
-            
-            Object.keys(userTasks).forEach((taskId) => {
-              if (userTasks[taskId].status === 'pending') {
-                pendingTasks[taskId] = userTasks[taskId];
+          const data = snapshot.val();
+          const pendingTasks: ApprovalQueueItem[] = [];
+
+          for (const [uid, userLog] of Object.entries<any>(data)) {
+            if (userLog && userLog.tasks) {
+              for (const [taskId, taskData] of Object.entries<any>(userLog.tasks)) {
+                // STRICT FIREBASE_SCHEMA_LOCK COMPLIANCE
+                if (taskData.status === 'pending') {
+                  pendingTasks.push({
+                    id: taskId,
+                    userId: uid,
+                    ...taskData
+                  } as ApprovalQueueItem);
+                }
               }
-            });
-            
-            if (Object.keys(pendingTasks).length > 0) {
-              pendingQueue[uid] = pendingTasks;
             }
-          });
-          
-          setQueue(pendingQueue);
+          }
+          setQueue(pendingTasks);
         } else {
-          setQueue({});
+          setQueue([]);
         }
         setLoading(false);
-        setError(null);
       },
       (err) => {
         setError(err);
@@ -57,31 +61,11 @@ export function useApprovalQueue(dateKey: string) {
     return () => {
       unsubscribe();
     };
-  }, [dateKey]);
+  }, [user, yyyy_mm, date]);
 
-  const approveTask = useCallback(async (userId: string, taskId: string, checkerId: string) => {
-    try {
-      await approveTaskAtomic(userId, dateKey, taskId, checkerId);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Approval failed'));
-      throw err;
-    }
-  }, [dateKey]);
+  const refreshQueue = useCallback(async () => {
+    // Managed via realtime subscription
+  }, []);
 
-  const rejectTask = useCallback(async (userId: string, taskId: string, checkerId: string) => {
-    try {
-      await rejectTaskAtomic(userId, dateKey, taskId, checkerId);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Rejection failed'));
-      throw err;
-    }
-  }, [dateKey]);
-
-  return {
-    queue,
-    loading,
-    error,
-    approveTask,
-    rejectTask
-  };
+  return { queue, loading, error, refreshQueue };
 }
