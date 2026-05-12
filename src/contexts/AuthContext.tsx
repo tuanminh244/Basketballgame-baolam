@@ -1,122 +1,110 @@
+// src/contexts/AuthContext.tsx
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { ref, get } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
+import { validatePin, logoutUser } from '@/services/authService';
+import { AuthUser } from '@/types/auth';
 
-export interface User {
-  id: string;
-  role: string;
-  name?: string;
-  [key: string]: any;
-}
-
-interface AuthContextType {
-  user: User | null;
+interface AuthContextValue {
+  user: AuthUser | null;
   loading: boolean;
+  error: string | null;
+  isAuthenticated: boolean;
+  isChecker: boolean;
+  isPlayer: boolean;
+  login: (pin: string) => Promise<void>;
   loginWithPin: (pin: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Session Restore Logic (Preserved)
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('game_user_meta');
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        
-        // Normalize the restored object
-        const normalizedUser: User = {
-          ...parsed,
-          id: parsed.id || parsed.uid
-        };
-
-        // Corrupted session guard
-        if (normalizedUser.id) {
-          setUser(normalizedUser);
-        } else {
-          console.warn('Session data is missing user id. Clearing corrupted session.');
-          setUser(null);
-          localStorage.removeItem('game_user_meta');
+    let mounted = true;
+    const initAuth = async () => {
+      try {
+        const savedPin = localStorage.getItem('coregame_auth_pin');
+        if (savedPin) {
+          const u = await validatePin(savedPin);
+          if (u && mounted) {
+            setUser(u);
+          } else if (mounted) {
+            localStorage.removeItem('coregame_auth_pin');
+          }
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        if (mounted) setLoading(false);
       }
-    } catch (error) {
-      console.error('Lỗi khi khôi phục phiên đăng nhập:', error);
-      setUser(null);
-      localStorage.removeItem('game_user_meta');
+    };
+    initAuth();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const loginWithPin = useCallback(async (pin: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const u = await validatePin(pin);
+      if (u) {
+        setUser(u);
+        localStorage.setItem('coregame_auth_pin', pin);
+      } else {
+        setError('Mã PIN không đúng');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Lỗi đăng nhập. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Direct RTDB PIN Auth Flow (No API transport layer)
-  const loginWithPin = async (pin: string) => {
+  const logout = useCallback(async () => {
+    setLoading(true);
     try {
-      // 1. Read users/ from RTDB using Firebase Client SDK
-      const usersRef = ref(db, 'users');
-      const snapshot = await get(usersRef);
-
-      if (!snapshot.exists()) {
-        throw new Error('Hệ thống chưa có dữ liệu người dùng');
-      }
-
-      const usersData = snapshot.val();
-      let matchedSessionUser: User | null = null;
-
-      // 2. Iterate users & Compare PIN (Client-side plaintext compare)
-      for (const [userId, userData] of Object.entries<any>(usersData)) {
-        if (userData.pass_pin === pin) {
-          // 4. If matched: create normalized session user
-          matchedSessionUser = {
-            id: userId,
-            role: userData.role,
-            name: userData.name,
-          };
-          break; // Stop iterating once matched
-        }
-      }
-
-      // 5. Invalid PIN or Valid PIN flow
-      if (matchedSessionUser) {
-        localStorage.setItem('game_user_meta', JSON.stringify(matchedSessionUser));
-        setUser(matchedSessionUser);
-      } else {
-        throw new Error('Mã PIN không đúng');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      await logoutUser();
+      setUser(null);
+      localStorage.removeItem('coregame_auth_pin');
+    } catch (err) {
+      console.error('Logout error:', err);
+      setError('Lỗi đăng xuất. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  // Logout Flow (Preserved)
-  const logout = () => {
-    localStorage.removeItem('game_user_meta');
-    setUser(null);
-    router.replace('/login');
-  };
+  const value = useMemo<AuthContextValue>(() => {
+    return {
+      user,
+      loading,
+      error,
+      isAuthenticated: !!user,
+      isChecker: user?.role === 'checker' || user?.role === 'admin',
+      isPlayer: user?.role === 'player',
+      login: loginWithPin,
+      loginWithPin,
+      logout
+    };
+  }, [user, loading, error, loginWithPin, logout]);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, loginWithPin, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+export function useAuthContext(): AuthContextValue {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuthContext must be used within an AuthProvider');
   }
   return context;
 }
+
+export const useAuth = useAuthContext;
