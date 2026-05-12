@@ -1,47 +1,51 @@
+// src/hooks/useRealtimeStatus.ts
 import { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase/config';
 
-export function useRealtimeStatus() {
-  const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [syncing, setSyncing] = useState<boolean>(true);
-  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+export interface RealtimeStatus {
+  isOnline: boolean;
+  isConnected: boolean;
+  syncing: boolean;
+  lastSyncTime: number | null;
+}
+
+export function useRealtimeStatus(): RealtimeStatus {
+  const [status, setStatus] = useState<RealtimeStatus>({
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    isConnected: false,
+    syncing: false,
+    lastSyncTime: null,
+  });
 
   useEffect(() => {
-    const connectedRef = ref(db, '.info/connected');
+    const handleOnline = () => setStatus(s => ({ ...s, isOnline: true }));
+    const handleOffline = () => setStatus(s => ({ ...s, isOnline: false }));
 
-    const unsubscribe = onValue(
-      connectedRef,
-      (snapshot) => {
-        const status = snapshot.val() === true;
-        setIsConnected(status);
-        setIsOnline(status);
-        
-        if (status) {
-          setLastSyncTime(Date.now());
-          setSyncing(false);
-        } else {
-          setSyncing(true);
-        }
-      },
-      (err) => {
-        console.error('Realtime connection error:', err);
-        setIsConnected(false);
-        setIsOnline(false);
-        setSyncing(false);
-      }
-    );
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    const connectedRef = ref(db, '.info/connected');
+    const unsubscribe = onValue(connectedRef, (snap) => {
+      const connected = snap.val() === true;
+      setStatus(s => ({
+        ...s,
+        isConnected: connected,
+        syncing: false,
+        lastSyncTime: connected ? Date.now() : s.lastSyncTime
+      }));
+    });
 
     return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
       unsubscribe();
     };
   }, []);
 
-  return {
-    isOnline,
-    isConnected,
-    syncing,
-    lastSyncTime
-  };
+  return status;
 }
