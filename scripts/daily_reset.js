@@ -1,93 +1,85 @@
-const admin = require("firebase-admin");
+const { adminDb } = require('./shared/firebaseAdmin');
+const logger = require('./shared/logger');
 
-try {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-  });
-  const db = admin.database();
+async function runDailyReset() {
+  logger.info('Starting Daily Reset Routine...');
+  const now = new Date();
+  
+  // Xử lý múi giờ chuẩn Asia/Ho_Chi_Minh (+7 UTC)
+  const offset = 7 * 60 * 60 * 1000; 
+  const localDate = new Date(now.getTime() + offset);
+  
+  const yyyy = localDate.getUTCFullYear();
+  const mm = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(localDate.getUTCDate()).padStart(2, '0');
+  const dateKey = `${yyyy}-${mm}-${dd}`;
+  const monthKey = `${yyyy}_${mm}`;
 
-  (async () => {
-    try {
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const vnTime = new Date(utc + 7 * 60 * 60 * 1000);
-      
-      const yyyy = vnTime.getFullYear();
-      const mm = String(vnTime.getMonth() + 1).padStart(2, "0");
-      const dd = String(vnTime.getDate()).padStart(2, "0");
-      const dateToday = `${yyyy}-${mm}-${dd}`;
-      const dailyNode = `daily_logs_${yyyy}_${mm}`;
-      
-      console.log("Running daily reset for:", dateToday);
+  try {
+    const usersIndexSnap = await adminDb.ref('user_index').get();
+    if (!usersIndexSnap.exists()) {
+      logger.warn('No users found in user_index');
+      return;
+    }
 
-      const [usersSnap, taskBatchesSnap, taskTemplatesSnap, configSnap] = await Promise.all([
-        db.ref("users").once("value"),
-        db.ref("task_batches").once("value"),
-        db.ref("task_templates").once("value"),
-        db.ref("system_config").once("value")
-      ]);
+    const templatesSnap = await adminDb.ref('task_templates').get();
+    const templates = templatesSnap.val() || {};
 
-      const users = usersSnap.val() || {};
-      const taskBatches = taskBatchesSnap.val() || {};
-      const taskTemplates = taskTemplatesSnap.val() || {};
-      const systemConfig = configSnap.val() || {};
+    const updates = {};
+    // Map chính xác Root Node của tháng hiện tại
+    updates['system_config/current_month_node'] = `daily_logs_${monthKey}`;
 
-      const updates = {};
+    const uids = Object.keys(usersIndexSnap.val());
 
-      Object.keys(users).forEach((uid) => {
-        if (users[uid].role === "player") {
-          updates[`users/${uid}/stats/daily_penalty_accumulated`] = 0;
-        }
-      });
-
-      Object.entries(taskBatches).forEach(([batchId, batch]) => {
-        if (batch.status !== "active") return;
-        const userId = batch.owner_id;
-        if (!userId || !batch.tasks) return;
-
-        const basePath = `${dailyNode}/${dateToday}/${userId}`;
-        const clonedTasks = {};
-
-        Object.values(batch.tasks).forEach((taskId) => {
-          const tmpl = taskTemplates[taskId];
-          if (!tmpl) return;
-          clonedTasks[taskId] = {
-            status: "todo",
-            xp_earned: tmpl.xp_reward,
-            point_earned: tmpl.point_reward,
-            updated_at: Date.now(),
-          };
-        });
-
-        if (Object.keys(clonedTasks).length === 0) return;
-
-        updates[`${basePath}/tasks`] = clonedTasks;
+    for (const uid of uids) {
+      const roleSnap = await adminDb.ref(`users/${uid}/role`).get();
+      if (roleSnap.val() === 'player') {
+        const basePath = `daily_logs_${monthKey}/${dateKey}/${uid}`;
+        
+        // Reset Penalty Cap
+        updates[`users/${uid}/stats/daily_penalty_accumulated`] = 0;
+        
+        // Khởi tạo Summary
         updates[`${basePath}/summary`] = {
           completion_rate: 0,
-          status: "incomplete",
           reward_78_unlocked: false,
           reward_100_unlocked: false,
           xp_granted: 0,
-          points_granted: 0
+          points_granted: 0,
+          status: 'ongoing'
         };
-      });
 
-      if (systemConfig.current_month_node !== dailyNode) {
-        updates["system_config/current_month_node"] = dailyNode;
-        console.log("Month changed → updated system_config");
+        const clonedTasks = {};
+        for (const templateId in templates) {
+          const tmpl = templates[templateId];
+          if (tmpl.owner_id === uid) {
+             // Clone an toàn, loại bỏ các trường rác không có trong schema
+             clonedTasks[templateId] = {
+               status: 'todo',
+               xp_earned: tmpl.xp_reward || 0,
+               point_earned: tmpl.point_reward || 0,
+               updated_at: Date.now()
+             };
+          }
+        }
+
+        // Bỏ qua ghi tasks nếu không có task nào hợp lệ
+        if (Object.keys(clonedTasks).length > 0) {
+           updates[`${basePath}/tasks`] = clonedTasks;
+        }
       }
-
-      await db.ref().update(updates);
-      console.log("Daily reset completed successfully");
-      process.exit(0);
-    } catch (error) {
-      console.error("Error during daily reset:", error);
-      process.exit(1);
     }
-  })();
-} catch (initError) {
-  console.error("Initialization error:", initError);
-  process.exit(1);
+
+    await adminDb.ref().update(updates);
+    logger.success(`Daily Reset completed for ${dateKey}`);
+    
+  } catch (err) {
+    logger.error(`Daily Reset Failed: ${err.message}`, err);
+    process.exit(1);
+  }
 }
+
+if (require.main === module) {
+  runDailyReset();
+}
+module.exports = runDailyReset;
