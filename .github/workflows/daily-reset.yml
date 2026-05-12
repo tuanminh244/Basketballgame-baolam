@@ -1,19 +1,31 @@
 name: Daily Reset Engine
+
 on:
   schedule:
-    - cron: "0 17 * * *" 
+    # 17:00 UTC tương đương 00:00 giờ Asia/Ho_Chi_Minh
+    - cron: '0 17 * * *'
   workflow_dispatch:
+
 jobs:
-  daily-reset:
+  run-daily-reset:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: "20"
-      - run: npm ci
-      - name: Run Daily Reset Script
+          node-version: '18'
+          
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Execute Daily Reset Script
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.NEXT_PUBLIC_FIREBASE_DATABASE_URL }}
         run: node scripts/daily_reset.js
