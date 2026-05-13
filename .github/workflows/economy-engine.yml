@@ -18,7 +18,6 @@ jobs:
         uses: actions/setup-node@v4  # v4, không phải v3
         with:
           node-version: '18'
-          cache: 'npm'              # thêm cache
 
       - name: Install Dependencies
         run: npm ci                 # thay npm install
