@@ -1,34 +1,41 @@
 import { ref, push, runTransaction } from 'firebase/database';
-import { db } from '@/services/firebase/config';
+import { db } from '@/lib/firebase/config';
 
-export async function createPurchaseTransaction(
+export async function processPurchaseTransaction(
   userId: string,
-  itemType: string,
   itemId: string,
-  cost: number
-) {
-  const transRef = push(ref(db, `transactions/${userId}`));
+  cost: number,
+  currentBalance: number
+): Promise<string> {
+  // Client-side guard (Rule backend sẽ chặn thêm 1 lớp nữa)
+  if (currentBalance < cost) {
+    throw new Error('Not enough points to process transaction');
+  }
 
-  return runTransaction(transRef, (currentData) => {
+  const transRef = push(ref(db, `transactions/${userId}`));
+  const now = Date.now();
+
+  await runTransaction(transRef, (currentData) => {
     if (currentData !== null) return;
 
-    const now = Date.now();
     return {
       user_id: userId,
-      item_type: itemType,
       item_id: itemId,
+      item_type: 'store',
       cost: cost,
       status: 'pending_delivery',
       created_at: now,
       updated_at: now
     };
   });
+
+  return transRef.key as string;
 }
 
-export async function markTransactionDelivered(userId: string, transId: string) {
+export async function markTransactionDelivered(userId: string, transId: string): Promise<void> {
   const transRef = ref(db, `transactions/${userId}/${transId}`);
 
-  return runTransaction(transRef, (currentData) => {
+  await runTransaction(transRef, (currentData) => {
     if (currentData === null) return currentData;
     if (currentData.status !== 'pending_delivery') return;
 
@@ -38,10 +45,10 @@ export async function markTransactionDelivered(userId: string, transId: string) 
   });
 }
 
-export async function cancelTransaction(userId: string, transId: string) {
+export async function cancelTransaction(userId: string, transId: string): Promise<void> {
   const transRef = ref(db, `transactions/${userId}/${transId}`);
 
-  return runTransaction(transRef, (currentData) => {
+  await runTransaction(transRef, (currentData) => {
     if (currentData === null) return currentData;
     if (currentData.status !== 'pending_delivery') return;
 
