@@ -1,5 +1,6 @@
 import { ref, runTransaction } from 'firebase/database';
-import { db } from '@/services/firebase/config';
+import { db } from '@/lib/firebase/config';
+import { TaskStatus } from '@/types';
 
 export async function approveTaskAtomic(
   monthNode: string,
@@ -8,24 +9,18 @@ export async function approveTaskAtomic(
   taskId: string,
   approve: boolean,
   checkerId: string
-) {
-  const taskRef = ref(
-    db,
-    `${monthNode}/${date}/${userId}/tasks/${taskId}`
-  );
+): Promise<void> {
+  const taskRef = ref(db, `${monthNode}/${date}/${userId}/tasks/${taskId}`);
 
-  return runTransaction(taskRef, (currentData) => {
-    if (currentData === null) {
-      return currentData;
-    }
+  await runTransaction(taskRef, (currentData) => {
+    if (currentData === null) return currentData;
 
-    // FIREBASE RULE STRICT CHECK
-    // Only allow pending -> approved/rejected
-    if (currentData.status !== 'pending') {
+    // SCHEMA LOCK: Chỉ cho duyệt task đang ở trạng thái pending
+    if (currentData.status !== ('pending' as TaskStatus)) {
       return;
     }
 
-    currentData.status = approve ? 'approved' : 'rejected';
+    currentData.status = (approve ? 'approved' : 'rejected') as TaskStatus;
     currentData.updated_at = Date.now();
     currentData.verified_by = checkerId;
 
