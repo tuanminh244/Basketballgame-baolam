@@ -20,7 +20,7 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies
-        run: npm ci                 # thay npm install
+        run: npm install                 # thay npm install
 
       - name: Execute Task Approval Engine
         env:
