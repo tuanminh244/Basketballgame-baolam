@@ -2,30 +2,31 @@ name: Economy Engine
 
 on:
   schedule:
-    # Chạy lặp lại mỗi 5 phút
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
   run-approval-engine:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 5        # safety net cấp job
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4  # v4, không phải v3
         with:
           node-version: '18'
-          
+          cache: 'npm'              # thêm cache
+
       - name: Install Dependencies
-        run: npm install
+        run: npm ci                 # thay npm install
 
       - name: Execute Task Approval Engine
         env:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-          NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.NEXT_PUBLIC_FIREBASE_DATABASE_URL }}
+          FIREBASE_DATABASE_URL: ${{ secrets.NEXT_PUBLIC_FIREBASE_DATABASE_URL }}
         run: node scripts/task_approval.js
