@@ -1,8 +1,7 @@
-// src/hooks/useUserStats.ts
 import { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
-import { UserStats } from '@/types/auth';
+import { onValue } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
+import type { UserStats } from '@/types/auth';
 
 export function useUserStats(userId: string | undefined) {
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -11,23 +10,22 @@ export function useUserStats(userId: string | undefined) {
 
   useEffect(() => {
     if (!userId) {
-      setStats(null);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    const statsRef = ref(db, `users/${userId}/stats`);
+    const statsRef = refs.userStats(userId);
 
     const unsubscribe = onValue(
       statsRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          setStats(snapshot.val() as UserStats);
+          setStats(snapshot.val());
         } else {
           setStats(null);
         }
         setLoading(false);
+        setError(null);
       },
       (err) => {
         setError(err);
@@ -35,9 +33,7 @@ export function useUserStats(userId: string | undefined) {
       }
     );
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [userId]);
 
   return { stats, loading, error };
