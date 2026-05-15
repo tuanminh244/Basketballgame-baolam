@@ -1,6 +1,6 @@
-import { ref, runTransaction } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
-import { TaskStatus } from '@/types';
+import { runTransaction } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
+import type { TaskStatus } from '@/types';
 
 export async function submitTaskAtomic(
   monthNode: string,
@@ -8,12 +8,12 @@ export async function submitTaskAtomic(
   userId: string,
   taskId: string
 ): Promise<void> {
-  const taskRef = ref(db, `${monthNode}/${date}/${userId}/tasks/${taskId}`);
+  const taskRef = refs.dailyTaskItem(monthNode, date, userId, taskId);
 
   await runTransaction(taskRef, (currentData) => {
     if (currentData === null) return currentData;
 
-    // SCHEMA LOCK: Chỉ cho phép trạng thái todo chuyển thành pending
+    // SCHEMA LOCK: Chỉ cho phép trạng thái 'todo' chuyển thành 'pending'
     if (currentData.status !== ('todo' as TaskStatus)) {
       return; 
     }
