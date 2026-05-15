@@ -1,5 +1,5 @@
-import { ref, push } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
+import { push } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
 
 export async function createPenaltyLog(
   userId: string,
@@ -7,8 +7,8 @@ export async function createPenaltyLog(
   pointsDeducted: number,
   adminId: string
 ): Promise<string> {
-  const penaltyLogsRef = ref(db, `penalty_logs/${userId}`);
-  
+  const penaltyLogsRef = refs.penaltyLogUser(userId);
+    
   const newPenaltyRef = await push(penaltyLogsRef, {
     user_id: userId,
     reason: reason,
