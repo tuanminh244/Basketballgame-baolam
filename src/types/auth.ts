@@ -14,6 +14,9 @@ export interface PlayerStats {
   readonly daily_penalty_accumulated: number;
 }
 
+// Alias to satisfy UI layer contracts
+export type UserStats = PlayerStats;
+
 export interface BaseUser {
   readonly name: string;
   readonly role: UserRole;
@@ -25,22 +28,18 @@ export interface PlayerUser extends BaseUser {
   readonly stats: PlayerStats;
 }
 
-export interface ParentUser extends BaseUser {
-  readonly role: 'admin' | 'checker';
+export interface CheckerUser extends BaseUser {
+  readonly role: 'checker';
 }
 
-export interface SessionUser {
-  readonly id: string;
-  readonly name: string;
-  readonly role: UserRole;
+export interface AdminUser extends BaseUser {
+  readonly role: 'admin';
 }
 
-export interface AuthState {
-  readonly user: SessionUser | null;
-  readonly isLoading: boolean;
-  readonly error: string | null;
-}
+export type User = PlayerUser | CheckerUser | AdminUser;
 
-export interface LoginPayload {
-  readonly pin: string;
-}
+// SessionUser is historically used, aliased to User to prevent duplication
+export type SessionUser = User;
+
+// Canonical type with ID attached (returned from auth service)
+export type AuthUser = User & { id: string };
