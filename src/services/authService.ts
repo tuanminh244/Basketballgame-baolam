@@ -1,11 +1,11 @@
-import { ref, get } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
-import { User } from '@/types';
+import { get } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
+import type { User } from '@/types';
 
 export async function validatePin(pin: string): Promise<User | null> {
-  const usersRef = ref(db, 'users');
+  const usersRef = refs.users();
   const snapshot = await get(usersRef);
-  
+    
   if (!snapshot.exists()) {
     return null;
   }
@@ -19,10 +19,11 @@ export async function validatePin(pin: string): Promise<User | null> {
       } as User;
     }
   }
-  
+    
   return null;
 }
 
 export async function logoutUser(): Promise<void> {
+  // Session is handled by React Context (AuthContext)
   return Promise.resolve();
 }
