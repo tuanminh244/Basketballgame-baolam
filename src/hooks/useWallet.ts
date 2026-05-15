@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
+import { onValue } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
 import { processPurchaseTransaction } from '@/services/transactionService';
 import type { Transaction } from '@/types/economy';
 
-export function useWallet(userId: string) {
+export function useWallet(userId: string | undefined) {
   const [transactions, setTransactions] = useState<Record<string, Transaction>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -15,7 +15,7 @@ export function useWallet(userId: string) {
       return;
     }
 
-    const txRef = ref(db, `transactions/${userId}`);
+    const txRef = refs.userTransactions(userId);
 
     const unsubscribe = onValue(
       txRef,
@@ -34,12 +34,11 @@ export function useWallet(userId: string) {
       }
     );
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [userId]);
 
   const spendPoints = useCallback(async (itemId: string, cost: number, currentBalance: number) => {
+    if (!userId) throw new Error('User not found');
     try {
       setError(null);
       await processPurchaseTransaction(userId, itemId, cost, currentBalance);
@@ -49,10 +48,5 @@ export function useWallet(userId: string) {
     }
   }, [userId]);
 
-  return {
-    transactions,
-    loading,
-    error,
-    spendPoints
-  };
+  return { transactions, loading, error, spendPoints };
 }
