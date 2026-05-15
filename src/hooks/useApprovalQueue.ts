@@ -1,41 +1,45 @@
-// src/hooks/useApprovalQueue.ts
 import { useState, useEffect, useCallback } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { ApprovalQueueItem } from '@/types/tasks';
-import { useCurrentVNDate } from '@/hooks/useCurrentVNDate';
-import { buildDailyLogsNode } from '@/utils/time';
+import { onValue } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
+import { getVietnamDate } from '@/utils/time';
+import type { ApprovalQueueItem } from '@/types/tasks';
 
-export function useApprovalQueue() {
-  const { user } = useAuthContext();
+export function useApprovalQueue(_checkerId?: string) {
   const [queue, setQueue] = useState<ApprovalQueueItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  const { yyyy_mm, date } = useCurrentVNDate();
+    
+  const [monthNode, setMonthNode] = useState('');
+  
+  useEffect(() => {
+    const unsub = onValue(
+      refs.systemConfigMonthNode(),
+      (snap) => {
+        if (snap.exists()) {
+          setMonthNode(snap.val());
+        }
+      }
+    );
+    return () => unsub();
+  }, []);
+  
+  const date = getVietnamDate();
 
   useEffect(() => {
-    if (!user || user.role === 'player') {
-      setQueue([]);
-      setLoading(false);
-      return;
-    }
+    if (!monthNode) return;
 
-    setLoading(true);
-    const logsNode = buildDailyLogsNode(yyyy_mm);
-    const dailyLogsRef = ref(db, `${logsNode}/${date}`);
+    const dateRef = refs.dailyLogsDate(monthNode, date);
 
     const unsubscribe = onValue(
-      dailyLogsRef,
+      dateRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          const data = snapshot.val();
+          const allUsersData = snapshot.val();
           const pendingTasks: ApprovalQueueItem[] = [];
 
-          for (const [uid, userLog] of Object.entries<any>(data)) {
-            if (userLog && userLog.tasks) {
-              for (const [taskId, taskData] of Object.entries<any>(userLog.tasks)) {
-                // STRICT FIREBASE_SCHEMA_LOCK COMPLIANCE
+          Object.entries(allUsersData).forEach(([uid, userData]: [string, any]) => {
+            if (userData.tasks) {
+              Object.entries(userData.tasks).forEach(([taskId, taskData]: [string, any]) => {
                 if (taskData.status === 'pending') {
                   pendingTasks.push({
                     id: taskId,
@@ -43,14 +47,16 @@ export function useApprovalQueue() {
                     ...taskData
                   } as ApprovalQueueItem);
                 }
-              }
+              });
             }
-          }
+          });
+
           setQueue(pendingTasks);
         } else {
           setQueue([]);
         }
         setLoading(false);
+        setError(null);
       },
       (err) => {
         setError(err);
@@ -58,14 +64,10 @@ export function useApprovalQueue() {
       }
     );
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user, yyyy_mm, date]);
+    return () => unsubscribe();
+  }, [monthNode, date]);
 
-  const refreshQueue = useCallback(async () => {
-    // Managed via realtime subscription
-  }, []);
+  const refreshQueue = useCallback(async () => Promise.resolve(), []);
 
   return { queue, loading, error, refreshQueue };
 }
