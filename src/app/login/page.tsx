@@ -26,7 +26,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user) router.push('/');
+    if (!loading && user) router.replace('/');
   }, [user, loading, router]);
 
   // Cleanup shake timeout on unmount
