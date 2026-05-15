@@ -1,51 +1,24 @@
-// src/hooks/useRealtimeStatus.ts
 import { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
+import { onValue } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
 
 export interface RealtimeStatus {
-  isOnline: boolean;
-  isConnected: boolean;
-  syncing: boolean;
-  lastSyncTime: number | null;
+  readonly isOnline: boolean;
+  readonly syncing: boolean;
 }
 
 export function useRealtimeStatus(): RealtimeStatus {
-  const [status, setStatus] = useState<RealtimeStatus>({
-    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-    isConnected: false,
-    syncing: false,
-    lastSyncTime: null,
-  });
+  const [isOnline, setIsOnline] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleOnline = () => setStatus(s => ({ ...s, isOnline: true }));
-    const handleOffline = () => setStatus(s => ({ ...s, isOnline: false }));
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-    }
-
-    const connectedRef = ref(db, '.info/connected');
+    const connectedRef = refs.connected();
+    
     const unsubscribe = onValue(connectedRef, (snap) => {
-      const connected = snap.val() === true;
-      setStatus(s => ({
-        ...s,
-        isConnected: connected,
-        syncing: false,
-        lastSyncTime: connected ? Date.now() : s.lastSyncTime
-      }));
+      setIsOnline(snap.val() === true);
     });
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      }
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
-  return status;
+  return { isOnline, syncing: false };
 }
