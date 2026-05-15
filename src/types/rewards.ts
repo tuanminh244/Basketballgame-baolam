@@ -21,11 +21,8 @@ export interface Reward {
   readonly lifecycle: RewardLifecycle;
 }
 
-/**
- * UI-only display type. Does not map to Firebase schema.
- */
-export interface BadgeDisplay {
-  readonly name: string;
-  readonly image_url: string;
-  readonly date_earned: number;
+// Aggregate state used by hooks and SessionContext
+export interface RewardState {
+  readonly reward_78_unlocked: boolean;
+  readonly reward_100_unlocked: boolean;
 }
