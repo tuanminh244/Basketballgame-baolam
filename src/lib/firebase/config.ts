@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
 // Central Firebase client initialization layer.
-// Sử dụng các biến môi trường có sẵn và ngăn việc khởi tạo trùng lặp (duplicate initialization).
+// Sử dụng các biến môi trường có sẵn và ngăn việc khởi tạo trùng lặp.
 // LƯU Ý: Firebase Auth KHÔNG được sử dụng. Xác thực PIN được xử lý thủ công bằng logic của App.
 
 const firebaseConfig = {
@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Khởi tạo Firebase an toàn
+// Khởi tạo Firebase an toàn (Singleton)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Export các dịch vụ đã khởi tạo (Chỉ có Database)
