@@ -7,7 +7,7 @@ let adminApp;
 if (!admin.apps.length) {
   adminApp = admin.initializeApp({
     credential: admin.credential.applicationDefault(), 
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL
+    databaseURL: process.env.FIREBASE_DATABASE_URL
   });
 } else {
   adminApp = admin.app();
