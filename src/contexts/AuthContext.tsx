@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
@@ -37,62 +38,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (err) {
-        console.error('Auth init error:', err);
+        console.error('Auth initialization error:', err);
       } finally {
         if (mounted) setLoading(false);
       }
     };
     initAuth();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const loginWithPin = useCallback(async (pin: string) => {
+    setLoading(true);
     setError(null);
     try {
       const u = await validatePin(pin);
       if (u) {
-        localStorage.setItem('coregame_auth_pin', pin);
         setUser(u);
+        localStorage.setItem('coregame_auth_pin', pin);
       } else {
-        // MUST throw so UI try/catch correctly triggers feedback (e.g., shake animation)
-        throw new Error('Mã PIN không đúng');
+        setError('Mã PIN không đúng');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
-      throw err;
+      console.error('Login error:', err);
+      setError('Lỗi đăng nhập. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   const logout = useCallback(async () => {
-    // Hardened logout sequence
+    setLoading(true);
     try {
       await logoutUser();
-    } finally {
-      localStorage.removeItem('coregame_auth_pin');
       setUser(null);
+      localStorage.removeItem('coregame_auth_pin');
+    } catch (err) {
+      console.error('Logout error:', err);
+      setError('Lỗi đăng xuất. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const value = useMemo(() => ({
-    user,
-    loading,
-    error,
-    isAuthenticated: !!user,
-    isChecker: user?.role === 'checker' || user?.role === 'admin',
-    isPlayer: user?.role === 'player',
-    login: loginWithPin,
-    loginWithPin,
-    logout
-  }), [user, loading, error, loginWithPin, logout]);
+  const value = useMemo<AuthContextValue>(() => {
+    return {
+      user,
+      loading,
+      error,
+      isAuthenticated: !!user,
+      isChecker: user?.role === 'checker' || user?.role === 'admin',
+      isPlayer: user?.role === 'player',
+      login: loginWithPin,
+      loginWithPin,
+      logout
+    };
+  }, [user, loading, error, loginWithPin, logout]);
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuthContext() {
+export function useAuthContext(): AuthContextValue {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuthContext must be used within an AuthProvider');
@@ -100,6 +107,4 @@ export function useAuthContext() {
   return context;
 }
 
-// RESTORE BACKWARD COMPATIBILITY EXPORT
-// DO NOT REMOVE: Critical for UI_LOCK backward compatibility
 export const useAuth = useAuthContext;
