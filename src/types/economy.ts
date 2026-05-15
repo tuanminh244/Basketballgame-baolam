@@ -1,13 +1,5 @@
 export type TransactionStatus = 'pending_delivery' | 'delivered' | 'cancelled';
 
-export interface PenaltyLog {
-  readonly user_id: string;
-  readonly points_deducted: number;
-  readonly reason: string;
-  readonly created_by: string;
-  readonly created_at: number;
-}
-
 export interface StoreTransaction {
   readonly user_id: string;
   readonly item_type: string;
@@ -16,6 +8,15 @@ export interface StoreTransaction {
   readonly status: TransactionStatus;
   readonly created_at: number;
   readonly updated_at: number;
+}
+
+// Flat structure matching actual DB schema, aliased to prevent duplicated entities
+export type Transaction = StoreTransaction & { readonly id?: string };
+
+// Aggregate state used by hooks and SessionContext
+export interface WalletState {
+  readonly total_points: number;
+  readonly current_xp: number;
 }
 
 export interface LevelInfo {
