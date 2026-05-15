@@ -1,23 +1,31 @@
-"use client";
+'use client';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function RootPage() {
-  const router = useRouter();
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
-    
+
     if (!user) {
-      router.push('/login');
-    } else if (user.role === 'checker' || user.role === 'admin') {
-      router.push('/dashboard');
+      router.replace('/login');
     } else if (user.role === 'player') {
-      router.push('/player-home');
+      router.replace('/player-home');
+    } else if (user.role === 'checker' || user.role === 'admin') {
+      router.replace('/dashboard');
+    } else {
+      router.replace('/login');
     }
   }, [user, loading, router]);
 
-  return <div className="p-8 text-center font-bold text-gray-500">Đang tải hệ thống...</div>;
+  // Global loading state while resolving Auth
+  return (
+    <div className="flex flex-1 items-center justify-center min-h-screen">
+      <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 }
