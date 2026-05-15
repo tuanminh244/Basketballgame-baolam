@@ -1,5 +1,5 @@
-import { ref, push, runTransaction } from 'firebase/database';
-import { db } from '@/lib/firebase/config';
+import { push, runTransaction } from 'firebase/database';
+import { refs } from '@/lib/firebase/refs';
 
 export async function processPurchaseTransaction(
   userId: string,
@@ -7,12 +7,11 @@ export async function processPurchaseTransaction(
   cost: number,
   currentBalance: number
 ): Promise<string> {
-  // Client-side guard (Rule backend sẽ chặn thêm 1 lớp nữa)
   if (currentBalance < cost) {
     throw new Error('Not enough points to process transaction');
   }
 
-  const transRef = push(ref(db, `transactions/${userId}`));
+  const transRef = push(refs.userTransactions(userId));
   const now = Date.now();
 
   await runTransaction(transRef, (currentData) => {
@@ -33,7 +32,7 @@ export async function processPurchaseTransaction(
 }
 
 export async function markTransactionDelivered(userId: string, transId: string): Promise<void> {
-  const transRef = ref(db, `transactions/${userId}/${transId}`);
+  const transRef = refs.userTransactionItem(userId, transId);
 
   await runTransaction(transRef, (currentData) => {
     if (currentData === null) return currentData;
@@ -46,7 +45,7 @@ export async function markTransactionDelivered(userId: string, transId: string):
 }
 
 export async function cancelTransaction(userId: string, transId: string): Promise<void> {
-  const transRef = ref(db, `transactions/${userId}/${transId}`);
+  const transRef = refs.userTransactionItem(userId, transId);
 
   await runTransaction(transRef, (currentData) => {
     if (currentData === null) return currentData;
