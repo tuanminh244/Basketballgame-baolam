@@ -1,19 +1,16 @@
-"use client";
-import ApprovalQueuePage from '@/components/checker/queue/ApprovalQueuePage';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+'use client';
 
 export default function QueueRoute() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && (!user || (user.role !== 'checker' && user.role !== 'admin'))) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) return null;
-  return <ApprovalQueuePage />;
+  return (
+    <div className="p-6 flex flex-col justify-center items-center min-h-[50vh]">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Chờ Duyệt</h1>
+      <p className="text-gray-500 text-sm">Chờ kết nối giao diện ApprovalQueuePage...</p>
+      
+      {/* TODO: Replace scaffold with real ApprovalQueuePage component
+        import ApprovalQueuePage from '@/components/checker/queue/ApprovalQueuePage';
+        
+        <ApprovalQueuePage />
+      */}
+    </div>
+  );
 }
