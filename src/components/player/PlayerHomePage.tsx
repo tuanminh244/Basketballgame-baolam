@@ -1,108 +1,67 @@
-"use client";
-import { useEffect, useState } from 'react';
-import { ref, onValue, query, orderByChild, equalTo } from 'firebase/database';
-import { db } from '@/services/firebase/config';
-import { submitTaskAtomic } from '@/services/taskService';
-import { getVietnamDate } from '@/utils/time';
-import { TaskLog } from '@/types';
+'use client';
+
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDailyLog } from '@/hooks/useDailyLog';
+import { useSessionContext } from '@/contexts/SessionContext';
+import { taskService } from '@/services/taskService';
 
 const LEVEL_XP = [0, 300, 700, 1300, 2000, 3000, 4500, 6500, 9000, 12000];
 
-const STATUS_CONFIG: Record<string, {
-  label: string; icon: string; bg: string; text: string; border: string;
-}> = {
+const STATUS_CONFIG: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
   todo:     { label: 'Chưa làm',  icon: '📋', bg: 'bg-slate-800',    text: 'text-slate-400', border: 'border-slate-700' },
   pending:  { label: 'Chờ duyệt', icon: '⏳', bg: 'bg-amber-900/30', text: 'text-amber-400', border: 'border-amber-700'  },
   approved: { label: 'Đã duyệt',  icon: '✅', bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-700'  },
   rejected: { label: 'Làm lại',   icon: '🔄', bg: 'bg-red-900/30',   text: 'text-red-400',   border: 'border-red-700'   },
 };
 
-export default function PlayerHomePage({ userId }: { userId: string }) {
-  const [tasks, setTasks]           = useState<{ id: string; data: TaskLog }[]>([]);
-  const [templates, setTemplates]   = useState<Record<string, any>>({});
-  const [monthNode, setMonthNode]   = useState('');
-  const [stats, setStats]           = useState<any>(null);
-  const [summary, setSummary]       = useState<any>(null);
-  const [processing, setProcessing] = useState<string | null>(null);
+export default function PlayerHomePage() {
   const { user, logout } = useAuth();
+  const userId = user?.id ?? '';
 
-  useEffect(() => {
-    const unsub = onValue(ref(db, 'system_config/current_month_node'), snap => {
-      if (snap.exists()) setMonthNode(snap.val());
-    });
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    const unsub = onValue(ref(db, `users/${userId}/stats`), snap => {
-      if (snap.exists()) setStats(snap.val());
-    });
-    return () => unsub();
-  }, [userId]);
-
-  useEffect(() => {
-    const q = query(ref(db, 'task_templates'), orderByChild('owner_id'), equalTo(userId));
-    const unsub = onValue(q, snap => {
-      if (snap.exists()) {
-        setTemplates(snap.val() || {});
-      } else {
-        setTemplates({});
-      }
-    });
-    return () => unsub();
-  }, [userId]);
-
-  useEffect(() => {
-    if (!monthNode) return;
-    const unsub = onValue(ref(db, `${monthNode}/${getVietnamDate()}/${userId}/tasks`), snap => {
-      if (snap.exists()) {
-        setTasks(Object.entries(snap.val()).map(([id, t]: any) => ({ id, data: t as TaskLog })));
-      } else {
-        setTasks([]);
-      }
-    });
-    return () => unsub();
-  }, [userId, monthNode]);
-
-  useEffect(() => {
-    if (!monthNode) return;
-    const unsub = onValue(
-      ref(db, `${monthNode}/${getVietnamDate()}/${userId}/summary`),
-      snap => setSummary(snap.exists() ? snap.val() : null)
-    );
-    return () => unsub();
-  }, [userId, monthNode]);
+  const { dailyLog, loading: logLoading, error: logError } = useDailyLog(userId);
+  const { stats, loading: sessionLoading }                  = useSessionContext();
+  const [processingId, setProcessingId]                     = useState<string | null>(null);
 
   const handleSubmit = async (taskId: string) => {
-    if (!monthNode || processing) return;
-    setProcessing(taskId);
+    if (!userId || processingId) return;
+    setProcessingId(taskId);
     try {
-      await submitTaskAtomic(monthNode, getVietnamDate(), userId, taskId);
+      await taskService.submitTask(userId, taskId);
     } catch (e) {
       console.error(e);
     } finally {
-      setProcessing(null);
+      setProcessingId(null);
     }
   };
 
-  const level     = stats?.level ?? 1;
-  const currentXp = stats?.current_xp ?? 0;
-  const points    = stats?.total_points ?? 0;
+  const level     = stats?.level        ?? 1;
+  const currentXp = stats?.current_xp   ?? 0;
+  const points    = stats?.total_points  ?? 0;
   const streak    = stats?.current_streak ?? 0;
-  const nextLvXp  = LEVEL_XP[Math.min(level, LEVEL_XP.length - 1)] || 300;
-  const prevLvXp  = LEVEL_XP[Math.max(level - 1, 0)] || 0;
-  const range     = nextLvXp - prevLvXp;
-  const xpPct     = range > 0
-    ? Math.min(100, Math.round(((currentXp - prevLvXp) / range) * 100))
+  const nextLvXp  = LEVEL_XP[Math.min(level, LEVEL_XP.length - 1)] ?? 300;
+  const prevLvXp  = LEVEL_XP[Math.max(level - 1, 0)] ?? 0;
+  const xpPct     = nextLvXp > prevLvXp
+    ? Math.min(100, Math.round(((currentXp - prevLvXp) / (nextLvXp - prevLvXp)) * 100))
     : 0;
 
-  const donePct          = summary?.completion_rate ?? 0;
-  const isRewardUnlocked = summary?.reward_78_unlocked || summary?.reward_100_unlocked;
+  const donePct         = dailyLog?.summary?.completion_rate ?? 0;
+  const rewardUnlocked  = dailyLog?.summary?.reward_78_unlocked || dailyLog?.summary?.reward_100_unlocked;
+
+  const tasks = dailyLog?.tasks
+    ? Object.entries(dailyLog.tasks).map(([id, data]) => ({ id, ...data }))
+    : [];
+
+  if (logLoading || sessionLoading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 pb-8">
 
+      {/* Header */}
       <div className="bg-gradient-to-br from-sky-600 to-blue-800 px-5 pt-12 pb-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -145,6 +104,7 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
         </div>
       </div>
 
+      {/* Daily progress — backend authoritative */}
       <div className="px-5 -mt-4">
         <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl">
           <div className="flex justify-between items-center mb-2">
@@ -159,12 +119,16 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
               style={{ width: `${donePct}%` }} />
           </div>
           <p className="text-slate-500 text-xs mt-2">
-            Mức độ hoàn thành: {donePct}%
-            {isRewardUnlocked && ' 🎉 Phần thưởng đã mở!'}
+            Hoàn thành: {donePct}%{rewardUnlocked && ' 🎉 Phần thưởng đã mở!'}
           </p>
         </div>
       </div>
 
+      {logError && (
+        <p className="text-red-400 text-xs text-center mt-3">{logError?.message}</p>
+      )}
+
+      {/* Task list */}
       <div className="px-5 mt-5">
         <h2 className="text-white font-bold text-lg mb-3">📋 Nhiệm vụ hôm nay</h2>
 
@@ -177,24 +141,23 @@ export default function PlayerHomePage({ userId }: { userId: string }) {
         ) : (
           <div className="space-y-3">
             {tasks.map(task => {
-              const cfg    = STATUS_CONFIG[task.data.status] ?? STATUS_CONFIG.todo;
-              const name   = templates[task.id]?.name ?? task.id.slice(0, 10);
-              const isBusy = processing === task.id;
-              const canDo  = task.data.status === 'todo';
+              const cfg    = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.todo;
+              const isBusy = processingId === task.id;
+              const canDo  = task.status === 'todo';
 
               return (
                 <div key={task.id}
                   className={`${cfg.bg} border ${cfg.border} rounded-2xl p-4 flex items-center gap-4 transition-all`}>
                   <span className="text-2xl">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{name}</p>
-                    <p className="text-yellow-500 text-xs font-medium mt-0.5">+{task.data.xp_earned} XP</p>
+                    <p className="text-white font-semibold text-sm truncate">{task.id}</p>
+                    <p className="text-yellow-500 text-xs font-medium mt-0.5">+{task.xp_earned} XP</p>
                     <p className={`text-xs mt-0.5 ${cfg.text}`}>{cfg.label}</p>
                   </div>
                   {canDo && (
                     <button
                       onClick={() => handleSubmit(task.id)}
-                      disabled={!!processing}
+                      disabled={!!processingId}
                       className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all
                         ${isBusy
                           ? 'bg-slate-600'
