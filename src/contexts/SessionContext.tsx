@@ -1,15 +1,13 @@
-// src/contexts/SessionContext.tsx
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, ReactNode } from 'react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
+import { useAuthContext } from './AuthContext';
+import { useWallet } from '@/hooks/useWallet';
 import { useRewards } from '@/hooks/useRewards';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useApprovalQueue } from '@/hooks/useApprovalQueue';
 import { useRealtimeStatus, RealtimeStatus } from '@/hooks/useRealtimeStatus';
-import { WalletState } from '@/types/economy';
-import { RewardState } from '@/types/rewards';
-import { UserStats } from '@/types/auth';
+import { WalletState, RewardState, UserStats } from '@/types';
 import { ApprovalQueueItem } from '@/types/tasks';
 
 interface SessionContextValue {
@@ -29,7 +27,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuthContext();
   const userId = user?.id;
 
-  const [hydrated, setHydrated] = useState<boolean>(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
@@ -37,7 +35,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const { rewards, loading: rewardsLoading } = useRewards(userId);
   const { stats, loading: statsLoading } = useUserStats(userId);
-  const { queue, loading: queueLoading, refreshQueue } = useApprovalQueue();
+  const { queue, loading: queueLoading, refreshQueue } = useApprovalQueue(userId);
   const realtime = useRealtimeStatus();
 
   const wallet = useMemo<WalletState | null>(() => {
