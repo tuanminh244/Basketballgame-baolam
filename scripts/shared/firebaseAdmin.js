@@ -1,28 +1,18 @@
-// scripts/shared/firebaseAdmin.js
-
 const admin = require('firebase-admin');
 
-// Singleton Initialization: Safe for serverless environments
-let adminApp;
+// Singleton Initialization: Safe for serverless environments & GitHub Actions
 if (!admin.apps.length) {
-  adminApp = admin.initializeApp({
-    credential: admin.credential.applicationDefault(), 
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // [HARDENING PATCH] Normalize newline escape sequences from GitHub Secrets
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+    }),
     databaseURL: process.env.FIREBASE_DATABASE_URL
   });
-} else {
-  adminApp = admin.app();
 }
 
 const adminDb = admin.database();
 
-// Forcefully terminate Firebase Admin connection to allow process to exit
-const terminate = async () => {
-  try {
-    adminDb.goOffline();
-    await adminApp.delete();
-  } catch (error) {
-    console.error('[ERROR] Failed to terminate Firebase Admin app:', error);
-  }
-};
-
-module.exports = { adminApp, adminDb, terminate };
+module.exports = { adminDb };
