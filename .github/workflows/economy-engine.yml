@@ -1,26 +1,30 @@
 name: Economy Engine
-
 on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
+# Khai báo operational intent an toàn chống Overlap
+concurrency:
+  group: economy-engine
+  cancel-in-progress: false
+
 jobs:
   run-approval-engine:
     runs-on: ubuntu-latest
-    timeout-minutes: 5        # safety net cấp job
+    timeout-minutes: 5        # Safety net cấp job (ngăn burn minutes vô hạn)
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4  # v4, không phải v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
       - name: Install Dependencies
-        run: npm install                 # thay npm install
+        run: npm ci
 
       - name: Execute Task Approval Engine
         env:
