@@ -59,5 +59,11 @@ export function useDailyLog(userId: string | undefined) {
     await submitTaskAtomic(monthNode, date, userId, taskId);
   }, [userId, monthNode, date]);
 
-  return { log, loading, error, submitTask };
+return {
+  dailyLog: log,
+  log,
+  loading,
+  error,
+  submitTask,
+};
 }
