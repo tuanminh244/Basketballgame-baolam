@@ -1,180 +1,312 @@
-"use client";
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const FAMILY = [
-  { name: 'Bảo Lâm',  emoji: '🏀', sub: 'Người chơi', grad: 'from-sky-500 to-blue-700',    ring: 'ring-sky-400'    },
-  { name: 'Bảo Linh', emoji: '⭐', sub: 'Người chơi', grad: 'from-pink-500 to-rose-700',    ring: 'ring-pink-400'   },
-  { name: 'Mẹ',       emoji: '💚', sub: 'Kiểm duyệt', grad: 'from-emerald-500 to-green-700', ring: 'ring-emerald-400' },
-  { name: 'Bố',       emoji: '🏆', sub: 'Quản trị',   grad: 'from-violet-500 to-purple-700', ring: 'ring-violet-400'  },
-];
+  {
+    id: 'blam_01',
+    email: 'blam@family.local',
+    name: 'Bảo Lâm',
+    emoji: '🏀',
+    sub: 'Người chơi',
+    grad: 'from-sky-500 to-blue-700',
+    ring: 'ring-sky-400',
+    route: '/player-home',
+  },
+  {
+    id: 'blinh_01',
+    email: 'blinh@family.local',
+    name: 'Bảo Linh',
+    emoji: '⭐',
+    sub: 'Người chơi',
+    grad: 'from-pink-500 to-rose-700',
+    ring: 'ring-pink-400',
+    route: '/player-home',
+  },
+  {
+    id: 'mom_01',
+    email: 'mom@family.local',
+    name: 'Mẹ',
+    emoji: '💚',
+    sub: 'Kiểm duyệt',
+    grad: 'from-emerald-500 to-green-700',
+    ring: 'ring-emerald-400',
+    route: '/checker/queue',
+  },
+  {
+    id: 'dad_01',
+    email: 'dad@family.local',
+    name: 'Bố',
+    emoji: '🏆',
+    sub: 'Quản trị',
+    grad: 'from-violet-500 to-purple-700',
+    ring: 'ring-violet-400',
+    route: '/admin',
+  },
+] as const;
 
-const PIN_MAX = 6;
-const KEYS = ['1','2','3','4','5','6','7','8','9','⌫','0','→'];
+type FamilyMember = (typeof FAMILY)[number];
+
+const PIN_LENGTH = 6;
 
 export default function LoginPage() {
-  const [step, setStep]               = useState<'select'|'pin'>('select');
-  const [member, setMember]           = useState<typeof FAMILY[0] | null>(null);
-  const [pin, setPin]                 = useState('');
-  const [error, setError]             = useState('');
-  const [submitting, setSubmitting]   = useState(false);
-  const [shake, setShake]             = useState(false);
-  const shakeTimeoutRef               = useRef<NodeJS.Timeout | null>(null);
-
-  const { loginWithPin, user, loading } = useAuth();
   const router = useRouter();
+  const { loginWithPin, user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && user) router.replace('/');
-  }, [user, loading, router]);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [shake, setShake] = useState(false);
 
-  // Cleanup shake timeout on unmount
+  const shakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const member = useMemo<FamilyMember | null>(() => {
+    return FAMILY.find((item) => item.id === selectedMemberId) ?? null;
+  }, [selectedMemberId]);
+
   useEffect(() => {
     return () => {
-      if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
+      if (shakeTimeoutRef.current) {
+        clearTimeout(shakeTimeoutRef.current);
+      }
     };
   }, []);
 
-  const doSubmit = useCallback(async (currentPin: string) => {
-    if (!currentPin || submitting) return;
-    setSubmitting(true);
-    setError('');
-    try {
-      await loginWithPin(currentPin);
-    } catch (e: any) {
-      setError(e.message || 'Mã PIN không đúng');
-      if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
-      setShake(true);
-      setPin('');
-      shakeTimeoutRef.current = setTimeout(() => setShake(false), 500);
-      setSubmitting(false);
-    }
-  }, [loginWithPin, submitting]);
-
-  // Auto-submit when PIN full — stable deps
   useEffect(() => {
-    if (pin.length === PIN_MAX && !submitting) {
-      doSubmit(pin);
+    if (!user) return;
+
+    const matchedMember = FAMILY.find((item) => item.id === user.id);
+
+    if (matchedMember) {
+      router.replace(matchedMember.route);
+      return;
     }
-  }, [pin, submitting, doSubmit]);
 
-  const handleKey = (key: string) => {
-    if (submitting) return;
-    if (key === '⌫') { setPin(p => p.slice(0, -1)); setError(''); return; }
-    if (key === '→') { doSubmit(pin); return; }
-    if (pin.length < PIN_MAX) setPin(p => p + key);
-  };
+    if (user.role === 'admin') {
+      router.replace('/admin');
+      return;
+    }
 
-  if (loading && !submitting) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
-    </div>
+    if (user.role === 'checker') {
+      router.replace('/checker/queue');
+      return;
+    }
+
+    router.replace('/player-home');
+  }, [user, router]);
+
+  const resetPinState = useCallback(() => {
+    setPin('');
+    setError('');
+    setSubmitting(false);
+    setShake(false);
+  }, []);
+
+  const handleSelectMember = useCallback(
+    (memberId: string) => {
+      setSelectedMemberId(memberId);
+      resetPinState();
+    },
+    [resetPinState]
   );
 
-  return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-5 py-10 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-900/30 rounded-full blur-3xl" />
-      </div>
+  const handleBack = useCallback(() => {
+    setSelectedMemberId(null);
+    resetPinState();
+  }, [resetPinState]);
 
-      {/* Logo */}
-      <div className="mb-10 text-center z-10">
-        <div className="text-6xl mb-3 drop-shadow-lg">🎮</div>
-        <h1 className="text-3xl font-black text-white tracking-tight">Family Game</h1>
-        <p className="text-slate-400 text-sm mt-1">Hành trình học tập của nhà mình</p>
-      </div>
+  const doSubmit = useCallback(
+    async (currentPin: string) => {
+      if (!member || submitting || loading) return;
 
-      {step === 'select' ? (
-        <div className="w-full max-w-xs z-10">
-          <p className="text-slate-400 text-xs text-center uppercase tracking-widest mb-5 font-semibold">
-            Bạn là ai?
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {FAMILY.map(m => (
-              <button key={m.name}
-                onClick={() => { setMember(m); setPin(''); setError(''); setStep('pin'); }}
-                className={`bg-gradient-to-br ${m.grad} p-5 rounded-3xl flex flex-col items-center
-                  shadow-xl active:scale-95 transition-transform duration-150 cursor-pointer`}>
-                <span className="text-5xl mb-2 drop-shadow">{m.emoji}</span>
-                <span className="text-white font-bold text-base">{m.name}</span>
-                <span className="text-white/60 text-xs mt-0.5">{m.sub}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="w-full max-w-xs z-10">
-          {/* Back */}
-          <button
-            onClick={() => { setStep('select'); setPin(''); setError(''); }}
-            className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition text-sm">
-            <span className="text-lg">←</span> Chọn lại
-          </button>
+      if (currentPin.length !== PIN_LENGTH) {
+        setError('Vui lòng nhập đủ 6 số');
+        return;
+      }
 
-          {/* Selected member */}
-          <div className={`bg-gradient-to-br ${member!.grad} p-4 rounded-2xl flex items-center gap-4 mb-8 shadow-lg ${member!.ring} ring-2`}>
-            <span className="text-4xl drop-shadow">{member!.emoji}</span>
-            <div>
-              <p className="text-white font-bold text-lg leading-tight">{member!.name}</p>
-              <p className="text-white/60 text-sm">{member!.sub}</p>
-            </div>
-            {submitting && (
-              <div className="ml-auto w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
-          </div>
+      setSubmitting(true);
+      setError('');
 
-          {/* PIN dots */}
-          <div
-            className="flex justify-center gap-3 mb-3"
-            style={{ animation: shake ? 'shake 0.4s ease' : 'none' }}>
-            {Array.from({ length: PIN_MAX }).map((_, i) => (
-              <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
-                i < pin.length
-                  ? 'bg-white border-white scale-110'
-                  : error
-                  ? 'bg-red-500/30 border-red-400'
-                  : 'bg-transparent border-slate-600'
-              }`} />
-            ))}
-          </div>
+      try {
+        /**
+         * QUAN TRỌNG:
+         * PIN ở màn hình này chính là password của Firebase Auth account.
+         * App phải Firebase Auth login trước, sau đó Firebase Rules mới có auth.uid/auth.token.role.
+         */
+        await loginWithPin(member.email, currentPin);
+      } catch (e: any) {
+        setError(e?.message || 'Mã PIN không đúng hoặc tài khoản chưa được cấu hình');
+        setPin('');
 
-          {/* Error */}
-          <div className="h-6 mb-4 text-center">
-            {error && <p className="text-red-400 text-sm font-medium">{error}</p>}
-          </div>
-
-          {/* Numpad */}
-          <div className="grid grid-cols-3 gap-2.5">
-            {KEYS.map(key => (
-              <button key={key} onClick={() => handleKey(key)}
-                disabled={submitting}
-                className={`py-5 rounded-2xl text-xl font-bold transition-all duration-100 active:scale-95
-                  ${key === '→'
-                    ? pin.length > 0
-                      ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30'
-                      : 'bg-slate-800 text-slate-600'
-                    : key === '⌫'
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                    : 'bg-slate-800 text-white hover:bg-slate-700'
-                  } disabled:opacity-50`}>
-                {key}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes shake {
-          0%,100%{transform:translateX(0)}
-          20%{transform:translateX(-8px)}
-          40%{transform:translateX(8px)}
-          60%{transform:translateX(-5px)}
-          80%{transform:translateX(5px)}
+        if (shakeTimeoutRef.current) {
+          clearTimeout(shakeTimeoutRef.current);
         }
-      `}</style>
-    </div>
+
+        setShake(true);
+        shakeTimeoutRef.current = setTimeout(() => {
+          setShake(false);
+        }, 500);
+
+        setSubmitting(false);
+      }
+    },
+    [member, submitting, loading, loginWithPin]
+  );
+
+  const handleNumber = useCallback(
+    async (value: string) => {
+      if (!member || submitting || loading) return;
+      if (pin.length >= PIN_LENGTH) return;
+
+      const nextPin = `${pin}${value}`;
+      setPin(nextPin);
+      setError('');
+
+      if (nextPin.length === PIN_LENGTH) {
+        await doSubmit(nextPin);
+      }
+    },
+    [member, pin, submitting, loading, doSubmit]
+  );
+
+  const handleDelete = useCallback(() => {
+    if (submitting || loading) return;
+    setError('');
+    setPin((current) => current.slice(0, -1));
+  }, [submitting, loading]);
+
+  const keypadDisabled = !member || submitting || loading;
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center px-5 py-10">
+      <div className="w-full max-w-[520px] flex flex-col items-center">
+        <div className="text-5xl mb-3">🎮</div>
+
+        <h1 className="text-4xl font-extrabold tracking-tight text-center">
+          Family Game
+        </h1>
+
+        <p className="text-slate-400 mt-3 text-center">
+          Hành trình học tập của nhà mình
+        </p>
+
+        {!member ? (
+          <section className="w-full mt-14 space-y-4">
+            <h2 className="text-lg text-slate-300 text-center mb-6">
+              Chọn người chơi
+            </h2>
+
+            {FAMILY.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelectMember(item.id)}
+                className={`w-full rounded-3xl bg-gradient-to-r ${item.grad} px-7 py-5 flex items-center gap-5 ring-2 ring-transparent hover:${item.ring} transition active:scale-[0.98]`}
+              >
+                <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center text-4xl">
+                  {item.emoji}
+                </div>
+
+                <div className="text-left">
+                  <div className="text-2xl font-bold">{item.name}</div>
+                  <div className="text-white/70 text-base mt-1">{item.sub}</div>
+                </div>
+              </button>
+            ))}
+          </section>
+        ) : (
+          <section className="w-full mt-16">
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={submitting || loading}
+              className="mb-10 text-slate-300 hover:text-white transition disabled:opacity-50"
+            >
+              ← Chọn lại
+            </button>
+
+            <div
+              className={`w-full rounded-3xl bg-gradient-to-r ${member.grad} px-8 py-7 flex items-center gap-6 ring-2 ring-cyan-400 mb-10`}
+            >
+              <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center text-4xl">
+                {member.emoji}
+              </div>
+
+              <div>
+                <div className="text-2xl font-bold">{member.name}</div>
+                <div className="text-white/70 text-lg mt-1">{member.sub}</div>
+              </div>
+            </div>
+
+            <div className={`flex justify-center gap-5 mb-6 ${shake ? 'animate-pulse' : ''}`}>
+              {Array.from({ length: PIN_LENGTH }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-6 h-6 rounded-full border-4 ${
+                    index < pin.length
+                      ? 'bg-rose-400 border-rose-400'
+                      : 'border-rose-400'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {error ? (
+              <p className="text-center text-rose-400 font-bold mb-8">
+                {error}
+              </p>
+            ) : (
+              <p className="text-center text-slate-500 mb-8 h-6">
+                {submitting ? 'Đang đăng nhập...' : ' '}
+              </p>
+            )}
+
+            <div className="grid grid-cols-3 gap-4">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((number) => (
+                <button
+                  key={number}
+                  type="button"
+                  disabled={keypadDisabled}
+                  onClick={() => handleNumber(number)}
+                  className="h-24 rounded-3xl bg-slate-800 text-3xl font-bold hover:bg-slate-700 transition active:scale-[0.98] disabled:opacity-50"
+                >
+                  {number}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                disabled={keypadDisabled || pin.length === 0}
+                onClick={handleDelete}
+                className="h-24 rounded-3xl bg-slate-800 text-3xl font-bold hover:bg-slate-700 transition active:scale-[0.98] disabled:opacity-50"
+              >
+                ⌫
+              </button>
+
+              <button
+                type="button"
+                disabled={keypadDisabled}
+                onClick={() => handleNumber('0')}
+                className="h-24 rounded-3xl bg-slate-800 text-3xl font-bold hover:bg-slate-700 transition active:scale-[0.98] disabled:opacity-50"
+              >
+                0
+              </button>
+
+              <button
+                type="button"
+                disabled={keypadDisabled || pin.length !== PIN_LENGTH}
+                onClick={() => doSubmit(pin)}
+                className="h-24 rounded-3xl bg-slate-800 text-3xl font-bold hover:bg-slate-700 transition active:scale-[0.98] disabled:opacity-50"
+              >
+                →
+              </button>
+            </div>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }
