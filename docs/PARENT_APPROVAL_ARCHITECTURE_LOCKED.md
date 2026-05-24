@@ -1,52 +1,79 @@
-# PARENT APPROVAL ARCHITECTURE (LOCKED v1)
+# PARENT_APPROVAL_ARCHITECTURE_LOCKED.md — APPROVAL FLOW LOCK
 
-**Status:** LOCKED (Production-Ready)
-**System:** Family Education Game App
-**Stack:** React/Next.js, Firebase Realtime Database (RTDB), Cronjob Backend
+## 1. Purpose
 
-## LOCKED PRINCIPLES
+This lock governs the parent/checker approval architecture for the Family Education Game.
 
-### 1. Frontend = State Changer + Authority Reader
-**Frontend được phép:**
-- Chuyển đổi trạng thái task (Approve/Reject) thông qua `runTransaction` an toàn.
-- Render UI realtime dựa trên thay đổi của database.
-- Đọc các trạng thái Summary/Economy Authority.
+It is separate from Coregame, Economy, Engine Rules, Firebase Schema, and Firebase Rules.
 
-**Frontend TUYỆT ĐỐI KHÔNG:**
-- Mint (Đúc) rewards hoặc XP.
-- Tự quyết định unlock rewards.
-- Trực tiếp update wallet/ledger/streak/stats.
-- Tự quyết định/tính toán các Economy States mang tính quyết định (Authority).
+## 2. Locked Approval Flow
 
-### 2. Cronjob = Economy Authority
-`task_approval.js` (Backend Cronjob) là **Authority duy nhất** cho:
-- Quyết định Reward unlock.
-- Tính toán `completion_rate` chính thức.
-- Xử lý Streak logic.
-- Ghi nhận Ledger và Wallet balance.
-- Cấp (Grant) XP và Points.
-- Các Derived States liên quan đến kinh tế.
+The approval flow is:
 
-### 3. Tasks Node = Operational State
-Nhiệm vụ của node `tasks`:
-- Phục vụ Realtime Queue.
-- Cung cấp dữ liệu để Render Task List.
-- Đếm số lượng hành vi bề mặt (Operational counts).
+1. Daily reset creates player tasks.
+2. Player submits a task for review.
+3. Submitted task becomes `pending`.
+4. Parent/checker reviews pending tasks.
+5. Parent/checker sets task to `approved` or `rejected`.
+6. Only `approved` tasks become input events for the Economy/Engine ledger.
+7. Economy/Engine grants XP/Points through the locked ledger process.
 
-### 4. Summary Node = Derived Authority State
-Nhiệm vụ của node `summary`:
-- Lưu trữ Reward flags (`reward_78_unlocked`, `reward_100_unlocked`).
-- Lưu trữ Completion rate chính thức.
-- Phục vụ các UI liên quan đến kinh tế.
+## 3. Authority Boundary
 
-### 5. Queue ≠ Dashboard (Separation of Concerns)
-- **Approval Queue:** Giao diện hành động (Transactional UI). Chỉ pull và xử lý các task ở trạng thái `submitted`.
-- **Dashboard:** Giao diện phân tích (Analytics UI). Đọc và hiển thị số liệu từ cả Operational và Authority.
+The approval flow must not grant XP/Points directly.
 
-### 6. Frontend Calculations
-- Các logic tính toán ở Frontend chỉ phục vụ mục đích Temporary Realtime UX.
-- Chúng KHÔNG BAO GIỜ được dùng làm Economy Authority.
+UI, player pages, and checker pages must not write authoritative economy fields, including:
 
-### 7. Monotonic Economy Principle
-- Trạng thái kinh tế chỉ có thể tăng tiến thông qua sự xác thực của Backend Authority.
-- Replay-Safe, Idempotent và Deterministic.
+- XP balance
+- Points balance
+- Level
+- Streak
+- Reward unlock flags
+- `summary.xp_granted`
+- `summary.points_granted`
+
+## 4. Status Rules
+
+Allowed task states remain under the existing project locks.
+
+General boundary:
+
+- Player may move a task into a submitted/pending state.
+- Player must not approve or reject their own task.
+- Checker/admin may approve or reject pending tasks.
+- Rejected tasks must not grant XP/Points.
+- Approved tasks are inputs for Economy/Engine processing, not direct payout commands.
+
+## 5. Approval Queue Rules
+
+Approval queue must:
+
+- Read from the locked daily log path.
+- Show only tasks requiring parent/checker action.
+- Preserve user/date/task identity.
+- Avoid duplicate listeners.
+- Clean up realtime listeners.
+- Call service-layer functions where available.
+
+## 6. Forbidden Changes
+
+Do not implement:
+
+- Player self-approval
+- UI direct XP/Points grants
+- Approval page direct writes to economy ledger
+- Bypassing `pending` approval flow
+- Treating `submit` as `approved`
+- New approval status values unless explicitly approved
+- New root DB nodes unless schema migration is explicitly approved
+- Firebase Auth/custom claims as approval authority unless owner explicitly writes: AUTH MIGRATION REQUESTED
+
+## 7. Integration Boundary
+
+- `COREGAME_LOCK.md` defines the overall game flow.
+- `PARENT_APPROVAL_ARCHITECTURE_LOCKED.md` defines approval authority and status transition boundaries.
+- `ECONOMY_LOCK.md` defines XP/Points rules.
+- `ENGINE_RULES_LOCK.md` defines engine/business-rule execution and ledger processing.
+- `firebase_rules_LOCKED_v2` defines Firebase RTDB validation/security rules.
+
+Do not merge these locks.
